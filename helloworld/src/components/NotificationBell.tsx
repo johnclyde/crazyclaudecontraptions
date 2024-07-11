@@ -9,7 +9,16 @@ interface NotificationBellProps {
 }
 
 const NotificationBell = forwardRef<HTMLDivElement, NotificationBellProps>(
-  ({ notifications, notificationsError, showNotifications, setShowNotifications, markNotificationAsRead }, ref) => {
+  (
+    {
+      notifications,
+      notificationsError,
+      showNotifications,
+      setShowNotifications,
+      markNotificationAsRead,
+    },
+    ref,
+  ) => {
     return (
       <div className="relative" ref={ref}>
         <button
