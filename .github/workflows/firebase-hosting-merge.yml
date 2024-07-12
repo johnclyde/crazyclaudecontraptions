@@ -11,10 +11,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: yarn build
+      - name: Build the project
+        run: yarn build
+        working-directory: ./helloworld
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: ${{ secrets.GITHUB_TOKEN }}
           firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_OLYMPIADS }}
           channelId: live
           projectId: olympiads
+          entryPoint: helloworld
