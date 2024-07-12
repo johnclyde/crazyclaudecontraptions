@@ -1,5 +1,6 @@
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import ColorPicker from './ColorPicker';
 import ComponentDirectory from './ComponentDirectory';
 import InteractiveCounter from './InteractiveCounter';
 import Navbar from './Navbar';
@@ -13,7 +14,7 @@ const App = () => {
           <Routes>
             <Route path="/" element={<ComponentDirectory />} />
             <Route path="/interactive-counter" element={<InteractiveCounter />} />
-            {/* Add more routes here as you create new components */}
+            <Route path="/color-picker" element={<ColorPicker />} />
           </Routes>
         </main>
       </div>

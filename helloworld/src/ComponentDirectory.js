@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 const ComponentDirectory = () => {
   const components = [
     { name: 'Interactive Counter', path: '/interactive-counter', description: 'A counter with increment and decrement buttons' },
-    // Add more components here as they are created
+    { name: 'Color Picker', path: '/color-picker', description: 'An interactive color picker with real-time preview' },
   ];
 
   return (
