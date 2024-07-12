@@ -1,5 +1,6 @@
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import BanzukeSurfer from './BanzukeSurfer';
 import ColorPicker from './ColorPicker';
 import ComponentDirectory from './ComponentDirectory';
 import InteractiveCounter from './InteractiveCounter';
@@ -13,6 +14,7 @@ const App = () => {
         <main className="flex-grow">
           <Routes>
             <Route path="/" element={<ComponentDirectory />} />
+            <Route path="/banzuke-surfer" element={<BanzukeSurfer />} />
             <Route path="/interactive-counter" element={<InteractiveCounter />} />
             <Route path="/color-picker" element={<ColorPicker />} />
           </Routes>
