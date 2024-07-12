@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { PlusCircle, MinusCircle } from 'lucide-react';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 const InteractiveCounter = () => {
   const [count, setCount] = useState(0);
@@ -28,14 +27,6 @@ const InteractiveCounter = () => {
           </button>
         </div>
       </div>
-      {count === 10 && (
-        <Alert className="mt-4 max-w-sm">
-          <AlertTitle>Congratulations!</AlertTitle>
-          <AlertDescription>
-            You've reached 10! Keep going!
-          </AlertDescription>
-        </Alert>
-      )}
     </div>
   );
 };
