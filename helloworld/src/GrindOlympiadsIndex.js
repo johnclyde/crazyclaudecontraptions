@@ -11,6 +11,8 @@ const GrindOlympiadsIndex = () => {
   const [tests, setTests] = useState([]);
   const [notifications, setNotifications] = useState([]);
   const [userProgress, setUserProgress] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {

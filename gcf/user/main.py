@@ -8,10 +8,10 @@ def load_user(request: Request) -> Response:
     try:
         # Reference to the user document
         user_ref = db.collection('users').document('math1434')
-        
+
         # Try to get the user document
         user_doc = user_ref.get()
-        
+
         if user_doc.exists:
             # User exists, return the user data
             user_data = user_doc.to_dict()
@@ -24,17 +24,17 @@ def load_user(request: Request) -> Response:
                 'tests_taken': [],
                 'points': 0
             }
-            
+
             # Set the new user data in Firestore
             user_ref.set(new_user_data)
-            
+
             # Retrieve the newly created user data
             user_data = user_ref.get().to_dict()
-        
+
         response_data = {
             "user": user_data
         }
-        
+
         return jsonify(response_data), 200, headers
     except Exception as e:
         return jsonify({"error": str(e)}), 500, headers
