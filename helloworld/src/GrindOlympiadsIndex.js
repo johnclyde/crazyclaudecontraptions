@@ -43,7 +43,7 @@ const GrindOlympiadsIndex = () => {
 
       <header className="text-center py-10 bg-white">
         <h1 className="text-4xl font-bold mb-4">Welcome to GrindOlympiads!</h1>
-        <button 
+        <button
           onClick={toggleTests}
           className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
         >
@@ -59,8 +59,8 @@ const GrindOlympiadsIndex = () => {
               <ul className="space-y-2">
                 {tests.map((test, index) => (
                   <li key={index}>
-                    <a 
-                      href={`https://grindolympiads.com/competition/${test.replace(/ - /g, '/')}`} 
+                    <a
+                      href={`/competition/${test.replace(/ - /g, '/')}`}
                       className="text-blue-500 hover:underline"
                     >
                       {test}

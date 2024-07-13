@@ -6,12 +6,14 @@ import ComponentDirectory from './ComponentDirectory';
 import GrindOlympiadsIndex from './GrindOlympiadsIndex.js';
 import InteractiveCounter from './InteractiveCounter';
 import Navbar from './Navbar';
+import ExamComponent from './ExamComponent';
 
 const App = () => {
   return (
     <Router>
       <Routes>
         <Route path="/" element={<GrindOlympiadsIndex />} />
+        <Route path="/competition/:competition/:year/:exam" element={<ExamComponent />} />
         <Route
           path="/labs/*"
           element={
