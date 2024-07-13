@@ -29,9 +29,7 @@ const ExamComponent = () => {
       } finally {
         setLoading(false);
       }
-
-      fetchExamData();
-    }, [competition, year, exam]);
+    };
 
     fetchExamData();
   }, [competition, year, exam]);
