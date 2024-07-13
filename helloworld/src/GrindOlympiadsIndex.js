@@ -44,6 +44,16 @@ const GrindOlympiadsIndex = () => {
       .catch(error => console.error('Error fetching user progress:', error));
   }, []);
 
+  const handleProfileClick = () => {
+    // Add logic for profile navigation or action
+    console.log('Navigate to profile');
+  };
+
+  const handleSettingsClick = () => {
+    // Add logic for settings navigation or action
+    console.log('Navigate to settings');
+  };
+
   const handleLogin = () => {
     // Implement actual login logic here
     fetch('/api/login', {
@@ -126,8 +136,8 @@ const GrindOlympiadsIndex = () => {
                 <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1">
                   {isLoggedIn ? (
                     <>
-                      <a href="#" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Profile</a>
-                      <a href="#" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Settings</a>
+                      <button onClick={handleProfileClick} className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Profile</button>
+                      <button onClick={handleSettingsClick} className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Settings</button>
                       <button onClick={handleLogout} className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Logout</button>
                     </>
                   ) : (
