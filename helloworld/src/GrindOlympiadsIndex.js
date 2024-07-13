@@ -3,7 +3,6 @@ import GrindOlympiadsLayout from './GrindOlympiadsLayout';
 
 const GrindOlympiadsIndex = () => {
   const [showTests, setShowTests] = useState(false);
-  const [showNotification, setShowNotification] = useState(false);
 
   // Simulated tests data
   const tests = [
@@ -20,12 +19,6 @@ const GrindOlympiadsIndex = () => {
 
   return (
     <GrindOlympiadsLayout>
-      {showNotification && (
-        <div className="bg-blue-500 text-white p-2 text-center">
-          You have no new notifications
-        </div>
-      )}
-
       <header className="text-center py-10 bg-white">
         <h1 className="text-4xl font-bold mb-4">Welcome to GrindOlympiads!</h1>
         <button
