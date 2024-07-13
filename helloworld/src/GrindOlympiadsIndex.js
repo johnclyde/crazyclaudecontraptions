@@ -61,13 +61,11 @@ const GrindOlympiadsIndex = () => {
           setNotifications(notificationsData);
         } catch (notifError) {
           console.error('Error fetching notifications:', notifError);
-          setNotificationsError('Unable to load notifications');
-          // Don't rethrow the error, allow the rest of the page to load
+          setNotificationsError('Unable to load notifications. Please try again later.');
         }
       } catch (err) {
         console.error('Error fetching data:', err);
-        setError('Failed to load data. Please try again later.');
-        setIsLoggedIn(false);
+        setError('Failed to load some data. Please try refreshing the page.');
       } finally {
         setLoading(false);
       }
@@ -176,15 +174,17 @@ const GrindOlympiadsIndex = () => {
   const competitions = ['All', ...new Set(tests.map(test => test.competition))];
 
   if (loading) {
-    return <div>Loading...</div>;
-  }
-
-  if (error) {
-    return <div>Error: {error}</div>;
+    return <div className="flex justify-center items-center h-screen">Loading...</div>;
   }
 
   return (
     <div className="min-h-screen bg-gray-100">
+      {error && (
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+          <strong className="font-bold">Error: </strong>
+          <span className="block sm:inline">{error}</span>
+        </div>
+      )}
       <header className="bg-gray-800 text-white p-4 sticky top-0 z-50">
         <div className="container mx-auto flex justify-between items-center">
           <div className="text-xl font-bold">GrindOlympiads</div>
