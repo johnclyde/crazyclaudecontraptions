@@ -4,11 +4,11 @@ import { Link } from 'react-router-dom';
 const Navbar = () => {
   return (
     <nav className="bg-gray-800 p-4">
-      <div className="container mx-auto">
-        <Link to="/" className="text-white text-lg font-semibold">
+      <div className="container mx-auto flex justify-between items-center">
+        <Link to="/" className="text-white hover:text-gray-300">
           Grind Olympiads
         </Link>
-        <Link to="/labs" className="text-white text-lg font-semibold">
+        <Link to="/labs" className="text-xl font-bold">
           Component Directory
         </Link>
       </div>

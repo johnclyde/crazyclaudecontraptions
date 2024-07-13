@@ -19,10 +19,10 @@ const App = () => {
               <Navbar />
               <main className="flex-grow">
                 <Routes>
-                  <Route path="/labs" element={<ComponentDirectory />} />
-                  <Route path="/banzuke-surfer" element={<BanzukeSurfer />} />
-                  <Route path="/interactive-counter" element={<InteractiveCounter />} />
-                  <Route path="/color-picker" element={<ColorPicker />} />
+                  <Route index element={<ComponentDirectory />} />
+                  <Route path="banzuke-surfer" element={<BanzukeSurfer />} />
+                  <Route path="interactive-counter" element={<InteractiveCounter />} />
+                  <Route path="color-picker" element={<ColorPicker />} />
                 </Routes>
               </main>
             </div>
