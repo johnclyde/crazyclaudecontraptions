@@ -80,26 +80,35 @@ const GrindOlympiadsIndex = () => {
   };
 
   const handleLogin = () => {
-    // Implement actual login logic here
-    fetch('/api/login', {
+    fetch('https://us-central1-olympiads.cloudfunctions.net/login', {
       method: 'POST',
-      // Add necessary headers and body
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        username: 'math1434'
+      })
     })
       .then(response => response.json())
       .then(data => {
-        setUser(data);
-        setIsLoggedIn(true);
+        if (data.token) {
+          localStorage.setItem('token', data.token);
+          setUser(data);
+          setIsLoggedIn(true);
+        }
       })
       .catch(error => console.error('Error logging in:', error));
   };
 
   const handleLogout = () => {
-    // Implement actual logout logic here
-    fetch('/api/logout', {
+    fetch('https://us-central1-olympiads.cloudfunctions.net/logout', {
       method: 'POST',
-      // Add necessary headers
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
+      }
     })
       .then(() => {
+        localStorage.removeItem('token');
         setUser(null);
         setIsLoggedIn(false);
         setShowUserMenu(false);
