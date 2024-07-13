@@ -76,11 +76,7 @@ const ExamComponent = () => {
               <li key={index} className="bg-white p-4 rounded shadow">
                 <strong>Problem {problem.number}:</strong> <span>{problem.problem}</span>
                 {problem.image_url && (
-<<<<<<< HEAD
                   <img src={problem.image_url} alt={`Problem ${problem.number}`} className="mt-2" />
-=======
-                  <img src={problem.image_url} alt={`Problem ${problem.number}`} className="mt-2" />
->>>>>>> 5b2e472 (Add ExamComponent.js)
                 )}
               </li>
             ))}
