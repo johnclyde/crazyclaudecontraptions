@@ -1,30 +1,18 @@
-from flask import Flask, jsonify, request
+from flask import jsonify
 from google.cloud import firestore_v1
 
-app = Flask(__name__)
 db = firestore_v1.Client(database="grindolympiads")
 
 
-@app.route("/exam-data/competition/", methods=["GET"])
-@app.route("/exam-data/competition/<competition>/<year>/<exam>", methods=["GET"])
-def get_exam_data(competition=None, year=None, exam=None):
-    # Set CORS headers for the preflight request
-    if request.method == "OPTIONS":
-        # Allows GET requests from any origin with the Content-Type
-        # header and caches preflight response for an 3600s
-        headers = {
-            "Access-Control-Allow-Origin": "*",
-            "Access-Control-Allow-Methods": "GET",
-            "Access-Control-Allow-Headers": "Content-Type",
-            "Access-Control-Max-Age": "3600",
-        }
-        return ("", 204, headers)
-
+def get_exam_data(competition, year, exam):
     # Set CORS headers for the main request
     headers = {"Access-Control-Allow-Origin": "*"}
 
+    print("competition", competition)
+    print("year", year)
+    print("exam", exam)
     if not all([competition, year, exam]):
-        return (jsonify({"error": "Missing parameters"}), 400, headers)
+        return (jsonify({"error": "Missing parameters", "competition": competition}), 400, headers)
 
     try:
         # Fetch problems
@@ -65,3 +53,6 @@ def get_exam_data(competition=None, year=None, exam=None):
 
     except Exception as e:
         return (jsonify({"error": str(e)}), 500, headers)
+
+if __name__ == "__main__":
+    app.run(debug=True)
