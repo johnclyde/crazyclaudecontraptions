@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
 const GrindOlympiadsIndex = () => {
   const [showTests, setShowTests] = useState(false);
@@ -13,6 +13,9 @@ const GrindOlympiadsIndex = () => {
   const [userProgress, setUserProgress] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+
+  const notificationRef = useRef(null);
+  const userMenuRef = useRef(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -36,6 +39,20 @@ const GrindOlympiadsIndex = () => {
         }
         const testsData = await testsResponse.json();
         setTests(testsData.tests || []);
+
+        // Fetch user progress
+        const progressResponse = await fetch('https://us-central1-olympiads.cloudfunctions.net/user_progress');
+        if (!progressResponse.ok) {
+          throw new Error('Failed to fetch user progress');
+        }
+        const progressData = await progressResponse.json();
+        setUserProgress(progressData);
+
+        // Fetch notifications (mock data for now)
+        setNotifications([
+          { id: 1, message: "New test available!", read: false },
+          { id: 2, message: "You've completed 5 tests!", read: true },
+        ]);
       } catch (err) {
         console.error('Error fetching data:', err);
         setError('Failed to load data. Please try again later.');
@@ -47,27 +64,23 @@ const GrindOlympiadsIndex = () => {
 
     fetchData();
 
-    if (loading) {
-      return <div>Loading...</div>;
-    }
+    // Add click event listener
+    document.addEventListener('mousedown', handleClickOutside);
 
-    if (error) {
-      return <div>Error: {error}</div>;
-    }
-
-    // Fetch notifications
-    fetch('/api/notifications')
-      .then(response => response.json())
-      .then(data => setNotifications(data))
-      .catch(error => console.error('Error fetching notifications:', error));
-
-    // Fetch user progress
-    fetch('/api/user-progress')
-      .then(response => response.json())
-      .then(data => setUserProgress(data))
-      .catch(error => console.error('Error fetching user progress:', error));
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // Cleanup the event listener
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
   }, []);
+
+  const handleClickOutside = (event) => {
+    if (notificationRef.current && !notificationRef.current.contains(event.target)) {
+      setShowNotifications(false);
+    }
+    if (userMenuRef.current && !userMenuRef.current.contains(event.target)) {
+      setShowUserMenu(false);
+    }
+  };
 
   const handleProfileClick = () => {
     // Add logic for profile navigation or action
@@ -86,7 +99,7 @@ const GrindOlympiadsIndex = () => {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        username: 'math1434'
+       username: 'math1434'
       })
     })
       .then(response => response.json())
@@ -101,29 +114,27 @@ const GrindOlympiadsIndex = () => {
   };
 
   const handleLogout = () => {
-    fetch('https://us-central1-olympiads.cloudfunctions.net/logout', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token')}`
-      }
-    })
-      .then(() => {
-        localStorage.removeItem('token');
-        setUser(null);
-        setIsLoggedIn(false);
-        setShowUserMenu(false);
-      })
-      .catch(error => console.error('Error logging out:', error));
+    setUser(null);
+    setIsLoggedIn(false);
+    setShowUserMenu(false);
   };
 
-  const filteredTests = tests ? tests.filter(test =>
+  const filteredTests = tests.filter(test =>
     (selectedCompetition === 'All' || test.competition === selectedCompetition) &&
     (test.competition.toLowerCase().includes(searchTerm.toLowerCase()) ||
      test.exam.toLowerCase().includes(searchTerm.toLowerCase()) ||
      test.year.includes(searchTerm))
-  ) : [];
+  );
 
-  const competitions = ['All', ...new Set(tests ? tests.map(test => test.competition) : [])];
+  const competitions = ['All', ...new Set(tests.map(test => test.competition))];
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  if (error) {
+    return <div>Error: {error}</div>;
+  }
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -131,7 +142,7 @@ const GrindOlympiadsIndex = () => {
         <div className="container mx-auto flex justify-between items-center">
           <div className="text-xl font-bold">GrindOlympiads</div>
           <div className="flex items-center space-x-4">
-            <div className="relative">
+            <div className="relative" ref={notificationRef}>
               <button
                 onClick={() => setShowNotifications(!showNotifications)}
                 className="p-2 hover:bg-gray-700 rounded-full"
@@ -153,7 +164,7 @@ const GrindOlympiadsIndex = () => {
                 </div>
               )}
             </div>
-            <div className="relative">
+            <div className="relative" ref={userMenuRef}>
               <button
                 onClick={() => setShowUserMenu(!showUserMenu)}
                 className="flex items-center space-x-2 hover:bg-gray-700 p-2 rounded-full"
