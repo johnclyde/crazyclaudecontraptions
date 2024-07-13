@@ -17,7 +17,7 @@ const GrindOlympiadsIndex = () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch('https://us-central1-olympiads.cloudfunctions.net/list_exams');
+      const response = await fetch('https://us-central1-olympiads.cloudfunctions.net/exams');
       if (!response.ok) {
         throw new Error('Failed to fetch tests');
       }
