@@ -1,9 +1,12 @@
 from google.cloud import firestore_v1
 from flask import jsonify
 
+app = Flask(__name__)
 db = firestore_v1.Client(database="grindolympiads")
 
-def get_exam_data(request):
+@app.route('/exam-data/competition/', methods=['GET'])
+@app.route('/exam-data/competition/<competition>/<year>/<exam>', methods=['GET'])
+def get_exam_data(competition=None, year=None, exam=None):
     # Set CORS headers for the preflight request
     if request.method == 'OPTIONS':
         # Allows GET requests from any origin with the Content-Type
@@ -20,11 +23,6 @@ def get_exam_data(request):
     headers = {
         'Access-Control-Allow-Origin': '*'
     }
-
-    # Get parameters from the request
-    competition = request.args.get('competition')
-    year = request.args.get('year')
-    exam = request.args.get('exam')
 
     if not all([competition, year, exam]):
         return (jsonify({'error': 'Missing parameters'}), 400, headers)
