@@ -14,7 +14,7 @@ const GrindOlympiadsIndex = () => {
 
   useEffect(() => {
     // Fetch user data
-    fetch('/api/user')
+    fetch('https://us-central1-olympiads.cloudfunctions.net/user')
       .then(response => response.json())
       .then(data => {
         setUser(data);
@@ -26,7 +26,7 @@ const GrindOlympiadsIndex = () => {
       });
 
     // Fetch tests
-    fetch('/api/tests')
+    fetch('https://us-central1-olympiads.cloudfunctions.net/exams')
       .then(response => response.json())
       .then(data => setTests(data))
       .catch(error => console.error('Error fetching tests:', error));
