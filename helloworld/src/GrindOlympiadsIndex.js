@@ -18,10 +18,6 @@ const GrindOlympiadsIndex = () => {
     setShowTests(!showTests);
   };
 
-  const toggleNotification = () => {
-    setShowNotification(!showNotification);
-  };
-
   return (
     <GrindOlympiadsLayout>
       {showNotification && (
