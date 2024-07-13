@@ -15,7 +15,7 @@ const ExamComponent = () => {
     const fetchExamData = async () => {
       setLoading(true);
       try {
-        const response = await fetch(`https://us-central1-olympiads.cloudfunctions.net/exam-data/competition/${competition}/${year}/${exam}`);
+        const response = await fetch(`https://us-central1-olympiads.cloudfunctions.net/exam-data?competition=${competition}&year=${year}&exam=${exam}`);
         if (!response.ok) {
           throw new Error('Failed to fetch exam data');
         }
@@ -81,7 +81,7 @@ const ExamComponent = () => {
           <>
             <div className="flex justify-between mb-4">
               {!showAllProblems && (
-                <button 
+                <button
                   onClick={handlePrevious}
                   className="bg-blue-500 text-white px-4 py-2 rounded disabled:bg-gray-300"
                   disabled={currentProblemIndex === 0}
@@ -89,14 +89,14 @@ const ExamComponent = () => {
                   ← Previous
                 </button>
               )}
-              <button 
+              <button
                 onClick={toggleView}
                 className="bg-green-500 text-white px-4 py-2 rounded"
               >
                 {showAllProblems ? "Show One Problem" : "Show All Problems"}
               </button>
               {!showAllProblems && (
-                <button 
+                <button
                   onClick={handleNext}
                   className="bg-blue-500 text-white px-4 py-2 rounded disabled:bg-gray-300"
                   disabled={currentProblemIndex === problems.length - 1}
