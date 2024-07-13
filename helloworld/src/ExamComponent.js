@@ -76,7 +76,7 @@ const ExamComponent = () => {
               <li key={index} className="bg-white p-4 rounded shadow">
                 <strong>Problem {problem.number}:</strong> <span>{problem.problem}</span>
                 {problem.image_url && (
-                  <img src={problem.image_url} alt={`Problem ${problem.number} image`} className="mt-2" />
+                  <img src={problem.image_url} alt={`Problem ${problem.number}`} className="mt-2" />
                 )}
               </li>
             ))}
