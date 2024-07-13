@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 const GrindOlympiadsIndex = () => {
   const [showTests, setShowTests] = useState(false);
@@ -7,49 +7,72 @@ const GrindOlympiadsIndex = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCompetition, setSelectedCompetition] = useState('All');
   const [showNotifications, setShowNotifications] = useState(false);
+  const [user, setUser] = useState(null);
+  const [tests, setTests] = useState([]);
+  const [notifications, setNotifications] = useState([]);
+  const [userProgress, setUserProgress] = useState([]);
 
-  // Mock user data
-  const user = {
-    name: 'John Doe',
-    avatar: 'https://i.pravatar.cc/150?img=68'
-  };
+  useEffect(() => {
+    // Fetch user data
+    fetch('/api/user')
+      .then(response => response.json())
+      .then(data => {
+        setUser(data);
+        setIsLoggedIn(true);
+      })
+      .catch(error => {
+        console.error('Error fetching user data:', error);
+        setIsLoggedIn(false);
+      });
 
-  // Mock test data
-  const tests = [
-    { competition: 'AMC', year: '2012', exam: 'AMC-10A' },
-    { competition: 'AMC', year: '2012', exam: 'AMC-10B' },
-    { competition: 'AMC', year: '2013', exam: 'AMC-10A' },
-    { competition: 'ARML', year: '2023', exam: 'Team Round' },
-    { competition: 'ARML', year: '2024', exam: 'Team Round' },
-    { competition: 'Davilmpiads', year: '2024', exam: 'Davilmpiads' },
-    { competition: 'Washington Math Olympiad', year: '2024', exam: 'Proofs' },
-    { competition: 'moSp', year: '2024', exam: 'Mock IMO Day 1' },
-    { competition: 'moSp', year: '2024', exam: 'Mock IMO Day 2' },
-  ];
+    // Fetch tests
+    fetch('/api/tests')
+      .then(response => response.json())
+      .then(data => setTests(data))
+      .catch(error => console.error('Error fetching tests:', error));
 
-  // Mock notifications
-  const notifications = [
-    { id: 1, message: 'New AMC 10A test available!', read: false },
-    { id: 2, message: 'You completed ARML Team Round. Great job!', read: true },
-    { id: 3, message: 'Upcoming contest: Washington Math Olympiad', read: false },
-  ];
+    // Fetch notifications
+    fetch('/api/notifications')
+      .then(response => response.json())
+      .then(data => setNotifications(data))
+      .catch(error => console.error('Error fetching notifications:', error));
 
-  // Mock user progress
-  const userProgress = [
-    { competition: 'AMC', year: '2012', exam: 'AMC-10A', score: 120 },
-    { competition: 'ARML', year: '2023', exam: 'Team Round', score: 45 },
-  ];
+    // Fetch user progress
+    fetch('/api/user-progress')
+      .then(response => response.json())
+      .then(data => setUserProgress(data))
+      .catch(error => console.error('Error fetching user progress:', error));
+  }, []);
 
   const handleLogin = () => {
-    setIsLoggedIn(true);
+    // Implement actual login logic here
+    fetch('/api/login', {
+      method: 'POST',
+      // Add necessary headers and body
+    })
+      .then(response => response.json())
+      .then(data => {
+        setUser(data);
+        setIsLoggedIn(true);
+      })
+      .catch(error => console.error('Error logging in:', error));
   };
 
   const handleLogout = () => {
-    setIsLoggedIn(false);
-    setShowUserMenu(false);
+    // Implement actual logout logic here
+    fetch('/api/logout', {
+      method: 'POST',
+      // Add necessary headers
+    })
+      .then(() => {
+        setUser(null);
+        setIsLoggedIn(false);
+        setShowUserMenu(false);
+      })
+      .catch(error => console.error('Error logging out:', error));
   };
 
-  const filteredTests = tests.filter(test => 
+  const filteredTests = tests.filter(test =>
     (selectedCompetition === 'All' || test.competition === selectedCompetition) &&
     (test.competition.toLowerCase().includes(searchTerm.toLowerCase()) ||
      test.exam.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -65,7 +88,7 @@ const GrindOlympiadsIndex = () => {
           <div className="text-xl font-bold">GrindOlympiads</div>
           <div className="flex items-center space-x-4">
             <div className="relative">
-              <button 
+              <button
                 onClick={() => setShowNotifications(!showNotifications)}
                 className="p-2 hover:bg-gray-700 rounded-full"
               >
@@ -87,11 +110,11 @@ const GrindOlympiadsIndex = () => {
               )}
             </div>
             <div className="relative">
-              <button 
-                onClick={() => setShowUserMenu(!showUserMenu)} 
+              <button
+                onClick={() => setShowUserMenu(!showUserMenu)}
                 className="flex items-center space-x-2 hover:bg-gray-700 p-2 rounded-full"
               >
-                {isLoggedIn ? (
+                {isLoggedIn && user ? (
                   <img src={user.avatar} alt={user.name} className="w-8 h-8 rounded-full" />
                 ) : (
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -120,7 +143,7 @@ const GrindOlympiadsIndex = () => {
       <div className="bg-gradient-to-r from-blue-500 to-purple-600 text-white py-20">
         <div className="container mx-auto text-center">
           <h1 className="text-4xl font-bold mb-4">Welcome to GrindOlympiads!</h1>
-          <button 
+          <button
             onClick={() => setShowTests(!showTests)}
             className="bg-white text-blue-500 font-bold py-2 px-4 rounded-full hover:bg-blue-100 transition duration-300"
           >
@@ -154,7 +177,7 @@ const GrindOlympiadsIndex = () => {
               <div key={index} className="bg-white rounded-lg shadow-md p-6">
                 <h3 className="text-xl font-bold mb-2">{test.competition}</h3>
                 <p className="text-gray-600 mb-4">{`${test.year} - ${test.exam}`}</p>
-                <a 
+                <a
                   href={`/competition/${test.competition}/${test.year}/${test.exam}`}
                   className="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 transition duration-300"
                 >
