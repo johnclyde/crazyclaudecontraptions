@@ -3,10 +3,10 @@ import { Link } from 'react-router-dom';
 
 const ComponentDirectory = () => {
   const components = [
-    { name: 'Banzuke Surfer', path: '/banzuke-surfer', description: 'Banzuke Surfing Utility' },
-    { name: 'Interactive Counter', path: '/interactive-counter', description: 'A counter with increment and decrement buttons' },
-    { name: 'Color Picker', path: '/color-picker', description: 'An interactive color picker with real-time preview' },
-    { name: 'GrindOlympiads Index', path: '/grind-olympiads', description: 'Index page for GrindOlympiads math platform' },
+    { name: 'Banzuke Surfer', path: '/labs/banzuke-surfer', description: 'Banzuke Surfing Utility' },
+    { name: 'Interactive Counter', path: '/labs/interactive-counter', description: 'A counter with increment and decrement buttons' },
+    { name: 'Color Picker', path: '/labs/color-picker', description: 'An interactive color picker with real-time preview' },
+    { name: 'GrindOlympiads Index', path: '/', description: 'Index page for GrindOlympiads math platform' },
   ];
 
   return (
