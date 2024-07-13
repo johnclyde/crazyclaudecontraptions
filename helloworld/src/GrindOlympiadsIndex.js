@@ -99,7 +99,7 @@ const GrindOlympiadsIndex = () => {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-       username: 'math1434'
+        username: 'math1434'
       })
     })
       .then(response => response.json())
@@ -114,9 +114,19 @@ const GrindOlympiadsIndex = () => {
   };
 
   const handleLogout = () => {
-    setUser(null);
-    setIsLoggedIn(false);
-    setShowUserMenu(false);
+    fetch('https://us-central1-olympiads.cloudfunctions.net/logout', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
+      }
+    })
+      .then(() => {
+        localStorage.removeItem('token');
+        setUser(null);
+        setIsLoggedIn(false);
+        setShowUserMenu(false);
+      })
+      .catch(error => console.error('Error logging out:', error));
   };
 
   const filteredTests = tests.filter(test =>
