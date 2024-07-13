@@ -24,7 +24,7 @@ const GrindOlympiadsIndex = () => {
   return (
     <div className="min-h-screen flex flex-col bg-gray-100">
       <nav className="bg-black text-white p-4 flex justify-between items-center">
-        <a href="#" className="text-xl font-bold">Home</a>
+        <a href="/" className="text-xl font-bold">Home</a>
         <div className="flex items-center space-x-4">
           <button onClick={toggleNotification} className="text-xl">
             <i className="fas fa-bell"></i>
