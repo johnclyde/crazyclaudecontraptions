@@ -8,7 +8,7 @@ const Navbar = () => {
         <Link to="/" className="text-white hover:text-gray-300">
           Grind Olympiads
         </Link>
-        <Link to="/labs" className="text-xl font-bold">
+        <Link to="/labs" className="text-white text-xl font-bold">
           Component Directory
         </Link>
       </div>
