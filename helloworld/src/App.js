@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import BanzukeSurfer from './BanzukeSurfer';
 import ColorPicker from './ColorPicker';
 import ComponentDirectory from './ComponentDirectory';
+import GrindOlympiadsIndex from './GrindOlympiadsIndex.js';
 import InteractiveCounter from './InteractiveCounter';
 import Navbar from './Navbar';
 
@@ -13,7 +14,8 @@ const App = () => {
         <Navbar />
         <main className="flex-grow">
           <Routes>
-            <Route path="/" element={<ComponentDirectory />} />
+            <Route path="/" element={<GrindOlympiadsIndex />} />
+            <Route path="/labs" element={<ComponentDirectory />} />
             <Route path="/banzuke-surfer" element={<BanzukeSurfer />} />
             <Route path="/interactive-counter" element={<InteractiveCounter />} />
             <Route path="/color-picker" element={<ColorPicker />} />

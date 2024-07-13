@@ -6,6 +6,7 @@ const ComponentDirectory = () => {
     { name: 'Banzuke Surfer', path: '/banzuke-surfer', description: 'Banzuke Surfing Utility' },
     { name: 'Interactive Counter', path: '/interactive-counter', description: 'A counter with increment and decrement buttons' },
     { name: 'Color Picker', path: '/color-picker', description: 'An interactive color picker with real-time preview' },
+    { name: 'GrindOlympiads Index', path: '/grind-olympiads', description: 'Index page for GrindOlympiads math platform' },
   ];
 
   return (
