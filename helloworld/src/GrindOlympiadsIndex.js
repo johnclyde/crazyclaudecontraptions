@@ -14,6 +14,7 @@ const GrindOlympiadsIndex = () => {
   const [userProgress, setUserProgress] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [notificationsError, setNotificationsError] = useState(null);
 
   const notificationRef = useRef(null);
   const userMenuRef = useRef(null);
@@ -22,6 +23,7 @@ const GrindOlympiadsIndex = () => {
     const fetchData = async () => {
       setLoading(true);
       setError(null);
+      setNotificationsError(null);
 
       try {
         // Fetch user data
@@ -50,12 +52,18 @@ const GrindOlympiadsIndex = () => {
         setUserProgress(progressData);
 
         // Fetch notifications
-        const notificationsResponse = await fetch('https://us-central1-olympiads.cloudfunctions.net/notifications');
-        if (!notificationsResponse.ok) {
-          throw new Error('Failed to fetch notifications');
+        try {
+          const notificationsResponse = await fetch('https://us-central1-olympiads.cloudfunctions.net/user_notifications');
+          if (!notificationsResponse.ok) {
+            throw new Error('Failed to fetch notifications');
+          }
+          const notificationsData = await notificationsResponse.json();
+          setNotifications(notificationsData);
+        } catch (notifError) {
+          console.error('Error fetching notifications:', notifError);
+          setNotificationsError('Unable to load notifications');
+          // Don't rethrow the error, allow the rest of the page to load
         }
-        const notificationsData = await notificationsResponse.json();
-        setNotifications(notificationsData);
       } catch (err) {
         console.error('Error fetching data:', err);
         setError('Failed to load data. Please try again later.');
@@ -189,22 +197,26 @@ const GrindOlympiadsIndex = () => {
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
                 </svg>
-                {notifications.some(n => !n.read) && (
+                {!notificationsError && notifications.some(n => !n.read) && (
                   <span className="absolute top-0 right-0 block h-2 w-2 rounded-full bg-red-500"></span>
                 )}
               </button>
               {showNotifications && (
                 <div className="absolute right-0 mt-2 w-64 bg-white rounded-md shadow-lg py-1">
-                  {notifications.map(notification => (
-                    <div
-                      key={notification.id}
-                      className={`px-4 py-2 text-sm ${notification.read ? 'text-gray-500' : 'text-gray-700 font-semibold'}`}
-                      onClick={() => !notification.read && markNotificationAsRead(notification.id)}
-                    >
-                      {notification.message}
-                      <div className="text-xs text-gray-400">{new Date(notification.timestamp).toLocaleString()}</div>
-                    </div>
-                  ))}
+                  {notificationsError ? (
+                    <div className="px-4 py-2 text-sm text-red-500">{notificationsError}</div>
+                  ) : (
+                    notifications.map(notification => (
+                      <div
+                        key={notification.id}
+                        className={`px-4 py-2 text-sm ${notification.read ? 'text-gray-500' : 'text-gray-700 font-semibold'}`}
+                        onClick={() => !notification.read && markNotificationAsRead(notification.id)}
+                      >
+                        {notification.message}
+                        <div className="text-xs text-gray-400">{new Date(notification.timestamp).toLocaleString()}</div>
+                      </div>
+                    ))
+                  )}
                 </div>
               )}
             </div>
