@@ -15,7 +15,7 @@ const ExamComponent = () => {
     const fetchExamData = async () => {
       setLoading(true);
       try {
-        const response = await fetch(`https://prod.grindolympiads.com/api/competition/${competition}/${year}/${exam}`);
+        const response = await fetch(`https://us-central1-olympiads.cloudfunctions.net/exam-data/competition/${competition}/${year}/${exam}`);
         if (!response.ok) {
           throw new Error('Failed to fetch exam data');
         }
