@@ -13,23 +13,37 @@ const GrindOlympiadsIndex = () => {
   const [userProgress, setUserProgress] = useState([]);
 
   useEffect(() => {
-    // Fetch user data
-    fetch('https://us-central1-olympiads.cloudfunctions.net/user')
-      .then(response => response.json())
-      .then(data => {
-        setUser(data);
-        setIsLoggedIn(true);
-      })
-      .catch(error => {
-        console.error('Error fetching user data:', error);
-        setIsLoggedIn(false);
-      });
+    const fetchData = async () => {
+      setLoading(true);
+      setError(null);
 
-    // Fetch tests
-    fetch('https://us-central1-olympiads.cloudfunctions.net/exams')
-      .then(response => response.json())
-      .then(data => setTests(data))
-      .catch(error => console.error('Error fetching tests:', error));
+      try {
+        // Fetch user data
+        const userResponse = await fetch('https://us-central1-olympiads.cloudfunctions.net/user');
+        if (!userResponse.ok) {
+          throw new Error('Failed to fetch user data');
+        }
+        const userData = await userResponse.json();
+        setUser(userData);
+        setIsLoggedIn(true);
+
+        // Fetch tests
+        const testsResponse = await fetch('https://us-central1-olympiads.cloudfunctions.net/exams');
+        if (!testsResponse.ok) {
+          throw new Error('Failed to fetch tests');
+        }
+        const testsData = await testsResponse.json();
+        setTests(testsData.tests || []);
+      } catch (err) {
+        console.error('Error fetching data:', err);
+        setError('Failed to load data. Please try again later.');
+        setIsLoggedIn(false);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
 
     // Fetch notifications
     fetch('/api/notifications')
