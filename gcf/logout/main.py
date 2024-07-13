@@ -7,7 +7,14 @@ SECRET_KEY = "a_secure_random_secret_key"
 
 
 def logout(request: Request) -> Response:
-    headers = {"Access-Control-Allow-Origin": "*"}
+    headers = {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "POST",
+        "Access-Control-Allow-Headers": "Authorization, Content-Type",
+    }
+    if request.method == "OPTIONS":
+        return Response(status=204, headers=headers)
+
     try:
         auth_header = request.headers.get("Authorization")
         if not auth_header:
