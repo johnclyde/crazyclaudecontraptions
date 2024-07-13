@@ -107,14 +107,14 @@ const GrindOlympiadsIndex = () => {
       .catch(error => console.error('Error logging out:', error));
   };
 
-  const filteredTests = tests.filter(test =>
+  const filteredTests = tests ? tests.filter(test =>
     (selectedCompetition === 'All' || test.competition === selectedCompetition) &&
     (test.competition.toLowerCase().includes(searchTerm.toLowerCase()) ||
      test.exam.toLowerCase().includes(searchTerm.toLowerCase()) ||
      test.year.includes(searchTerm))
-  );
+  ) : [];
 
-  const competitions = ['All', ...new Set(tests.map(test => test.competition))];
+  const competitions = ['All', ...new Set(tests ? tests.map(test => test.competition) : [])];
 
   return (
     <div className="min-h-screen bg-gray-100">
