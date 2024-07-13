@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import GrindOlympiadsLayout from './GrindOlympiadsLayout';
+import './GrindOlympiadsIndex.css';
 
 const GrindOlympiadsIndex = () => {
   const [showTests, setShowTests] = useState(false);
@@ -31,53 +31,51 @@ const GrindOlympiadsIndex = () => {
     }
   };
 
-  const toggleTests = () => {
-    setShowTests(!showTests);
-  };
-
   return (
-    <GrindOlympiadsLayout>
-      <header className="text-center py-10 bg-white">
-        <h1 className="text-4xl font-bold mb-4">Welcome to GrindOlympiads!</h1>
-        <button
-          onClick={toggleTests}
-          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-        >
-          View Tests
-        </button>
+    <div>
+      <header className="header">
+        <nav className="nav">
+          <div className="logo">GrindOlympiads</div>
+        </nav>
       </header>
-      <main className="flex-grow container mx-auto px-4 py-8">
-        {showTests && (
-          <section>
-            <h2 className="text-2xl font-bold mb-4">Available Tests</h2>
-            {loading ? (
-              <p>Loading tests...</p>
-            ) : error ? (
-              <p className="text-red-500">{error}</p>
-            ) : tests.length > 0 ? (
-              <ul className="space-y-2">
-                {tests.map((test, index) => (
-                  <li key={index}>
+
+      <div className="hero">
+        <h1 className="hero-title">Welcome to GrindOlympiads!</h1>
+        <button
+          onClick={() => setShowTests(!showTests)}
+          className="button"
+        >
+          {showTests ? 'Hide Tests' : 'View Tests'}
+        </button>
+      </div>
+
+      {showTests && (
+        <div className="container">
+          {loading ? (
+            <p>Loading tests...</p>
+          ) : error ? (
+            <p style={{ color: 'red' }}>{error}</p>
+          ) : (
+            <div className="grid">
+              {tests.map((test, index) => (
+                <div key={index} className="card">
+                  <div className="card-content">
+                    <h3 className="card-title">{test.competition}</h3>
+                    <p className="card-subtitle">{`${test.year} - ${test.exam}`}</p>
                     <a
                       href={`/competition/${test.competition}/${test.year}/${test.exam}`}
-                      className="text-blue-500 hover:underline"
+                      className="card-button"
                     >
-                      {`${test.competition} - ${test.year} - ${test.exam}`}
+                      Take Test
                     </a>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p>No tests available at the moment. Please check back later.</p>
-            )}
-          </section>
-        )}
-      </main>
-      <footer className="bg-gray-200 text-center p-4">
-        <p>&copy; 2024 Grind Olympiads. All rights reserved.</p>
-        <p className="text-sm text-gray-600">Build Version: 1.0.0</p>
-      </footer>
-    </GrindOlympiadsLayout>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
   );
 };
 
