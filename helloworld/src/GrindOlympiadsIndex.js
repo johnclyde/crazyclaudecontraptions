@@ -66,6 +66,7 @@ const GrindOlympiadsIndex = () => {
       .then(response => response.json())
       .then(data => setUserProgress(data))
       .catch(error => console.error('Error fetching user progress:', error));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleProfileClick = () => {
