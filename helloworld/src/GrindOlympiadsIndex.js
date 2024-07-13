@@ -81,7 +81,7 @@ const GrindOlympiadsIndex = () => {
 
   const handleLogin = () => {
     // Implement actual login logic here
-    fetch('/api/login', {
+    fetch('https://us-central1-olympiads.cloudfunctions.net/login', {
       method: 'POST',
       // Add necessary headers and body
     })
@@ -95,7 +95,7 @@ const GrindOlympiadsIndex = () => {
 
   const handleLogout = () => {
     // Implement actual logout logic here
-    fetch('/api/logout', {
+    fetch('https://us-central1-olympiads.cloudfunctions.net/logout', {
       method: 'POST',
       // Add necessary headers
     })
