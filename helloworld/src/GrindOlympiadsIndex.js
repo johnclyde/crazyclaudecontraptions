@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { Link } from 'react-router-dom';
 
 const GrindOlympiadsIndex = () => {
   const [showTests, setShowTests] = useState(false);
@@ -29,7 +30,7 @@ const GrindOlympiadsIndex = () => {
           throw new Error('Failed to fetch user data');
         }
         const userData = await userResponse.json();
-        setUser(userData);
+        setUser(userData.user);
         setIsLoggedIn(true);
 
         // Fetch tests
@@ -94,16 +95,43 @@ const GrindOlympiadsIndex = () => {
     console.log('Navigate to settings');
   };
 
-  const handleLogin = () => {
-    // Mock login for demonstration
-    setUser({ name: 'John Doe', avatar: 'https://example.com/avatar.jpg' });
-    setIsLoggedIn(true);
+  const handleLogin = async () => {
+    try {
+      const response = await fetch('https://us-central1-olympiads.cloudfunctions.net/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          username: 'math1434'
+        })
+      });
+      const data = await response.json();
+      if (data.token) {
+        localStorage.setItem('token', data.token);
+        setUser(data.user);
+        setIsLoggedIn(true);
+      }
+    } catch (error) {
+      console.error('Error logging in:', error);
+    }
     setShowUserMenu(false);
   };
 
-  const handleLogout = () => {
-    setUser(null);
-    setIsLoggedIn(false);
+  const handleLogout = async () => {
+    try {
+      await fetch('https://us-central1-olympiads.cloudfunctions.net/logout', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      localStorage.removeItem('token');
+      setUser(null);
+      setIsLoggedIn(false);
+    } catch (error) {
+      console.error('Error logging out:', error);
+    }
     setShowUserMenu(false);
   };
 
@@ -211,43 +239,70 @@ const GrindOlympiadsIndex = () => {
         </div>
       </header>
 
-      {/* Main content */}
-      <main className="container mx-auto mt-8 px-4">
-        <h1 className="text-3xl font-bold mb-6">Welcome to GrindOlympiads</h1>
-
-        {/* Search and filter */}
-        <div className="mb-6">
-          <input
-            type="text"
-            placeholder="Search tests..."
-            className="p-2 border rounded"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-          <select
-            className="ml-4 p-2 border rounded"
-            value={selectedCompetition}
-            onChange={(e) => setSelectedCompetition(e.target.value)}
+      <div className="bg-gradient-to-r from-blue-500 to-purple-600 text-white py-20">
+        <div className="container mx-auto text-center">
+          <h1 className="text-4xl font-bold mb-4">Welcome to GrindOlympiads!</h1>
+          <button
+            onClick={() => setShowTests(!showTests)}
+            className="bg-white text-blue-500 font-bold py-2 px-4 rounded-full hover:bg-blue-100 transition duration-300"
           >
-            {competitions.map(comp => (
-              <option key={comp} value={comp}>{comp}</option>
-            ))}
-          </select>
+            {showTests ? 'Hide Tests' : 'View Tests'}
+          </button>
         </div>
+      </div>
 
-        {/* Tests grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredTests.map(test => (
-            <div key={`${test.competition}-${test.year}-${test.exam}`} className="bg-white p-6 rounded shadow">
-              <h2 className="text-xl font-semibold mb-2">{test.competition}</h2>
-              <p className="text-gray-600 mb-2">{test.year} - {test.exam}</p>
-              <button className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
-                Start Test
-              </button>
-            </div>
-          ))}
+      {showTests && (
+        <div className="container mx-auto py-8">
+          <div className="mb-6 flex flex-col md:flex-row justify-between items-center">
+            <input
+              type="text"
+              placeholder="Search tests..."
+              className="w-full md:w-1/3 px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+            <select
+              className="mt-4 md:mt-0 w-full md:w-auto px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              value={selectedCompetition}
+              onChange={(e) => setSelectedCompetition(e.target.value)}
+            >
+              {competitions.map(competition => (
+                <option key={competition} value={competition}>{competition}</option>
+              ))}
+            </select>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredTests.map((test, index) => (
+              <div key={index} className="bg-white rounded-lg shadow-md p-6">
+                <h3 className="text-xl font-bold mb-2">{test.competition}</h3>
+                <p className="text-gray-600 mb-4">{`${test.year} - ${test.exam}`}</p>
+                <Link
+                  to={`/competition/${test.competition}/${test.year}/${test.exam}`}
+                  className="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 transition duration-300"
+                >
+                  Take Test
+                </Link>
+              </div>
+            ))}
+          </div>
         </div>
-      </main>
+      )}
+
+      {isLoggedIn && (
+        <div className="container mx-auto py-8">
+          <h2 className="text-2xl font-bold mb-4">Your Progress</h2>
+          <div className="bg-white rounded-lg shadow-md p-6">
+            <h3 className="text-xl font-bold mb-4">Completed Tests</h3>
+            <ul>
+              {userProgress.map((progress, index) => (
+                <li key={index} className="mb-2">
+                  {`${progress.competition} ${progress.year} ${progress.exam}: Score ${progress.score}`}
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
