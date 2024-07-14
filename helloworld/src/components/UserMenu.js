@@ -1,6 +1,15 @@
 import React, { forwardRef } from "react";
 
-const UserMenu = forwardRef(
+interface UserMenuProps {
+  user: any;
+  isLoggedIn: boolean;
+  showUserMenu: boolean;
+  setShowUserMenu: React.Dispatch<React.SetStateAction<boolean>>;
+  login: () => void;
+  logout: () => void;
+}
+
+const UserMenu = forwardRef<HTMLDivElement, UserMenuProps>(
   ({ user, isLoggedIn, showUserMenu, setShowUserMenu, login, logout }, ref) => {
     const handleProfileClick = () => {
       // Add logic for profile navigation or action
