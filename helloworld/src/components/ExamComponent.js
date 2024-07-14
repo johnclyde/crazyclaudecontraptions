@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
-import GrindOlympiadsLayout from './GrindOlympiadsLayout';
+import React, { useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
+import GrindOlympiadsLayout from "./GrindOlympiadsLayout";
 
 const ExamComponent = () => {
   const { competition, year, exam } = useParams();
   const [problems, setProblems] = useState([]);
-  const [comment, setComment] = useState('');
+  const [comment, setComment] = useState("");
   const [currentProblemIndex, setCurrentProblemIndex] = useState(0);
   const [showAllProblems, setShowAllProblems] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -15,17 +15,19 @@ const ExamComponent = () => {
     const fetchExamData = async () => {
       setLoading(true);
       try {
-        const response = await fetch(`https://us-central1-olympiads.cloudfunctions.net/exam-data?competition=${competition}&year=${year}&exam=${exam}`);
+        const response = await fetch(
+          `https://us-central1-olympiads.cloudfunctions.net/exam-data?competition=${competition}&year=${year}&exam=${exam}`,
+        );
         if (!response.ok) {
-          throw new Error('Failed to fetch exam data');
+          throw new Error("Failed to fetch exam data");
         }
         const data = await response.json();
         setProblems(data.problems || []);
-        setComment(data.comment || '');
+        setComment(data.comment || "");
         setError(null);
       } catch (err) {
-        console.error('Error fetching exam data:', err);
-        setError('Failed to load exam data. Please try again later.');
+        console.error("Error fetching exam data:", err);
+        setError("Failed to load exam data. Please try again later.");
       } finally {
         setLoading(false);
       }
@@ -48,7 +50,13 @@ const ExamComponent = () => {
 
   const renderImage = (imageUrl) => {
     if (!imageUrl) return null;
-    return <img src={`https://prod.grindolympiads.com/api${imageUrl}`} alt="Problem illustration" className="mt-2 max-w-full h-auto" />;
+    return (
+      <img
+        src={`https://prod.grindolympiads.com/api${imageUrl}`}
+        alt="Problem illustration"
+        className="mt-2 max-w-full h-auto"
+      />
+    );
   };
 
   if (loading) {
@@ -107,10 +115,16 @@ const ExamComponent = () => {
             </div>
 
             <ul className="space-y-4">
-              {(showAllProblems ? problems : [problems[currentProblemIndex]]).map((problem, index) => (
+              {(showAllProblems
+                ? problems
+                : [problems[currentProblemIndex]]
+              ).map((problem, index) => (
                 <li key={index} className="bg-white p-4 rounded shadow">
                   <strong className="text-lg">Problem {problem.number}:</strong>
-                  <div className="mt-2" dangerouslySetInnerHTML={{ __html: problem.problem }} />
+                  <div
+                    className="mt-2"
+                    dangerouslySetInnerHTML={{ __html: problem.problem }}
+                  />
                   {renderImage(problem.image_url)}
                 </li>
               ))}
