@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timezone
 
 from flask import jsonify
 from google.cloud import firestore_v1
@@ -50,22 +50,48 @@ def user_notifications(request):
         notifications_data = []
         for notification in notifications:
             notification_data = notification.to_dict()
+            timestamp = notification_data["timestamp"]
+            if isinstance(timestamp, datetime):
+                # Ensure the timestamp is timezone-aware
+                if timestamp.tzinfo is None:
+                    timestamp = timestamp.replace(tzinfo=timezone.utc)
+                timestamp_str = timestamp.isoformat()
+            else:
+                # If it's not a datetime object, convert it to a string
+                timestamp_str = str(timestamp)
+
             notifications_data.append(
                 {
                     "id": notification.id,
                     "message": notification_data["message"],
                     "read": notification_data["read"],
-                    "timestamp": notification_data["timestamp"].isoformat(),
+                    "timestamp": timestamp_str,
                 }
             )
 
         # Generate new notifications based on user activity
-        last_login = user_data.get("last_login", datetime.now() - timedelta(days=30))
-        if (datetime.now() - last_login).days >= 7:
+        last_login = user_data.get("last_login")
+        if last_login:
+            if isinstance(last_login, datetime):
+                if last_login.tzinfo is None:
+                    last_login = last_login.replace(tzinfo=timezone.utc)
+            else:
+                # If it's not a datetime object, try to parse it
+                try:
+                    last_login = datetime.fromisoformat(str(last_login)).replace(
+                        tzinfo=timezone.utc
+                    )
+                except ValueError:
+                    last_login = datetime.now(timezone.utc)
+        else:
+            last_login = datetime.now(timezone.utc) - timedelta(days=30)
+
+        current_time = datetime.now(timezone.utc)
+        if (current_time - last_login).days >= 7:
             new_notification = {
                 "message": "Welcome back! It's been a while since your last visit.",
                 "read": False,
-                "timestamp": firestore_v1.SERVER_TIMESTAMP,
+                "timestamp": current_time,
             }
             notifications_ref.add(new_notification)
             notifications_data.insert(
@@ -74,12 +100,12 @@ def user_notifications(request):
                     "id": "new",
                     "message": new_notification["message"],
                     "read": new_notification["read"],
-                    "timestamp": datetime.now().isoformat(),
+                    "timestamp": current_time.isoformat(),
                 },
             )
 
         # Update user's last login time
-        user_ref.update({"last_login": firestore_v1.SERVER_TIMESTAMP})
+        user_ref.update({"last_login": current_time})
 
         return jsonify(notifications_data), 200, headers
 

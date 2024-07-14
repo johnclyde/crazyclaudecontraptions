@@ -53,7 +53,7 @@ const GrindOlympiadsIndex = () => {
 
         // Fetch notifications
         try {
-          const notificationsResponse = await fetch('https://us-central1-olympiads.cloudfunctions.net/user_notifications');
+          const notificationsResponse = await fetch('https://us-central1-olympiads.cloudfunctions.net/notifications');
           if (!notificationsResponse.ok) {
             throw new Error('Failed to fetch notifications');
           }
