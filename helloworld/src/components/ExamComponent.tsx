@@ -59,16 +59,21 @@ const ExamComponent: React.FC = () => {
     setShowAllProblems((prev) => !prev);
   };
 
-  const renderImage = (imageUrl?: string) => {
-    if (!imageUrl) return null;
-    return (
-      <img
-        src={`https://prod.grindolympiads.com/api${imageUrl}`}
-        alt="Problem illustration"
-        className="mt-2 max-w-full h-auto"
-      />
-    );
-  };
+  const renderProblem = (problem: Problem) => (
+    <li key={problem.number} className="bg-white p-4 rounded shadow">
+      <strong className="text-lg">Problem {problem.number}:</strong>
+      <div className="mt-2">
+        <LatexRenderer latex={problem.problem} />
+      </div>
+      {problem.image_url && (
+        <img
+          src={`https://prod.grindolympiads.com/api${problem.image_url}`}
+          alt="Problem illustration"
+          className="mt-2 max-w-full h-auto"
+        />
+      )}
+    </li>
+  );
 
   if (loading) {
     return (
@@ -129,15 +134,7 @@ const ExamComponent: React.FC = () => {
               {(showAllProblems
                 ? problems
                 : [problems[currentProblemIndex]]
-              ).map((problem, index) => (
-                <li key={index} className="bg-white p-4 rounded shadow">
-                  <strong className="text-lg">Problem {problem.number}:</strong>
-                  <div className="mt-2">
-                    <LatexRenderer latex={problem.problem} />
-                  </div>
-                  {renderImage(problem.image_url)}
-                </li>
-              ))}
+              ).map(renderProblem)}
             </ul>
           </>
         ) : (
