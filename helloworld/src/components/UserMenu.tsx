@@ -20,7 +20,7 @@ const UserMenu = forwardRef<HTMLDivElement, UserMenuProps>(
     const [isGoogleAuthReady, setIsGoogleAuthReady] = useState(false);
 
     useEffect(() => {
-      setIsGoogleAuthReady(!!process.env.REACT_APP_GOOGLE_CLIENT_ID);
+      setIsGoogleAuthReady(!!process.env.REACT_APP_GOOGLE_API_KEY);
     }, []);
 
     const handleProfileClick = () => {
@@ -121,7 +121,6 @@ const UserMenu = forwardRef<HTMLDivElement, UserMenuProps>(
                 {isGoogleAuthReady && (
                   <div className="px-4 py-2">
                     <GoogleAuth
-                      clientId={process.env.REACT_APP_GOOGLE_CLIENT_ID || ""}
                       onSuccess={handleGoogleSignInSuccess}
                       onFailure={handleGoogleSignInFailure}
                     />

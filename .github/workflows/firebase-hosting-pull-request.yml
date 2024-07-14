@@ -21,6 +21,8 @@ jobs:
 
       - name: Build the project
         run: yarn build
+        env:
+          REACT_APP_GOOGLE_API_KEY: ${{ secrets.REACT_APP_GOOGLE_API_KEY }}
         working-directory: ./helloworld
 
       - name: Deploy to Firebase Hosting
