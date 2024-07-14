@@ -1,30 +1,30 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 
 const BanzukeSurfer = () => {
   const [selectedYear, setSelectedYear] = useState(null);
   const [selectedBasho, setSelectedBasho] = useState(null);
-  
+
   const years = Array.from({ length: 10 }, (_, i) => 2015 + i);
-  const bashos = ['January', 'March', 'May', 'July', 'September', 'November'];
+  const bashos = ["January", "March", "May", "July", "September", "November"];
 
   // Dummy data for the leaderboard
   const dummyLeaderboard = [
-    { rank: 'Yokozuna', name: 'Hakuho', wins: 15, losses: 0 },
-    { rank: 'Ozeki', name: 'Terunofuji', wins: 12, losses: 3 },
-    { rank: 'Sekiwake', name: 'Takakeisho', wins: 11, losses: 4 },
-    { rank: 'Komusubi', name: 'Mitakeumi', wins: 10, losses: 5 },
-    { rank: 'Maegashira 1', name: 'Daieisho', wins: 9, losses: 6 },
+    { rank: "Yokozuna", name: "Hakuho", wins: 15, losses: 0 },
+    { rank: "Ozeki", name: "Terunofuji", wins: 12, losses: 3 },
+    { rank: "Sekiwake", name: "Takakeisho", wins: 11, losses: 4 },
+    { rank: "Komusubi", name: "Mitakeumi", wins: 10, losses: 5 },
+    { rank: "Maegashira 1", name: "Daieisho", wins: 9, losses: 6 },
   ];
 
   const renderYearButtons = () => (
     <div className="mb-4">
       <h2 className="text-xl font-semibold mb-2">Select Year:</h2>
       <div className="flex flex-wrap gap-2">
-        {years.map(year => (
+        {years.map((year) => (
           <button
             key={year}
             onClick={() => setSelectedYear(year)}
-            className={`px-4 py-2 rounded ${selectedYear === year ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
+            className={`px-4 py-2 rounded ${selectedYear === year ? "bg-blue-500 text-white" : "bg-gray-200"}`}
           >
             {year}
           </button>
@@ -37,11 +37,11 @@ const BanzukeSurfer = () => {
     <div className="mb-4">
       <h2 className="text-xl font-semibold mb-2">Select Basho:</h2>
       <div className="flex flex-wrap gap-2">
-        {bashos.map(basho => (
+        {bashos.map((basho) => (
           <button
             key={basho}
             onClick={() => setSelectedBasho(basho)}
-            className={`px-4 py-2 rounded ${selectedBasho === basho ? 'bg-green-500 text-white' : 'bg-gray-200'}`}
+            className={`px-4 py-2 rounded ${selectedBasho === basho ? "bg-green-500 text-white" : "bg-gray-200"}`}
           >
             {basho}
           </button>
@@ -52,7 +52,9 @@ const BanzukeSurfer = () => {
 
   const renderLeaderboard = () => (
     <div className="mt-8">
-      <h2 className="text-2xl font-bold mb-4">Leaderboard: {selectedYear} {selectedBasho} Basho</h2>
+      <h2 className="text-2xl font-bold mb-4">
+        Leaderboard: {selectedYear} {selectedBasho} Basho
+      </h2>
       <table className="w-full border-collapse">
         <thead>
           <tr className="bg-gray-200">
@@ -64,7 +66,7 @@ const BanzukeSurfer = () => {
         </thead>
         <tbody>
           {dummyLeaderboard.map((wrestler, index) => (
-            <tr key={index} className={index % 2 === 0 ? 'bg-gray-100' : ''}>
+            <tr key={index} className={index % 2 === 0 ? "bg-gray-100" : ""}>
               <td className="border p-2">{wrestler.rank}</td>
               <td className="border p-2">{wrestler.name}</td>
               <td className="border p-2">{wrestler.wins}</td>

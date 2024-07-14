@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 
 const Hero = ({ showTests, setShowTests }) => {
   return (
@@ -9,7 +9,7 @@ const Hero = ({ showTests, setShowTests }) => {
           onClick={() => setShowTests(!showTests)}
           className="bg-white text-blue-500 font-bold py-2 px-4 rounded-full hover:bg-blue-100 transition duration-300"
         >
-          {showTests ? 'Hide Tests' : 'View Tests'}
+          {showTests ? "Hide Tests" : "View Tests"}
         </button>
       </div>
     </div>

@@ -1,13 +1,16 @@
-import React from 'react';
+import React from "react";
 
-const TestSearch = ({ 
-  searchTerm, 
-  setSearchTerm, 
-  selectedCompetition, 
-  setSelectedCompetition, 
-  tests 
+const TestSearch = ({
+  searchTerm,
+  setSearchTerm,
+  selectedCompetition,
+  setSelectedCompetition,
+  tests,
 }) => {
-  const competitions = ['All', ...new Set(tests.map(test => test.competition))];
+  const competitions = [
+    "All",
+    ...new Set(tests.map((test) => test.competition)),
+  ];
 
   return (
     <div className="container mx-auto py-8">
@@ -24,8 +27,10 @@ const TestSearch = ({
           value={selectedCompetition}
           onChange={(e) => setSelectedCompetition(e.target.value)}
         >
-          {competitions.map(competition => (
-            <option key={competition} value={competition}>{competition}</option>
+          {competitions.map((competition) => (
+            <option key={competition} value={competition}>
+              {competition}
+            </option>
           ))}
         </select>
       </div>

@@ -1,25 +1,28 @@
-import React, { useState, useRef } from 'react';
-import { Link } from 'react-router-dom';
-import NotificationBell from './NotificationBell';
-import UserMenu from './UserMenu';
+import React, { useState, useRef } from "react";
+import { Link } from "react-router-dom";
+import NotificationBell from "./NotificationBell";
+import UserMenu from "./UserMenu";
 
-const Header = ({ 
-  user, 
-  isLoggedIn, 
-  notifications, 
-  notificationsError, 
-  markNotificationAsRead, 
-  login, 
-  logout 
+const Header = ({
+  user,
+  isLoggedIn,
+  notifications,
+  notificationsError,
+  markNotificationAsRead,
+  login,
+  logout,
 }) => {
   const [showNotifications, setShowNotifications] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
-  
+
   const notificationRef = useRef(null);
   const userMenuRef = useRef(null);
 
   const handleClickOutside = (event) => {
-    if (notificationRef.current && !notificationRef.current.contains(event.target)) {
+    if (
+      notificationRef.current &&
+      !notificationRef.current.contains(event.target)
+    ) {
       setShowNotifications(false);
     }
     if (userMenuRef.current && !userMenuRef.current.contains(event.target)) {
@@ -29,16 +32,18 @@ const Header = ({
 
   // Add click event listener
   React.useEffect(() => {
-    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
 
   return (
     <header className="bg-gray-800 text-white p-4 sticky top-0 z-50">
       <div className="container mx-auto flex justify-between items-center">
-        <Link to="/" className="text-xl font-bold">GrindOlympiads</Link>
+        <Link to="/" className="text-xl font-bold">
+          GrindOlympiads
+        </Link>
         <div className="flex items-center space-x-4">
           {isLoggedIn && (
             <NotificationBell
