@@ -18,8 +18,8 @@ const Navbar: React.FC = () => {
         </Link>
         <div className="flex items-center space-x-4">
           {isLabsPath && (
-            <Link to="/" className="text-white hover:text-gray-300">
-              Back to Grind Olympiads
+            <Link to="/labs" className="text-white hover:text-gray-300">
+              Components Directory
             </Link>
           )}
           <button onClick={toggleNotification} className="text-xl">
