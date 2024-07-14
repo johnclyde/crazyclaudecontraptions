@@ -3,7 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 
 const Navbar: React.FC = () => {
   const location = useLocation();
-  const isLabsPath = location.pathname.startsWith('/labs');
+  const isLabsPath = location.pathname.startsWith("/labs");
 
   return (
     <nav className="bg-gray-800 p-4">
@@ -12,11 +12,8 @@ const Navbar: React.FC = () => {
           Grind Olympiads
         </Link>
         {isLabsPath && (
-          <Link 
-            to="/"
-            className="text-white text-xl font-bold"
-          >
-            Back to Grind Olympiads
+          <Link to="/" className="text-white text-xl font-bold">
+            Grind Olympiads
           </Link>
         )}
         {!isLabsPath && (
