@@ -1,36 +1,61 @@
-import React, { forwardRef } from "react";
+import React, { forwardRef, useEffect, useState } from "react";
+import GoogleAuth from "./GoogleAuth";
+
+interface User {
+  name: string;
+  avatar: string;
+}
 
 interface UserMenuProps {
-  user: any;
+  user: User | null;
   isLoggedIn: boolean;
   showUserMenu: boolean;
   setShowUserMenu: React.Dispatch<React.SetStateAction<boolean>>;
-  login: () => void;
-  logout: () => void;
+  login: () => void | Promise<void>;
+  logout: () => void | Promise<void>;
 }
 
 const UserMenu = forwardRef<HTMLDivElement, UserMenuProps>(
   ({ user, isLoggedIn, showUserMenu, setShowUserMenu, login, logout }, ref) => {
+    const [isGoogleAuthReady, setIsGoogleAuthReady] = useState(false);
+
+    useEffect(() => {
+      setIsGoogleAuthReady(!!process.env.REACT_APP_GOOGLE_CLIENT_ID);
+    }, []);
+
     const handleProfileClick = () => {
-      // Add logic for profile navigation or action
       console.log("Navigate to profile");
       setShowUserMenu(false);
     };
 
     const handleSettingsClick = () => {
-      // Add logic for settings navigation or action
       console.log("Navigate to settings");
       setShowUserMenu(false);
     };
 
     const handleLogin = async () => {
-      await login();
+      const result = login();
+      if (result instanceof Promise) {
+        await result;
+      }
       setShowUserMenu(false);
     };
 
     const handleLogout = async () => {
-      await logout();
+      const result = logout();
+      if (result instanceof Promise) {
+        await result;
+      }
       setShowUserMenu(false);
+    };
+
+    const handleGoogleSignInSuccess = (response: any) => {
+      console.log("Google Sign-In Success", response);
+      handleLogin();
+    };
+
+    const handleGoogleSignInFailure = (error: any) => {
+      console.error("Google Sign-In Failure", error);
     };
 
     return (
@@ -86,12 +111,23 @@ const UserMenu = forwardRef<HTMLDivElement, UserMenuProps>(
                 </button>
               </>
             ) : (
-              <button
-                onClick={handleLogin}
-                className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-              >
-                Login
-              </button>
+              <>
+                <button
+                  onClick={handleLogin}
+                  className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                >
+                  Login
+                </button>
+                {isGoogleAuthReady && (
+                  <div className="px-4 py-2">
+                    <GoogleAuth
+                      clientId={process.env.REACT_APP_GOOGLE_CLIENT_ID || ""}
+                      onSuccess={handleGoogleSignInSuccess}
+                      onFailure={handleGoogleSignInFailure}
+                    />
+                  </div>
+                )}
+              </>
             )}
           </div>
         )}
