@@ -7,16 +7,11 @@ declare global {
 }
 
 interface GoogleAuthProps {
-  clientId: string;
   onSuccess: (response: any) => void;
   onFailure: (error: any) => void;
 }
 
-const GoogleAuth: React.FC<GoogleAuthProps> = ({
-  clientId,
-  onSuccess,
-  onFailure,
-}) => {
+const GoogleAuth: React.FC<GoogleAuthProps> = ({ onSuccess, onFailure }) => {
   const [isScriptLoaded, setIsScriptLoaded] = useState(false);
 
   const handleCredentialResponse = useCallback(
@@ -46,7 +41,7 @@ const GoogleAuth: React.FC<GoogleAuthProps> = ({
   useEffect(() => {
     if (isScriptLoaded && window.google) {
       window.google.accounts.id.initialize({
-        client_id: clientId,
+        client_id: process.env.REACT_APP_GOOGLE_API_KEY,
         callback: handleCredentialResponse,
       });
       window.google.accounts.id.renderButton(
@@ -54,7 +49,7 @@ const GoogleAuth: React.FC<GoogleAuthProps> = ({
         { theme: "outline", size: "large" },
       );
     }
-  }, [isScriptLoaded, clientId, handleCredentialResponse]);
+  }, [isScriptLoaded, handleCredentialResponse]);
 
   return (
     <div>
