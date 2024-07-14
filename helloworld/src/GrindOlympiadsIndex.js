@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Header from './components/Header';
 import Hero from './components/Hero';
 import TestSearch from './components/TestSearch';
@@ -9,9 +9,19 @@ import useUserData from './hooks/useUserData';
 import useTests from './hooks/useTests';
 
 const GrindOlympiadsIndex = () => {
+  const [showTests, setShowTests] = useState(false);
   const { user, isLoggedIn, login, logout } = useUserData();
   const { notifications, notificationsError, markNotificationAsRead } = useNotifications();
-  const { tests, loading, error, searchTerm, setSearchTerm, selectedCompetition, setSelectedCompetition } = useTests();
+  const {
+    tests,
+    loading,
+    error,
+    searchTerm,
+    setSearchTerm,
+    selectedCompetition,
+    setSelectedCompetition,
+    filteredTests
+  } = useTests();
 
   if (loading) {
     return <div className="flex justify-center items-center h-screen">Loading...</div>;
@@ -25,7 +35,7 @@ const GrindOlympiadsIndex = () => {
           <span className="block sm:inline">{error}</span>
         </div>
       )}
-      <Header 
+      <Header
         user={user}
         isLoggedIn={isLoggedIn}
         notifications={notifications}
@@ -34,15 +44,19 @@ const GrindOlympiadsIndex = () => {
         login={login}
         logout={logout}
       />
-      <Hero />
-      <TestSearch 
-        searchTerm={searchTerm}
-        setSearchTerm={setSearchTerm}
-        selectedCompetition={selectedCompetition}
-        setSelectedCompetition={setSelectedCompetition}
-        tests={tests}
-      />
-      <TestList tests={tests} />
+      <Hero showTests={showTests} setShowTests={setShowTests} />
+      {showTests && (
+        <>
+          <TestSearch
+            searchTerm={searchTerm}
+            setSearchTerm={setSearchTerm}
+            selectedCompetition={selectedCompetition}
+            setSelectedCompetition={setSelectedCompetition}
+            tests={tests}
+          />
+          <TestList tests={filteredTests} />
+        </>
+      )}
       {isLoggedIn && <UserProgress />}
     </div>
   );
