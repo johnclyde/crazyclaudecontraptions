@@ -1,21 +1,16 @@
 import React from "react";
-import { MathJax, MathJaxContext } from "mathjax-react";
+import { MathJax, MathJaxContext } from "better-react-mathjax";
 
 interface LatexRendererProps {
   latex: string;
 }
 
 const config = {
-  loader: { load: ["[tex]/html"] },
-  tex: {
-    packages: { "[+]": ["html"] },
-    inlineMath: [
+  loader: { load: ["input/asciimath"] },
+  asciimath: {
+    delimiters: [
       ["$", "$"],
-      ["\\(", "\\)"],
-    ],
-    displayMath: [
-      ["$$", "$$"],
-      ["\\[", "\\]"],
+      ["`", "`"],
     ],
   },
 };
