@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 
 declare global {
   interface Window {
@@ -18,6 +18,17 @@ const GoogleAuth: React.FC<GoogleAuthProps> = ({
   onFailure,
 }) => {
   const [isScriptLoaded, setIsScriptLoaded] = useState(false);
+
+  const handleCredentialResponse = useCallback(
+    (response: any) => {
+      if (response.credential) {
+        onSuccess(response);
+      } else {
+        onFailure("Google Sign-In failed");
+      }
+    },
+    [onSuccess, onFailure],
+  );
 
   useEffect(() => {
     const script = document.createElement("script");
@@ -43,15 +54,7 @@ const GoogleAuth: React.FC<GoogleAuthProps> = ({
         { theme: "outline", size: "large" },
       );
     }
-  }, [isScriptLoaded, clientId]);
-
-  const handleCredentialResponse = (response: any) => {
-    if (response.credential) {
-      onSuccess(response);
-    } else {
-      onFailure("Google Sign-In failed");
-    }
-  };
+  }, [isScriptLoaded, clientId, handleCredentialResponse]);
 
   return (
     <div>
