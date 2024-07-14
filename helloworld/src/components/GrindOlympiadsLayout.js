@@ -1,10 +1,10 @@
 import React from "react";
-import GrindOlympiadsNavbar from "./GrindOlympiadsNavbar";
+import Navbar from "./Navbar";
 
 const GrindOlympiadsLayout = ({ children }) => {
   return (
     <div className="flex flex-col min-h-screen">
-      <GrindOlympiadsNavbar />
+      <Navbar />
       <main className="flex-grow">{children}</main>
     </div>
   );

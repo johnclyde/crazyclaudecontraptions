@@ -1,8 +1,10 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 
-const GrindOlympiadsNavbar = () => {
+const Navbar: React.FC = () => {
   const [showNotification, setShowNotification] = useState(false);
+  const location = useLocation();
+  const isLabsPath = location.pathname.startsWith("/labs");
 
   const toggleNotification = () => {
     setShowNotification(!showNotification);
@@ -12,9 +14,14 @@ const GrindOlympiadsNavbar = () => {
     <>
       <nav className="bg-black text-white p-4 flex justify-between items-center">
         <Link to="/" className="text-xl font-bold">
-          Home
+          Grind Olympiads
         </Link>
         <div className="flex items-center space-x-4">
+          {isLabsPath && (
+            <Link to="/labs" className="text-white hover:text-gray-300">
+              Components Directory
+            </Link>
+          )}
           <button onClick={toggleNotification} className="text-xl">
             <i className="fas fa-bell"></i>
           </button>
@@ -23,7 +30,6 @@ const GrindOlympiadsNavbar = () => {
           </button>
         </div>
       </nav>
-
       {showNotification && (
         <div className="bg-blue-500 text-white p-2 text-center">
           You have no new notifications
@@ -33,4 +39,4 @@ const GrindOlympiadsNavbar = () => {
   );
 };
 
-export default GrindOlympiadsNavbar;
+export default Navbar;
