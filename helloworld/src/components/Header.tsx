@@ -36,7 +36,10 @@ const Header: React.FC<HeaderProps> = ({
     ) {
       setShowNotifications(false);
     }
-    if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
+    if (
+      userMenuRef.current &&
+      !userMenuRef.current.contains(event.target as Node)
+    ) {
       setShowUserMenu(false);
     }
   };

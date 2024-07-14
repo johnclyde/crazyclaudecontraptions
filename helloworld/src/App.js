@@ -5,7 +5,7 @@ import ColorPicker from "./components/ColorPicker";
 import ComponentDirectory from "./ComponentDirectory";
 import GrindOlympiadsIndex from "./GrindOlympiadsIndex.js";
 import InteractiveCounter from "./components/InteractiveCounter";
-import Navbar from "./components/Navbar";
+import Header from "./components/Header";
 import ExamComponent from "./components/ExamComponent";
 
 const App = () => {
@@ -21,7 +21,7 @@ const App = () => {
           path="/labs/*"
           element={
             <div className="flex flex-col min-h-screen">
-              <Navbar />
+              <Header />
               <main className="flex-grow">
                 <Routes>
                   <Route index element={<ComponentDirectory />} />
