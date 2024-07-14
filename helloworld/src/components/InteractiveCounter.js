@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
-import { PlusCircle, MinusCircle } from 'lucide-react';
+import React, { useState } from "react";
+import { PlusCircle, MinusCircle } from "lucide-react";
 
 const InteractiveCounter = () => {
   const [count, setCount] = useState(0);
-  const increment = () => setCount(prev => prev + 1);
-  const decrement = () => setCount(prev => prev - 1);
+  const increment = () => setCount((prev) => prev + 1);
+  const decrement = () => setCount((prev) => prev - 1);
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">

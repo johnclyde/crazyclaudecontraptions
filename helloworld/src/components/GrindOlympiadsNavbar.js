@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState } from "react";
+import { Link } from "react-router-dom";
 
 const GrindOlympiadsNavbar = () => {
   const [showNotification, setShowNotification] = useState(false);
@@ -11,7 +11,9 @@ const GrindOlympiadsNavbar = () => {
   return (
     <>
       <nav className="bg-black text-white p-4 flex justify-between items-center">
-        <Link to="/" className="text-xl font-bold">Home</Link>
+        <Link to="/" className="text-xl font-bold">
+          Home
+        </Link>
         <div className="flex items-center space-x-4">
           <button onClick={toggleNotification} className="text-xl">
             <i className="fas fa-bell"></i>
