@@ -131,10 +131,12 @@ const ExamComponent: React.FC = () => {
             </div>
 
             <ul className="space-y-4">
-              {(showAllProblems
-                ? problems
-                : [problems[currentProblemIndex]]
-              ).map(renderProblem)}
+              {problems.map((problem, index) => (
+                <React.Fragment key={problem.number}>
+                  {(showAllProblems || index === currentProblemIndex) &&
+                    renderProblem(problem)}
+                </React.Fragment>
+              ))}
             </ul>
           </>
         ) : (
