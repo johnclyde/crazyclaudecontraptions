@@ -6,19 +6,28 @@ interface LatexRendererProps {
 }
 
 const config = {
-  loader: { load: ["input/asciimath"] },
-  asciimath: {
-    delimiters: [
+  loader: { load: ["input/tex", "output/svg"] },
+  tex: {
+    inlineMath: [
       ["$", "$"],
-      ["`", "`"],
+      ["\\(", "\\)"],
     ],
+    displayMath: [
+      ["$$", "$$"],
+      ["\\[", "\\]"],
+    ],
+    processEscapes: true,
+    processEnvironments: true,
+  },
+  svg: {
+    fontCache: "global",
   },
 };
 
 const LatexRenderer: React.FC<LatexRendererProps> = ({ latex }) => {
   return (
     <MathJaxContext config={config}>
-      <MathJax inline={false}>{latex}</MathJax>
+      <MathJax>{latex}</MathJax>
     </MathJaxContext>
   );
 };
