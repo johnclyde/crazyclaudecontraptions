@@ -1,16 +1,15 @@
 import React, { forwardRef } from "react";
 
-const NotificationBell = forwardRef(
-  (
-    {
-      notifications,
-      notificationsError,
-      showNotifications,
-      setShowNotifications,
-      markNotificationAsRead,
-    },
-    ref,
-  ) => {
+interface NotificationBellProps {
+  notifications: any[]; // Replace 'any' with your notification type
+  notificationsError: string | null;
+  showNotifications: boolean;
+  setShowNotifications: React.Dispatch<React.SetStateAction<boolean>>;
+  markNotificationAsRead: (id: string) => void;
+}
+
+const NotificationBell = forwardRef<HTMLDivElement, NotificationBellProps>(
+  ({ notifications, notificationsError, showNotifications, setShowNotifications, markNotificationAsRead }, ref) => {
     return (
       <div className="relative" ref={ref}>
         <button
