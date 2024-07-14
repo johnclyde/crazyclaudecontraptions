@@ -1,15 +1,26 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import GrindOlympiadsLayout from "./GrindOlympiadsLayout";
+import LatexRenderer from "./LatexRenderer";
 
-const ExamComponent = () => {
-  const { competition, year, exam } = useParams();
-  const [problems, setProblems] = useState([]);
+interface Problem {
+  number: number;
+  problem: string;
+  image_url?: string;
+}
+
+const ExamComponent: React.FC = () => {
+  const { competition, year, exam } = useParams<{
+    competition: string;
+    year: string;
+    exam: string;
+  }>();
+  const [problems, setProblems] = useState<Problem[]>([]);
   const [comment, setComment] = useState("");
   const [currentProblemIndex, setCurrentProblemIndex] = useState(0);
   const [showAllProblems, setShowAllProblems] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchExamData = async () => {
@@ -48,16 +59,21 @@ const ExamComponent = () => {
     setShowAllProblems((prev) => !prev);
   };
 
-  const renderImage = (imageUrl) => {
-    if (!imageUrl) return null;
-    return (
-      <img
-        src={`https://prod.grindolympiads.com/api${imageUrl}`}
-        alt="Problem illustration"
-        className="mt-2 max-w-full h-auto"
-      />
-    );
-  };
+  const renderProblem = (problem: Problem) => (
+    <li key={problem.number} className="bg-white p-4 rounded shadow">
+      <strong className="text-lg">Problem {problem.number}:</strong>
+      <div className="mt-2">
+        <LatexRenderer latex={problem.problem} />
+      </div>
+      {problem.image_url && (
+        <img
+          src={`https://prod.grindolympiads.com/api${problem.image_url}`}
+          alt="Problem illustration"
+          className="mt-2 max-w-full h-auto"
+        />
+      )}
+    </li>
+  );
 
   if (loading) {
     return (
@@ -115,18 +131,11 @@ const ExamComponent = () => {
             </div>
 
             <ul className="space-y-4">
-              {(showAllProblems
-                ? problems
-                : [problems[currentProblemIndex]]
-              ).map((problem, index) => (
-                <li key={index} className="bg-white p-4 rounded shadow">
-                  <strong className="text-lg">Problem {problem.number}:</strong>
-                  <div
-                    className="mt-2"
-                    dangerouslySetInnerHTML={{ __html: problem.problem }}
-                  />
-                  {renderImage(problem.image_url)}
-                </li>
+              {problems.map((problem, index) => (
+                <React.Fragment key={problem.number}>
+                  {(showAllProblems || index === currentProblemIndex) &&
+                    renderProblem(problem)}
+                </React.Fragment>
               ))}
             </ul>
           </>
