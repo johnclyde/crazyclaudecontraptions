@@ -11,8 +11,8 @@ interface UserMenuProps {
   isLoggedIn: boolean;
   showUserMenu: boolean;
   setShowUserMenu: React.Dispatch<React.SetStateAction<boolean>>;
-  login: () => Promise<void>;
-  logout: () => Promise<void>;
+  login: () => void | Promise<void>;
+  logout: () => void | Promise<void>;
 }
 
 const UserMenu = forwardRef<HTMLDivElement, UserMenuProps>(
@@ -20,7 +20,6 @@ const UserMenu = forwardRef<HTMLDivElement, UserMenuProps>(
     const [isGoogleAuthReady, setIsGoogleAuthReady] = useState(false);
 
     useEffect(() => {
-      // Check if Google Auth is ready (e.g., client ID is set in environment variables)
       setIsGoogleAuthReady(!!process.env.REACT_APP_GOOGLE_CLIENT_ID);
     }, []);
 
@@ -35,25 +34,28 @@ const UserMenu = forwardRef<HTMLDivElement, UserMenuProps>(
     };
 
     const handleLogin = async () => {
-      await login();
+      const result = login();
+      if (result instanceof Promise) {
+        await result;
+      }
       setShowUserMenu(false);
     };
 
     const handleLogout = async () => {
-      await logout();
+      const result = logout();
+      if (result instanceof Promise) {
+        await result;
+      }
       setShowUserMenu(false);
     };
 
     const handleGoogleSignInSuccess = (response: any) => {
       console.log("Google Sign-In Success", response);
-      // Here you would typically send the response.credential to your backend
-      // to verify and create a session for the user
       handleLogin();
     };
 
     const handleGoogleSignInFailure = (error: any) => {
       console.error("Google Sign-In Failure", error);
-      // Handle sign-in failure (e.g., show an error message)
     };
 
     return (
