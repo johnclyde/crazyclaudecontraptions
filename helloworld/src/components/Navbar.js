@@ -1,16 +1,29 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 
-const Navbar = () => {
+const Navbar: React.FC = () => {
+  const location = useLocation();
+  const isLabsPath = location.pathname.startsWith('/labs');
+
   return (
     <nav className="bg-gray-800 p-4">
       <div className="container mx-auto flex justify-between items-center">
         <Link to="/" className="text-white hover:text-gray-300">
           Grind Olympiads
         </Link>
-        <Link to="/labs" className="text-white text-xl font-bold">
-          Component Directory
-        </Link>
+        {isLabsPath && (
+          <Link 
+            to="/"
+            className="text-white text-xl font-bold"
+          >
+            Back to Grind Olympiads
+          </Link>
+        )}
+        {!isLabsPath && (
+          <Link to="/labs" className="text-white text-xl font-bold">
+            Component Directory
+          </Link>
+        )}
       </div>
     </nav>
   );
