@@ -1,8 +1,8 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
+import { GoogleLogin } from "@react-oauth/google";
 import NotificationBell from "./NotificationBell";
 import UserMenu from "./UserMenu";
-import GoogleAuth from "./GoogleAuth";
 
 interface HeaderProps {
   user: any; // Replace any with your user type
@@ -10,7 +10,7 @@ interface HeaderProps {
   notifications: any[]; // Replace any with your notification type
   notificationsError: string | null;
   markNotificationAsRead: (id: string) => void;
-  login: () => void;
+  login: (response: any) => void;
   logout: () => void;
 }
 
@@ -52,11 +52,6 @@ const Header: React.FC<HeaderProps> = ({
     };
   }, []);
 
-  const handleGoogleSignInSuccess = (response: any) => {
-    console.log("Google Sign-In Success", response);
-    login();
-  };
-
   const handleGoogleSignInFailure = (error: any) => {
     console.error("Google Sign-In Failure", error);
   };
@@ -94,9 +89,10 @@ const Header: React.FC<HeaderProps> = ({
               logout={logout}
             />
           ) : (
-            <GoogleAuth
-              onSuccess={handleGoogleSignInSuccess}
-              onFailure={handleGoogleSignInFailure}
+            <GoogleLogin
+              onSuccess={login}
+              onError={handleGoogleSignInFailure}
+              useOneTap
             />
           )}
         </div>
