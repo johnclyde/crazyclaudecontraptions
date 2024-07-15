@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
+import { GoogleLogin } from "@react-oauth/google";
 import NotificationBell from "./NotificationBell";
 import UserMenu from "./UserMenu";
 import { LoginFunction } from "../hooks/useUserData";
@@ -37,20 +38,12 @@ const Header: React.FC<HeaderProps> = ({
   login,
   logout,
 }) => {
-  const [showNotifications, setShowNotifications] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
-  const notificationRef = useRef<HTMLDivElement>(null);
   const userMenuRef = useRef<HTMLDivElement>(null);
   const location = useLocation();
   const isLabsPath = location.pathname.startsWith("/labs");
 
   const handleClickOutside = (event: MouseEvent) => {
-    if (
-      notificationRef.current &&
-      !notificationRef.current.contains(event.target as Node)
-    ) {
-      setShowNotifications(false);
-    }
     if (
       userMenuRef.current &&
       !userMenuRef.current.contains(event.target as Node)
@@ -78,25 +71,27 @@ const Header: React.FC<HeaderProps> = ({
               Components Directory
             </Link>
           )}
-          {isLoggedIn && (
-            <NotificationBell
-              ref={notificationRef}
-              notifications={notifications}
-              notificationsError={notificationsError}
-              showNotifications={showNotifications}
-              setShowNotifications={setShowNotifications}
-              markNotificationAsRead={markNotificationAsRead}
+          {isLoggedIn ? (
+            <>
+              <NotificationBell
+                notifications={notifications}
+                notificationsError={notificationsError}
+                markNotificationAsRead={markNotificationAsRead}
+              />
+              <UserMenu
+                ref={userMenuRef}
+                user={user}
+                showUserMenu={showUserMenu}
+                setShowUserMenu={setShowUserMenu}
+                logout={logout}
+              />
+            </>
+          ) : (
+            <GoogleLogin
+              onSuccess={login}
+              onError={() => console.log('Login Failed')}
             />
           )}
-          <UserMenu
-            ref={userMenuRef}
-            user={user}
-            isLoggedIn={isLoggedIn}
-            showUserMenu={showUserMenu}
-            setShowUserMenu={setShowUserMenu}
-            login={login}
-            logout={logout}
-          />
         </div>
       </div>
     </header>
