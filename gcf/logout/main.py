@@ -3,7 +3,9 @@ from flask import Request, Response, jsonify
 from google.cloud import firestore_v1
 
 db = firestore_v1.Client(database="grindolympiads")
-SECRET_KEY = "a_secure_random_secret_key"
+SECRET_KEY = (
+    "a_secure_random_secret_key"  # Use the same secret key as in the login function
+)
 
 
 def logout(request: Request) -> Response:
@@ -29,7 +31,7 @@ def logout(request: Request) -> Response:
             blacklist_ref.set(
                 {
                     "token": token,
-                    "username": decoded_token["username"],
+                    "user_id": decoded_token["user_id"],
                     "exp": decoded_token["exp"],
                 }
             )
