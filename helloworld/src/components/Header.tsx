@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { CredentialResponse } from "@react-oauth/google";
+import { LoginFunction } from "@react-oauth/google";
 import { Link, useLocation } from "react-router-dom";
 import NotificationBell from "./NotificationBell";
 import UserMenu from "./UserMenu";
@@ -18,15 +18,13 @@ interface Notification {
   read: boolean;
 }
 
-type LoginFunction = (() => void) | ((response: CredentialResponse) => void);
-
 interface HeaderProps {
   user: User | null;
   isLoggedIn: boolean;
   notifications: Notification[];
   notificationsError: string | null;
   markNotificationAsRead: (id: string) => void;
-  login: (LoginFunction) => void;
+  login: LoginFunction;
   logout: () => void;
 }
 

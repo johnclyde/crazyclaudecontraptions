@@ -1,5 +1,9 @@
 import { useState, useEffect, useCallback } from "react";
-import { useGoogleLogin, CredentialResponse } from "@react-oauth/google";
+import {
+  useGoogleLogin,
+  CredentialResponse,
+  LoginFunction,
+} from "@react-oauth/google";
 
 interface User {
   id: string;
@@ -72,4 +76,5 @@ const useUserData = () => {
   return { user, isLoggedIn, login, logout, userProgress };
 };
 
+export { LoginFunction };
 export default useUserData;

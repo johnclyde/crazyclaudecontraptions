@@ -1,5 +1,5 @@
 import React, { forwardRef } from "react";
-import { GoogleLogin, CredentialResponse } from "@react-oauth/google";
+import { GoogleLogin, LoginFunction } from "@react-oauth/google";
 
 interface User {
   name: string;
@@ -11,7 +11,7 @@ interface UserMenuProps {
   isLoggedIn: boolean;
   showUserMenu: boolean;
   setShowUserMenu: React.Dispatch<React.SetStateAction<boolean>>;
-  login: () => void;
+  login: LoginFunction;
   logout: () => void;
 }
 
