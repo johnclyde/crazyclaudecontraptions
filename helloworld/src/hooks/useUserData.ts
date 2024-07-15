@@ -124,7 +124,7 @@ const useUserData = () => {
     }
   };
 
-  return { user, isLoggedIn, login, logout, userProgress };
+  return { user, isLoggedIn, setIsLoggedIn, login, logout, userProgress };
 };
 
 export default useUserData;
