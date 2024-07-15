@@ -1,66 +1,31 @@
-import React, { useEffect, useState, useCallback } from "react";
-
-declare global {
-  interface Window {
-    google: any;
-  }
-}
+import React from "react";
+import {
+  GoogleOAuthProvider,
+  GoogleLogin,
+  CredentialResponse,
+} from "@react-oauth/google";
 
 interface GoogleAuthProps {
-  onSuccess: (response: any) => void;
+  onSuccess: (response: CredentialResponse) => void;
   onFailure: (error: any) => void;
 }
 
 const GoogleAuth: React.FC<GoogleAuthProps> = ({ onSuccess, onFailure }) => {
-  const [isScriptLoaded, setIsScriptLoaded] = useState(false);
+  const clientId = process.env.REACT_APP_GOOGLE_CLIENT_ID;
 
-  const handleCredentialResponse = useCallback(
-    (response: any) => {
-      if (response.credential) {
-        onSuccess(response);
-      } else {
-        onFailure("Google Sign-In failed");
-      }
-    },
-    [onSuccess, onFailure],
-  );
+  if (!clientId) {
+    console.error("Google Client ID is not set");
+    return null;
+  }
 
-  useEffect(() => {
-    const script = document.createElement("script");
-    script.src = "https://accounts.google.com/gsi/client";
-    script.async = true;
-    script.defer = true;
-    script.onload = () => setIsScriptLoaded(true);
-    document.body.appendChild(script);
-
-    return () => {
-      document.body.removeChild(script);
-    };
-  }, []);
-
-  useEffect(() => {
-    if (isScriptLoaded && window.google) {
-      const allowedOrigins =
-        process.env.NODE_ENV === "production"
-          ? ["https://olympiads-ba812.web.app"]
-          : ["http://localhost:3000"];
-
-      window.google.accounts.id.initialize({
-        client_id: process.env.REACT_APP_GOOGLE_API_KEY,
-        callback: handleCredentialResponse,
-        allowed_origins: allowedOrigins,
-      });
-      window.google.accounts.id.renderButton(
-        document.getElementById("googleSignInButton"),
-        { theme: "outline", size: "large" },
-      );
-    }
-  }, [isScriptLoaded, handleCredentialResponse]);
+  const handleError = () => {
+    onFailure(new Error("Google Sign-In failed"));
+  };
 
   return (
-    <div>
-      <div id="googleSignInButton"></div>
-    </div>
+    <GoogleOAuthProvider clientId={clientId} onScriptLoadError={handleError}>
+      <GoogleLogin onSuccess={onSuccess} onError={handleError} useOneTap />
+    </GoogleOAuthProvider>
   );
 };
 
