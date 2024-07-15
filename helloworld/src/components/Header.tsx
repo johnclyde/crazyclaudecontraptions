@@ -18,13 +18,15 @@ interface Notification {
   read: boolean;
 }
 
+type LoginFunction = (() => void) | ((response: CredentialResponse) => void);
+
 interface HeaderProps {
   user: User | null;
   isLoggedIn: boolean;
   notifications: Notification[];
   notificationsError: string | null;
   markNotificationAsRead: (id: string) => void;
-  login: (response: CredentialResponse) => void;
+  login: (LoginFunction) => void;
   logout: () => void;
 }
 
