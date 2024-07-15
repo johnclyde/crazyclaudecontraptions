@@ -2,14 +2,29 @@ import React, { useState, useRef, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import NotificationBell from "./NotificationBell";
 import UserMenu from "./UserMenu";
+import { LoginFunction } from "../hooks/useUserData";
+
+interface User {
+  id: string;
+  name: string;
+  email: string;
+  avatar: string;
+}
+
+interface Notification {
+  id: string;
+  message: string;
+  timestamp: string;
+  read: boolean;
+}
 
 interface HeaderProps {
-  user: any; // Replace 'any' with your user type
+  user: User | null;
   isLoggedIn: boolean;
-  notifications: any[]; // Replace 'any' with your notification type
+  notifications: Notification[];
   notificationsError: string | null;
   markNotificationAsRead: (id: string) => void;
-  login: () => void;
+  login: LoginFunction;
   logout: () => void;
 }
 

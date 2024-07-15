@@ -1,13 +1,20 @@
 import { useState, useEffect, useCallback } from "react";
-import { useGoogleLogin } from "@react-oauth/google";
+import { useGoogleLogin, TokenResponse } from "@react-oauth/google";
 
 interface User {
-  // Define user properties here
+  id: string;
+  name: string;
+  email: string;
+  avatar: string;
 }
 
 interface UserProgress {
-  // Define user progress properties here
+  testId: string;
+  score: number;
+  completedAt: string;
 }
+
+export type LoginFunction = () => void;
 
 const useUserData = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -18,8 +25,6 @@ const useUserData = () => {
   );
 
   const fetchUserData = useCallback(async () => {
-    if (!token) return;
-
     try {
       const userResponse = await fetch(
         "https://us-central1-olympiads.cloudfunctions.net/user",
@@ -63,32 +68,39 @@ const useUserData = () => {
     }
   }, [token, fetchUserData]);
 
-  const login = useGoogleLogin({
-    onSuccess: async (tokenResponse) => {
-      try {
-        const response = await fetch(
-          "https://us-central1-olympiads.cloudfunctions.net/login",
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              google_token: tokenResponse.access_token,
-            }),
+  const handleGoogleLoginSuccess = async (
+    tokenResponse: Omit<
+      TokenResponse,
+      "error" | "error_description" | "error_uri"
+    >,
+  ) => {
+    try {
+      const response = await fetch(
+        "https://us-central1-olympiads.cloudfunctions.net/login",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
           },
-        );
-        const data = await response.json();
-        if (data.token) {
-          localStorage.setItem("token", data.token);
-          setToken(data.token);
-          setIsLoggedIn(true);
-          await fetchUserData();
-        }
-      } catch (error) {
-        console.error("Error logging in:", error);
+          body: JSON.stringify({
+            google_token: tokenResponse.access_token,
+          }),
+        },
+      );
+      const data = await response.json();
+      if (data.token) {
+        localStorage.setItem("token", data.token);
+        setToken(data.token);
+        setIsLoggedIn(true);
+        await fetchUserData();
       }
-    },
+    } catch (error) {
+      console.error("Error logging in:", error);
+    }
+  };
+
+  const login: LoginFunction = useGoogleLogin({
+    onSuccess: handleGoogleLoginSuccess,
     onError: (error) => console.error("Login Failed:", error),
   });
 

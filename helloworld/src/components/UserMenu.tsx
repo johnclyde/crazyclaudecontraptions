@@ -1,5 +1,6 @@
-import React, { forwardRef, useEffect, useState } from "react";
-import GoogleAuth from "./GoogleAuth";
+import React, { forwardRef } from "react";
+import { GoogleLogin } from "@react-oauth/google";
+import { LoginFunction } from "../hooks/useUserData";
 
 interface User {
   name: string;
@@ -11,18 +12,12 @@ interface UserMenuProps {
   isLoggedIn: boolean;
   showUserMenu: boolean;
   setShowUserMenu: React.Dispatch<React.SetStateAction<boolean>>;
-  login: () => void | Promise<void>;
-  logout: () => void | Promise<void>;
+  login: LoginFunction;
+  logout: () => void;
 }
 
 const UserMenu = forwardRef<HTMLDivElement, UserMenuProps>(
   ({ user, isLoggedIn, showUserMenu, setShowUserMenu, login, logout }, ref) => {
-    const [isGoogleAuthReady, setIsGoogleAuthReady] = useState(false);
-
-    useEffect(() => {
-      setIsGoogleAuthReady(!!process.env.REACT_APP_GOOGLE_API_KEY);
-    }, []);
-
     const handleProfileClick = () => {
       console.log("Navigate to profile");
       setShowUserMenu(false);
@@ -33,64 +28,31 @@ const UserMenu = forwardRef<HTMLDivElement, UserMenuProps>(
       setShowUserMenu(false);
     };
 
-    const handleLogin = async () => {
-      const result = login();
-      if (result instanceof Promise) {
-        await result;
-      }
+    const handleLogout = () => {
+      logout();
       setShowUserMenu(false);
     };
 
-    const handleLogout = async () => {
-      const result = logout();
-      if (result instanceof Promise) {
-        await result;
-      }
-      setShowUserMenu(false);
-    };
-
-    const handleGoogleSignInSuccess = (response: any) => {
-      console.log("Google Sign-In Success", response);
-      handleLogin();
-    };
-
-    const handleGoogleSignInFailure = (error: any) => {
-      console.error("Google Sign-In Failure", error);
+    const handleGoogleSignInFailure = () => {
+      console.error("Google Sign-In Failure");
     };
 
     return (
       <div className="relative" ref={ref}>
-        <button
-          onClick={() => setShowUserMenu(!showUserMenu)}
-          className="flex items-center space-x-2 hover:bg-gray-700 p-2 rounded-full"
-        >
-          {isLoggedIn && user ? (
-            <img
-              src={user.avatar}
-              alt={user.name}
-              className="w-8 h-8 rounded-full"
-            />
-          ) : (
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-6 w-6"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
+        {isLoggedIn ? (
+          <>
+            <button
+              onClick={() => setShowUserMenu(!showUserMenu)}
+              className="flex items-center space-x-2 hover:bg-gray-700 p-2 rounded-full"
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+              <img
+                src={user?.avatar}
+                alt={user?.name}
+                className="w-8 h-8 rounded-full"
               />
-            </svg>
-          )}
-        </button>
-        {showUserMenu && (
-          <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1">
-            {isLoggedIn ? (
-              <>
+            </button>
+            {showUserMenu && (
+              <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1">
                 <button
                   onClick={handleProfileClick}
                   className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
@@ -109,26 +71,15 @@ const UserMenu = forwardRef<HTMLDivElement, UserMenuProps>(
                 >
                   Logout
                 </button>
-              </>
-            ) : (
-              <>
-                <button
-                  onClick={handleLogin}
-                  className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                >
-                  Login
-                </button>
-                {isGoogleAuthReady && (
-                  <div className="px-4 py-2">
-                    <GoogleAuth
-                      onSuccess={handleGoogleSignInSuccess}
-                      onFailure={handleGoogleSignInFailure}
-                    />
-                  </div>
-                )}
-              </>
+              </div>
             )}
-          </div>
+          </>
+        ) : (
+          <GoogleLogin
+            onSuccess={login}
+            onError={handleGoogleSignInFailure}
+            useOneTap
+          />
         )}
       </div>
     );
