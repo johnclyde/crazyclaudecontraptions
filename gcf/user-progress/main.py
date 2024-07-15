@@ -1,55 +1,40 @@
-from flask import jsonify
+import jwt
+from flask import Request, Response, jsonify
 from google.cloud import firestore_v1
 
 db = firestore_v1.Client(database="grindolympiads")
+SECRET_KEY = (
+    "a_secure_random_secret_key"  # Use the same secret key as in the login function
+)
 
 
-def user_progress(request):
-    # Set CORS headers for the preflight request
-    if request.method == "OPTIONS":
-        # Allows GET requests from any origin with the Content-Type
-        # header and caches preflight response for an 3600s
-        headers = {
-            "Access-Control-Allow-Origin": "*",
-            "Access-Control-Allow-Methods": "GET",
-            "Access-Control-Allow-Headers": "Content-Type",
-            "Access-Control-Max-Age": "3600",
-        }
-        return ("", 204, headers)
-
-    # Set CORS headers for the main request
+def user_progress(request: Request) -> Response:
     headers = {"Access-Control-Allow-Origin": "*"}
 
-    # For this example, we'll use a hardcoded user ID
-    # In a real application, you'd get this from the authenticated user's session
-    user_id = "math1434"
+    # Verify JWT token
+    auth_header = request.headers.get("Authorization")
+    if not auth_header:
+        return jsonify({"error": "Authorization header missing"}), 401, headers
 
     try:
-        # Get the user document
-        user_ref = db.collection("users").document(user_id)
-        user_doc = user_ref.get()
+        token = auth_header.split(" ")[1]
+        decoded_token = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
+        user_id = decoded_token["user_id"]
+    except jwt.ExpiredSignatureError:
+        return jsonify({"error": "Token has expired"}), 401, headers
+    except jwt.InvalidTokenError:
+        return jsonify({"error": "Invalid token"}), 401, headers
 
-        if not user_doc.exists:
-            return jsonify({"error": "User not found"}), 404, headers
+    try:
+        progress_ref = db.collection("users").document(user_id).collection("progress")
+        progress_docs = progress_ref.stream()
 
-        user_data = user_doc.to_dict()
-
-        # Get the user's completed tests
-        completed_tests = user_data.get("tests_taken", [])
-
-        # Prepare the progress data
         progress_data = []
-        for test in completed_tests:
-            progress_data.append(
-                {
-                    "competition": test["competition"],
-                    "year": test["year"],
-                    "exam": test["exam"],
-                    "score": test["score"],
-                }
-            )
+        for doc in progress_docs:
+            progress_item = doc.to_dict()
+            progress_item["id"] = doc.id
+            progress_data.append(progress_item)
 
         return jsonify(progress_data), 200, headers
-
     except Exception as e:
         return jsonify({"error": str(e)}), 500, headers
