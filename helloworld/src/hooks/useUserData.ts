@@ -1,9 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import {
-  useGoogleLogin,
-  TokenResponse,
-  CodeResponse,
-} from "@react-oauth/google";
+import { useGoogleLogin, TokenResponse } from "@react-oauth/google";
 
 interface User {
   id: string;
