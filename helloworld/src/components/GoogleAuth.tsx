@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from "react";
-import { GoogleOAuthProvider, GoogleLogin } from "react-oauth/google";
+import { GoogleOAuthProvider, GoogleLogin } from "@react-oauth/google";
 
 interface GoogleAuthProps {
   onSuccess: (response: any) => void;
