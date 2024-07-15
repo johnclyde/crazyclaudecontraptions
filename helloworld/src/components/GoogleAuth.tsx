@@ -39,6 +39,7 @@ const GoogleAuth: React.FC<GoogleAuthProps> = ({ onSuccess, onFailure }) => {
   }, []);
 
   useEffect(() => {
+    console.log("Client ID:", process.env.REACT_APP_GOOGLE_CLIENT_ID);
     if (isScriptLoaded && window.google) {
       window.google.accounts.id.initialize({
         client_id: process.env.REACT_APP_GOOGLE_CLIENT_ID,
