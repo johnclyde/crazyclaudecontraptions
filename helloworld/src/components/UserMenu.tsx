@@ -1,5 +1,5 @@
 import React, { forwardRef } from "react";
-import { GoogleLogin } from "@react-oauth/google";
+import { GoogleLogin, CredentialResponse } from "@react-oauth/google";
 
 interface User {
   name: string;
@@ -11,7 +11,7 @@ interface UserMenuProps {
   isLoggedIn: boolean;
   showUserMenu: boolean;
   setShowUserMenu: React.Dispatch<React.SetStateAction<boolean>>;
-  login: (response: any) => void;
+  login: (response: CredentialResponse) => void;
   logout: () => void;
 }
 
@@ -32,8 +32,8 @@ const UserMenu = forwardRef<HTMLDivElement, UserMenuProps>(
       setShowUserMenu(false);
     };
 
-    const handleGoogleSignInFailure = (error: any) => {
-      console.error("Google Sign-In Failure", error);
+    const handleGoogleSignInFailure = () => {
+      console.error("Google Sign-In Failure");
     };
 
     return (

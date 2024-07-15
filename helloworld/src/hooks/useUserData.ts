@@ -2,12 +2,10 @@ import { useState, useEffect, useCallback } from "react";
 import { useGoogleLogin } from "@react-oauth/google";
 
 interface User {
-  // Define user properties here
-  // For example:
   id: string;
   name: string;
   email: string;
-  // Add any other relevant user properties
+  avatar: string;
 }
 
 interface UserProgress {

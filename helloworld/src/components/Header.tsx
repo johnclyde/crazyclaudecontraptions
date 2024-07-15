@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
+import { CredentialResponse } from "@react-oauth/google";
 import { Link, useLocation } from "react-router-dom";
 import NotificationBell from "./NotificationBell";
 import UserMenu from "./UserMenu";
@@ -23,7 +24,7 @@ interface HeaderProps {
   notifications: Notification[];
   notificationsError: string | null;
   markNotificationAsRead: (id: string) => void;
-  login: (response: any) => void; // We keep 'any' here as it depends on the Google OAuth response type
+  login: (response: CredentialResponse) => void;
   logout: () => void;
 }
 
