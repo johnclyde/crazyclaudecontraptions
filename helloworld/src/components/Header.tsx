@@ -66,6 +66,15 @@ const Header: React.FC<HeaderProps> = ({
     };
   }, []);
 
+  const handleGoogleSignInSuccess = (response: any) => {
+    console.log("Google Sign-In Success", response);
+    login();
+  };
+
+  const handleGoogleSignInFailure = (error: any) => {
+    console.error("Google Sign-In Failure", error);
+  };
+
   return (
     <header className="bg-gray-800 text-white p-4 sticky top-0 z-50">
       <div className="container mx-auto flex justify-between items-center">
@@ -88,15 +97,22 @@ const Header: React.FC<HeaderProps> = ({
               markNotificationAsRead={markNotificationAsRead}
             />
           )}
-          <UserMenu
-            ref={userMenuRef}
-            user={user}
-            isLoggedIn={isLoggedIn}
-            showUserMenu={showUserMenu}
-            setShowUserMenu={setShowUserMenu}
-            login={login}
-            logout={logout}
-          />
+          {isLoggedIn ? (
+            <UserMenu
+              ref={userMenuRef}
+              user={user}
+              isLoggedIn={isLoggedIn}
+              showUserMenu={showUserMenu}
+              setShowUserMenu={setShowUserMenu}
+              login={login}
+              logout={logout}
+            />
+          ) : (
+            <GoogleAuth
+              onSuccess={handleGoogleSignInSuccess}
+              onFailure={handleGoogleSignInFailure}
+            />
+          )}
         </div>
       </div>
     </header>
