@@ -17,7 +17,7 @@ interface UserMenuProps {
 
 const UserMenu = forwardRef<HTMLDivElement, UserMenuProps>(
   ({ user, isLoggedIn, login, logout, toggleLoginState }, ref) => {
-    const [showMenu, setShowMenu] = useState(false);
+    const [showMenu, setShowMenu] = useState(true);
     const [showLoginDialog, setShowLoginDialog] = useState(false);
 
     const handleProfileClick = () => {
