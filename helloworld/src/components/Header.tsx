@@ -1,6 +1,5 @@
-import React, { useState, useRef, useEffect } from "react";
+import React from "react";
 import { Link, useLocation } from "react-router-dom";
-import { GoogleLogin } from "@react-oauth/google";
 import NotificationBell from "./NotificationBell";
 import UserMenu from "./UserMenu";
 import { LoginFunction } from "../hooks/useUserData";
@@ -38,26 +37,8 @@ const Header: React.FC<HeaderProps> = ({
   login,
   logout,
 }) => {
-  const [showUserMenu, setShowUserMenu] = useState(false);
-  const userMenuRef = useRef<HTMLDivElement>(null);
   const location = useLocation();
   const isLabsPath = location.pathname.startsWith("/labs");
-
-  const handleClickOutside = (event: MouseEvent) => {
-    if (
-      userMenuRef.current &&
-      !userMenuRef.current.contains(event.target as Node)
-    ) {
-      setShowUserMenu(false);
-    }
-  };
-
-  useEffect(() => {
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, []);
 
   return (
     <header className="bg-gray-800 text-white p-4 sticky top-0 z-50">
@@ -71,27 +52,19 @@ const Header: React.FC<HeaderProps> = ({
               Components Directory
             </Link>
           )}
-          {isLoggedIn ? (
-            <>
-              <NotificationBell
-                notifications={notifications}
-                notificationsError={notificationsError}
-                markNotificationAsRead={markNotificationAsRead}
-              />
-              <UserMenu
-                ref={userMenuRef}
-                user={user}
-                showUserMenu={showUserMenu}
-                setShowUserMenu={setShowUserMenu}
-                logout={logout}
-              />
-            </>
-          ) : (
-            <GoogleLogin
-              onSuccess={login}
-              onError={() => console.log('Login Failed')}
+          {isLoggedIn && (
+            <NotificationBell
+              notifications={notifications}
+              notificationsError={notificationsError}
+              markNotificationAsRead={markNotificationAsRead}
             />
           )}
+          <UserMenu
+            user={user}
+            isLoggedIn={isLoggedIn}
+            login={login}
+            logout={logout}
+          />
         </div>
       </div>
     </header>
