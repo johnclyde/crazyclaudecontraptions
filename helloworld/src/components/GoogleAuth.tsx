@@ -1,5 +1,11 @@
 import React, { useEffect, useState, useCallback } from "react";
 
+declare global {
+  interface Window {
+    google: any;
+  }
+}
+
 interface GoogleAuthProps {
   onSuccess: (response: any) => void;
   onFailure: (error: any) => void;
