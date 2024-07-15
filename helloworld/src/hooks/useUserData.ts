@@ -1,19 +1,25 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useGoogleLogin } from "@react-oauth/google";
 
+interface User {
+  // Define user properties here
+}
+
+interface UserProgress {
+  // Define user progress properties here
+}
+
 const useUserData = () => {
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState<User | null>(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [userProgress, setUserProgress] = useState([]);
-  const [token, setToken] = useState(localStorage.getItem("token"));
+  const [userProgress, setUserProgress] = useState<UserProgress[]>([]);
+  const [token, setToken] = useState<string | null>(
+    localStorage.getItem("token"),
+  );
 
-  useEffect(() => {
-    if (token) {
-      fetchUserData();
-    }
-  }, [token]);
+  const fetchUserData = useCallback(async () => {
+    if (!token) return;
 
-  const fetchUserData = async () => {
     try {
       const userResponse = await fetch(
         "https://us-central1-olympiads.cloudfunctions.net/user",
@@ -49,7 +55,13 @@ const useUserData = () => {
       localStorage.removeItem("token");
       setToken(null);
     }
-  };
+  }, [token]);
+
+  useEffect(() => {
+    if (token) {
+      fetchUserData();
+    }
+  }, [token, fetchUserData]);
 
   const login = useGoogleLogin({
     onSuccess: async (tokenResponse) => {

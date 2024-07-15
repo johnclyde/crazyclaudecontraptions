@@ -8,7 +8,7 @@ SECRET_KEY = (
 )
 
 
-def get_notifications(request: Request) -> Response:
+def user_notifications(request: Request) -> Response:
     headers = {"Access-Control-Allow-Origin": "*"}
 
     # Verify JWT token
