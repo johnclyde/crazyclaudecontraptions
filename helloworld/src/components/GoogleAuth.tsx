@@ -12,7 +12,6 @@ interface GoogleAuthProps {
 
 const GoogleAuth: React.FC<GoogleAuthProps> = ({ onSuccess, onFailure }) => {
   const clientId = process.env.REACT_APP_GOOGLE_CLIENT_ID;
-  console.log("Client ID:", clientId);
 
   if (!clientId) {
     console.error("Google Client ID is not set");
@@ -20,7 +19,6 @@ const GoogleAuth: React.FC<GoogleAuthProps> = ({ onSuccess, onFailure }) => {
   }
 
   const handleError = () => {
-    console.error("Google Sign-In Error.");
     onFailure(new Error("Google Sign-In failed"));
   };
 
