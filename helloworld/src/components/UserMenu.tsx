@@ -114,8 +114,8 @@ const UserMenu = forwardRef<HTMLDivElement, UserMenuProps>(
             <div className="bg-white p-6 rounded-lg">
               <h2 className="text-xl font-bold mb-4">Login</h2>
               <GoogleLogin
-                onSuccess={(credentialResponse) => {
-                  login(credentialResponse);
+                onSuccess={() => {
+                  login();
                   setShowLoginDialog(false);
                 }}
                 onError={() => {

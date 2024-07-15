@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import GrindOlympiadsLayout from "./GrindOlympiadsLayout";
 import LatexRenderer from "./LatexRenderer";
 
 interface Problem {
@@ -77,73 +76,67 @@ const ExamComponent: React.FC = () => {
 
   if (loading) {
     return (
-      <GrindOlympiadsLayout>
-        <div className="p-6 bg-gray-100 min-h-screen flex items-center justify-center">
-          <p className="text-xl">Loading exam data...</p>
-        </div>
-      </GrindOlympiadsLayout>
+      <div className="p-6 bg-gray-100 min-h-screen flex items-center justify-center">
+        <p className="text-xl">Loading exam data...</p>
+      </div>
     );
   }
 
   if (error) {
     return (
-      <GrindOlympiadsLayout>
-        <div className="p-6 bg-gray-100 min-h-screen flex items-center justify-center">
-          <p className="text-xl text-red-500">{error}</p>
-        </div>
-      </GrindOlympiadsLayout>
+      <div className="p-6 bg-gray-100 min-h-screen flex items-center justify-center">
+        <p className="text-xl text-red-500">{error}</p>
+      </div>
     );
   }
 
   return (
-    <GrindOlympiadsLayout>
-      <div className="p-6 bg-gray-100 min-h-screen">
-        <h1 className="text-3xl font-bold mb-4">{`${competition} - ${year} - ${exam}`}</h1>
-        <p className="mb-4">{comment}</p>
+    <div className="p-6">
+      <h1 className="text-3xl font-bold mb-4">{`${competition} - ${year} - ${exam}`}</h1>
+      <p className="mb-4">{comment}</p>
 
-        {problems.length > 0 ? (
-          <>
-            <div className="flex justify-between mb-4">
-              {!showAllProblems && (
-                <button
-                  onClick={handlePrevious}
-                  className="bg-blue-500 text-white px-4 py-2 rounded disabled:bg-gray-300"
-                  disabled={currentProblemIndex === 0}
-                >
-                  ← Previous
-                </button>
-              )}
+      {problems.length > 0 ? (
+        <>
+          <div className="flex justify-between mb-4">
+            {!showAllProblems && (
               <button
-                onClick={toggleView}
-                className="bg-green-500 text-white px-4 py-2 rounded"
+                onClick={handlePrevious}
+                className="bg-blue-500 text-white px-4 py-2 rounded disabled:bg-gray-300"
+                disabled={currentProblemIndex === 0}
               >
-                {showAllProblems ? "Show One Problem" : "Show All Problems"}
+                ← Previous
               </button>
-              {!showAllProblems && (
-                <button
-                  onClick={handleNext}
-                  className="bg-blue-500 text-white px-4 py-2 rounded disabled:bg-gray-300"
-                  disabled={currentProblemIndex === problems.length - 1}
-                >
-                  Next →
-                </button>
-              )}
-            </div>
+            )}
+            <button
+              onClick={toggleView}
+              className="bg-green-500 text-white px-4 py-2 rounded"
+            >
+              {showAllProblems ? "Show One Problem" : "Show All Problems"}
+            </button>
+            {!showAllProblems && (
+              <button
+                onClick={handleNext}
+                className="bg-blue-500 text-white px-4 py-2 rounded disabled:bg-gray-300"
+                disabled={currentProblemIndex === problems.length - 1}
+              >
+                Next →
+              </button>
+            )}
+          </div>
 
-            <ul className="space-y-4">
-              {problems.map((problem, index) => (
-                <React.Fragment key={problem.number}>
-                  {(showAllProblems || index === currentProblemIndex) &&
-                    renderProblem(problem)}
-                </React.Fragment>
-              ))}
-            </ul>
-          </>
-        ) : (
-          <p className="text-xl">No problems available for this exam.</p>
-        )}
-      </div>
-    </GrindOlympiadsLayout>
+          <ul className="space-y-4">
+            {problems.map((problem, index) => (
+              <React.Fragment key={problem.number}>
+                {(showAllProblems || index === currentProblemIndex) &&
+                  renderProblem(problem)}
+              </React.Fragment>
+            ))}
+          </ul>
+        </>
+      ) : (
+        <p className="text-xl">No problems available for this exam.</p>
+      )}
+    </div>
   );
 };
 

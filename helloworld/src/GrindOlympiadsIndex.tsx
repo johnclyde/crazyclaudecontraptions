@@ -1,19 +1,14 @@
 import React, { useState } from "react";
-import Header from "./components/Header";
 import Hero from "./components/Hero";
 import TestSearch from "./components/TestSearch";
 import TestList from "./components/TestList";
 import UserProgress from "./components/UserProgress";
-import useNotifications from "./hooks/useNotifications";
 import useUserData from "./hooks/useUserData";
 import useTests from "./hooks/useTests";
 
 const GrindOlympiadsIndex: React.FC = () => {
   const [showTests, setShowTests] = useState<boolean>(false);
-  const { user, isLoggedIn, setIsLoggedIn, login, logout, userProgress } =
-    useUserData();
-  const { notifications, notificationsError, markNotificationAsRead } =
-    useNotifications();
+  const { isLoggedIn, userProgress } = useUserData();
   const {
     tests,
     loading,
@@ -44,16 +39,6 @@ const GrindOlympiadsIndex: React.FC = () => {
           <span className="block sm:inline">{error}</span>
         </div>
       )}
-      <Header
-        user={user}
-        isLoggedIn={isLoggedIn}
-        setIsLoggedIn={setIsLoggedIn}
-        notifications={notifications}
-        notificationsError={notificationsError}
-        markNotificationAsRead={markNotificationAsRead}
-        login={login}
-        logout={logout}
-      />
       <Hero showTests={showTests} setShowTests={setShowTests} />
       {showTests && (
         <>
