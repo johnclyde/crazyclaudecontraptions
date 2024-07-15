@@ -10,7 +10,8 @@ import useTests from "./hooks/useTests";
 
 const GrindOlympiadsIndex: React.FC = () => {
   const [showTests, setShowTests] = useState<boolean>(false);
-  const { user, isLoggedIn, login, logout, userProgress } = useUserData();
+  const { user, isLoggedIn, setIsLoggedIn, login, logout, userProgress } =
+    useUserData();
   const { notifications, notificationsError, markNotificationAsRead } =
     useNotifications();
   const {
@@ -46,6 +47,7 @@ const GrindOlympiadsIndex: React.FC = () => {
       <Header
         user={user}
         isLoggedIn={isLoggedIn}
+        setIsLoggedIn={setIsLoggedIn}
         notifications={notifications}
         notificationsError={notificationsError}
         markNotificationAsRead={markNotificationAsRead}
