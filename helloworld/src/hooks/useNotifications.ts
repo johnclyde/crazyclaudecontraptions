@@ -1,8 +1,17 @@
 import { useState, useEffect } from "react";
 
+interface Notification {
+  id: string;
+  message: string;
+  timestamp: string;
+  read: boolean;
+}
+
 const useNotifications = () => {
-  const [notifications, setNotifications] = useState([]);
-  const [notificationsError, setNotificationsError] = useState(null);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [notificationsError, setNotificationsError] = useState<string | null>(
+    null,
+  );
 
   useEffect(() => {
     fetchNotifications();
@@ -26,7 +35,7 @@ const useNotifications = () => {
     }
   };
 
-  const markNotificationAsRead = async (notificationId) => {
+  const markNotificationAsRead = async (notificationId: string) => {
     try {
       const response = await fetch(
         "https://us-central1-olympiads.cloudfunctions.net/mark_notification_read",

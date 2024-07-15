@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import { GoogleOAuthProvider } from "@react-oauth/google";
 import Header from "./components/Header";
 import Hero from "./components/Hero";
 import TestSearch from "./components/TestSearch";
@@ -34,42 +33,40 @@ const GrindOlympiadsIndex: React.FC = () => {
   }
 
   return (
-    <GoogleOAuthProvider clientId={process.env.REACT_APP_GOOGLE_CLIENT_ID!}>
-      <div className="min-h-screen bg-gray-100">
-        {error && (
-          <div
-            className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative"
-            role="alert"
-          >
-            <strong className="font-bold">Error: </strong>
-            <span className="block sm:inline">{error}</span>
-          </div>
-        )}
-        <Header
-          user={user}
-          isLoggedIn={isLoggedIn}
-          notifications={notifications}
-          notificationsError={notificationsError}
-          markNotificationAsRead={markNotificationAsRead}
-          login={login}
-          logout={logout}
-        />
-        <Hero showTests={showTests} setShowTests={setShowTests} />
-        {showTests && (
-          <>
-            <TestSearch
-              searchTerm={searchTerm}
-              setSearchTerm={setSearchTerm}
-              selectedCompetition={selectedCompetition}
-              setSelectedCompetition={setSelectedCompetition}
-              tests={tests}
-            />
-            <TestList tests={filteredTests} />
-          </>
-        )}
-        {isLoggedIn && <UserProgress userProgress={userProgress} />}
-      </div>
-    </GoogleOAuthProvider>
+    <div className="min-h-screen bg-gray-100">
+      {error && (
+        <div
+          className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative"
+          role="alert"
+        >
+          <strong className="font-bold">Error: </strong>
+          <span className="block sm:inline">{error}</span>
+        </div>
+      )}
+      <Header
+        user={user}
+        isLoggedIn={isLoggedIn}
+        notifications={notifications}
+        notificationsError={notificationsError}
+        markNotificationAsRead={markNotificationAsRead}
+        login={login}
+        logout={logout}
+      />
+      <Hero showTests={showTests} setShowTests={setShowTests} />
+      {showTests && (
+        <>
+          <TestSearch
+            searchTerm={searchTerm}
+            setSearchTerm={setSearchTerm}
+            selectedCompetition={selectedCompetition}
+            setSelectedCompetition={setSelectedCompetition}
+            tests={tests}
+          />
+          <TestList tests={filteredTests} />
+        </>
+      )}
+      {isLoggedIn && <UserProgress userProgress={userProgress} />}
+    </div>
   );
 };
 
