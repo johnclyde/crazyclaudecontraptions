@@ -1,9 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import {
-  useGoogleLogin,
-  CredentialResponse,
-  LoginFunction,
-} from "@react-oauth/google";
+import { useGoogleLogin, CredentialResponse } from "@react-oauth/google";
 
 interface User {
   id: string;
@@ -18,7 +14,7 @@ interface UserProgress {
   completedAt: string;
 }
 
-type LoginFunction = (() => void) | ((response: CredentialResponse) => void);
+export type LoginFunction = () => void;
 
 const useUserData = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -29,7 +25,41 @@ const useUserData = () => {
   );
 
   const fetchUserData = useCallback(async () => {
-    // ... (rest of the fetchUserData function remains the same)
+    try {
+      const userResponse = await fetch(
+        "https://us-central1-olympiads.cloudfunctions.net/user",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
+      if (!userResponse.ok) {
+        throw new Error("Failed to fetch user data");
+      }
+      const userData = await userResponse.json();
+      setUser(userData.user);
+      setIsLoggedIn(true);
+
+      const progressResponse = await fetch(
+        "https://us-central1-olympiads.cloudfunctions.net/user_progress",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
+      if (!progressResponse.ok) {
+        throw new Error("Failed to fetch user progress");
+      }
+      const progressData = await progressResponse.json();
+      setUserProgress(progressData);
+    } catch (error) {
+      console.error("Error fetching user data:", error);
+      setIsLoggedIn(false);
+      localStorage.removeItem("token");
+      setToken(null);
+    }
   }, [token]);
 
   useEffect(() => {
@@ -70,7 +100,21 @@ const useUserData = () => {
   });
 
   const logout = async () => {
-    // ... (logout function remains the same)
+    try {
+      await fetch("https://us-central1-olympiads.cloudfunctions.net/logout", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      localStorage.removeItem("token");
+      setToken(null);
+      setUser(null);
+      setIsLoggedIn(false);
+      setUserProgress([]);
+    } catch (error) {
+      console.error("Error logging out:", error);
+    }
   };
 
   return { user, isLoggedIn, login, logout, userProgress };

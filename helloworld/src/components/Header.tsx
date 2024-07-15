@@ -1,8 +1,8 @@
 import React, { useState, useRef, useEffect } from "react";
-import { LoginFunction } from "@react-oauth/google";
 import { Link, useLocation } from "react-router-dom";
 import NotificationBell from "./NotificationBell";
 import UserMenu from "./UserMenu";
+import { LoginFunction } from "../hooks/useUserData";
 
 interface User {
   id: string;

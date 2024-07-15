@@ -1,5 +1,6 @@
 import React, { forwardRef } from "react";
-import { GoogleLogin, LoginFunction } from "@react-oauth/google";
+import { GoogleLogin } from "@react-oauth/google";
+import { LoginFunction } from "../hooks/useUserData";
 
 interface User {
   name: string;
