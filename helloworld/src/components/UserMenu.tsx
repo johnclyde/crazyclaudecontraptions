@@ -11,7 +11,7 @@ interface UserMenuProps {
   isLoggedIn: boolean;
   showUserMenu: boolean;
   setShowUserMenu: React.Dispatch<React.SetStateAction<boolean>>;
-  login: (response: CredentialResponse) => void;
+  login: () => void;
   logout: () => void;
 }
 

@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { useGoogleLogin } from "@react-oauth/google";
+import { useGoogleLogin, TokenResponse } from "@react-oauth/google";
 
 interface User {
   id: string;
@@ -71,34 +71,35 @@ const useUserData = () => {
     }
   }, [token, fetchUserData]);
 
-  const login = useGoogleLogin({
-    onSuccess: async (tokenResponse) => {
-      try {
-        const response = await fetch(
-          "https://us-central1-olympiads.cloudfunctions.net/login",
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              google_token: tokenResponse.access_token,
-            }),
+  const handleGoogleLoginSuccess = async (tokenResponse: TokenResponse) => {
+    try {
+      const response = await fetch(
+        "https://us-central1-olympiads.cloudfunctions.net/login",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
           },
-        );
-        const data = await response.json();
-        if (data.token) {
-          localStorage.setItem("token", data.token);
-          setToken(data.token);
-          setIsLoggedIn(true);
-          await fetchUserData();
-        }
-      } catch (error) {
-        console.error("Error logging in:", error);
+          body: JSON.stringify({
+            google_token: tokenResponse.access_token,
+          }),
+        },
+      );
+      const data = await response.json();
+      if (data.token) {
+        localStorage.setItem("token", data.token);
+        setToken(data.token);
+        setIsLoggedIn(true);
+        await fetchUserData();
       }
-    },
+    } catch (error) {
+      console.error("Error logging in:", error);
+    }
+  };
+
+  const login = useGoogleLogin({
+    onSuccess: handleGoogleLoginSuccess,
     onError: (error) => console.error("Login Failed:", error),
-    scope: "email profile",
   });
 
   const logout = async () => {
