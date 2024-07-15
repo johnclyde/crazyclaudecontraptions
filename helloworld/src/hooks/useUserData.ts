@@ -1,5 +1,9 @@
 import { useState, useEffect, useCallback } from "react";
-import { useGoogleLogin, CredentialResponse } from "@react-oauth/google";
+import {
+  useGoogleLogin,
+  TokenResponse,
+  CodeResponse,
+} from "@react-oauth/google";
 
 interface User {
   id: string;
@@ -68,9 +72,14 @@ const useUserData = () => {
     }
   }, [token, fetchUserData]);
 
-  const handleGoogleLoginSuccess = async (response: CredentialResponse) => {
+  const handleGoogleLoginSuccess = async (
+    tokenResponse: Omit<
+      TokenResponse,
+      "error" | "error_description" | "error_uri"
+    >,
+  ) => {
     try {
-      const tokenResponse = await fetch(
+      const response = await fetch(
         "https://us-central1-olympiads.cloudfunctions.net/login",
         {
           method: "POST",
@@ -78,11 +87,11 @@ const useUserData = () => {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            google_token: response.credential,
+            google_token: tokenResponse.access_token,
           }),
         },
       );
-      const data = await tokenResponse.json();
+      const data = await response.json();
       if (data.token) {
         localStorage.setItem("token", data.token);
         setToken(data.token);
@@ -120,5 +129,4 @@ const useUserData = () => {
   return { user, isLoggedIn, login, logout, userProgress };
 };
 
-export { LoginFunction };
 export default useUserData;
