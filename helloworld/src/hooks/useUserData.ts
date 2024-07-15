@@ -102,7 +102,6 @@ const useUserData = () => {
   const login: LoginFunction = useGoogleLogin({
     onSuccess: handleGoogleLoginSuccess,
     onError: (error) => console.error("Login Failed:", error),
-    scope: "email profile",
   });
 
   const logout = async () => {

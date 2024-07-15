@@ -18,20 +18,6 @@ interface Notification {
   read: boolean;
 }
 
-interface User {
-  id: string;
-  name: string;
-  email: string;
-  avatar: string;
-}
-
-interface Notification {
-  id: string;
-  message: string;
-  timestamp: string;
-  read: boolean;
-}
-
 interface HeaderProps {
   user: User | null;
   isLoggedIn: boolean;
