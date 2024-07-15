@@ -1,9 +1,22 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { GoogleLogin } from "@react-oauth/google";
 import NotificationBell from "./NotificationBell";
 import UserMenu from "./UserMenu";
 import { LoginFunction } from "../hooks/useUserData";
+
+interface User {
+  id: string;
+  name: string;
+  email: string;
+  avatar: string;
+}
+
+interface Notification {
+  id: string;
+  message: string;
+  timestamp: string;
+  read: boolean;
+}
 
 interface User {
   id: string;
@@ -67,10 +80,6 @@ const Header: React.FC<HeaderProps> = ({
     };
   }, []);
 
-  const handleGoogleSignInFailure = (error: any) => {
-    console.error("Google Sign-In Failure", error);
-  };
-
   return (
     <header className="bg-gray-800 text-white p-4 sticky top-0 z-50">
       <div className="container mx-auto flex justify-between items-center">
@@ -93,23 +102,15 @@ const Header: React.FC<HeaderProps> = ({
               markNotificationAsRead={markNotificationAsRead}
             />
           )}
-          {isLoggedIn ? (
-            <UserMenu
-              ref={userMenuRef}
-              user={user}
-              isLoggedIn={isLoggedIn}
-              showUserMenu={showUserMenu}
-              setShowUserMenu={setShowUserMenu}
-              login={login}
-              logout={logout}
-            />
-          ) : (
-            <GoogleLogin
-              onSuccess={login}
-              onError={handleGoogleSignInFailure}
-              useOneTap
-            />
-          )}
+          <UserMenu
+            ref={userMenuRef}
+            user={user}
+            isLoggedIn={isLoggedIn}
+            showUserMenu={showUserMenu}
+            setShowUserMenu={setShowUserMenu}
+            login={login}
+            logout={logout}
+          />
         </div>
       </div>
     </header>
