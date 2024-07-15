@@ -3,10 +3,20 @@ import { useGoogleLogin } from "@react-oauth/google";
 
 interface User {
   // Define user properties here
+  // For example:
+  id: string;
+  name: string;
+  email: string;
+  // Add any other relevant user properties
 }
 
 interface UserProgress {
   // Define user progress properties here
+  // For example:
+  testId: string;
+  score: number;
+  completedAt: string;
+  // Add any other relevant progress properties
 }
 
 const useUserData = () => {
@@ -90,6 +100,7 @@ const useUserData = () => {
       }
     },
     onError: (error) => console.error("Login Failed:", error),
+    scope: "email profile",
   });
 
   const logout = async () => {

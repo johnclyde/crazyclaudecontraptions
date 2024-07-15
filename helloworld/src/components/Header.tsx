@@ -2,11 +2,12 @@ import React, { useState, useRef, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import NotificationBell from "./NotificationBell";
 import UserMenu from "./UserMenu";
+import GoogleAuth from "./GoogleAuth";
 
 interface HeaderProps {
-  user: any; // Replace 'any' with your user type
+  user: any; // Replace any with your user type
   isLoggedIn: boolean;
-  notifications: any[]; // Replace 'any' with your notification type
+  notifications: any[]; // Replace any with your notification type
   notificationsError: string | null;
   markNotificationAsRead: (id: string) => void;
   login: () => void;
@@ -51,6 +52,15 @@ const Header: React.FC<HeaderProps> = ({
     };
   }, []);
 
+  const handleGoogleSignInSuccess = (response: any) => {
+    console.log("Google Sign-In Success", response);
+    login();
+  };
+
+  const handleGoogleSignInFailure = (error: any) => {
+    console.error("Google Sign-In Failure", error);
+  };
+
   return (
     <header className="bg-gray-800 text-white p-4 sticky top-0 z-50">
       <div className="container mx-auto flex justify-between items-center">
@@ -73,15 +83,22 @@ const Header: React.FC<HeaderProps> = ({
               markNotificationAsRead={markNotificationAsRead}
             />
           )}
-          <UserMenu
-            ref={userMenuRef}
-            user={user}
-            isLoggedIn={isLoggedIn}
-            showUserMenu={showUserMenu}
-            setShowUserMenu={setShowUserMenu}
-            login={login}
-            logout={logout}
-          />
+          {isLoggedIn ? (
+            <UserMenu
+              ref={userMenuRef}
+              user={user}
+              isLoggedIn={isLoggedIn}
+              showUserMenu={showUserMenu}
+              setShowUserMenu={setShowUserMenu}
+              login={login}
+              logout={logout}
+            />
+          ) : (
+            <GoogleAuth
+              onSuccess={handleGoogleSignInSuccess}
+              onFailure={handleGoogleSignInFailure}
+            />
+          )}
         </div>
       </div>
     </header>

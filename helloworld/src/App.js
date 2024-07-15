@@ -3,7 +3,7 @@ import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import BanzukeSurfer from "./components/BanzukeSurfer";
 import ColorPicker from "./components/ColorPicker";
 import ComponentDirectory from "./ComponentDirectory";
-import GrindOlympiadsIndex from "./GrindOlympiadsIndex.js";
+import GrindOlympiadsIndex from "./GrindOlympiadsIndex";
 import InteractiveCounter from "./components/InteractiveCounter";
 import Header from "./components/Header";
 import ExamComponent from "./components/ExamComponent";

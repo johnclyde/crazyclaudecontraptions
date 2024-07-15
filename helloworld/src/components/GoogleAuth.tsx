@@ -1,9 +1,5 @@
 import React from "react";
-import {
-  GoogleOAuthProvider,
-  GoogleLogin,
-  CredentialResponse,
-} from "@react-oauth/google";
+import { useGoogleLogin, CredentialResponse } from "@react-oauth/google";
 
 interface GoogleAuthProps {
   onSuccess: (response: CredentialResponse) => void;
@@ -11,21 +7,25 @@ interface GoogleAuthProps {
 }
 
 const GoogleAuth: React.FC<GoogleAuthProps> = ({ onSuccess, onFailure }) => {
-  const clientId = process.env.REACT_APP_GOOGLE_CLIENT_ID;
-
-  if (!clientId) {
-    console.error("Google Client ID is not set");
-    return null;
-  }
-
-  const handleError = () => {
-    onFailure(new Error("Google Sign-In failed"));
-  };
+  const login = useGoogleLogin({
+    onSuccess: onSuccess,
+    onError: onFailure,
+    scope: "email profile",
+  });
 
   return (
-    <GoogleOAuthProvider clientId={clientId} onScriptLoadError={handleError}>
-      <GoogleLogin onSuccess={onSuccess} onError={handleError} useOneTap />
-    </GoogleOAuthProvider>
+    <button
+      onClick={() => login()}
+      className="px-4 py-2 border flex gap-2 border-slate-200 rounded-lg text-slate-700 hover:border-slate-400 hover:text-slate-900 hover:shadow transition duration-150"
+    >
+      <img
+        className="w-6 h-6"
+        src="https://www.svgrepo.com/show/475656/google-color.svg"
+        loading="lazy"
+        alt="google logo"
+      />
+      <span>Sign in with Google</span>
+    </button>
   );
 };
 
