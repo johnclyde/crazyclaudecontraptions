@@ -1,18 +1,27 @@
 import { useState, useEffect } from "react";
+import { useGoogleLogin } from "@react-oauth/google";
 
 const useUserData = () => {
   const [user, setUser] = useState(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userProgress, setUserProgress] = useState([]);
+  const [token, setToken] = useState(localStorage.getItem("token"));
 
   useEffect(() => {
-    fetchUserData();
-  }, []);
+    if (token) {
+      fetchUserData();
+    }
+  }, [token]);
 
   const fetchUserData = async () => {
     try {
       const userResponse = await fetch(
         "https://us-central1-olympiads.cloudfunctions.net/user",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
       );
       if (!userResponse.ok) {
         throw new Error("Failed to fetch user data");
@@ -23,6 +32,11 @@ const useUserData = () => {
 
       const progressResponse = await fetch(
         "https://us-central1-olympiads.cloudfunctions.net/user_progress",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
       );
       if (!progressResponse.ok) {
         throw new Error("Failed to fetch user progress");
@@ -32,44 +46,50 @@ const useUserData = () => {
     } catch (error) {
       console.error("Error fetching user data:", error);
       setIsLoggedIn(false);
+      localStorage.removeItem("token");
+      setToken(null);
     }
   };
 
-  const login = async () => {
-    try {
-      const response = await fetch(
-        "https://us-central1-olympiads.cloudfunctions.net/login",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
+  const login = useGoogleLogin({
+    onSuccess: async (tokenResponse) => {
+      try {
+        const response = await fetch(
+          "https://us-central1-olympiads.cloudfunctions.net/login",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              google_token: tokenResponse.access_token,
+            }),
           },
-          body: JSON.stringify({
-            username: "math1434",
-          }),
-        },
-      );
-      const data = await response.json();
-      if (data.token) {
-        localStorage.setItem("token", data.token);
-        setUser(data.user);
-        setIsLoggedIn(true);
-        fetchUserData(); // Fetch user data after successful login
+        );
+        const data = await response.json();
+        if (data.token) {
+          localStorage.setItem("token", data.token);
+          setToken(data.token);
+          setIsLoggedIn(true);
+          await fetchUserData();
+        }
+      } catch (error) {
+        console.error("Error logging in:", error);
       }
-    } catch (error) {
-      console.error("Error logging in:", error);
-    }
-  };
+    },
+    onError: (error) => console.error("Login Failed:", error),
+  });
 
   const logout = async () => {
     try {
       await fetch("https://us-central1-olympiads.cloudfunctions.net/logout", {
         method: "POST",
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
+          Authorization: `Bearer ${token}`,
         },
       });
       localStorage.removeItem("token");
+      setToken(null);
       setUser(null);
       setIsLoggedIn(false);
       setUserProgress([]);
