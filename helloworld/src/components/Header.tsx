@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import NotificationBell from "./NotificationBell";
 import UserMenu from "./UserMenu";
@@ -37,8 +37,27 @@ const Header: React.FC<HeaderProps> = ({
   login,
   logout,
 }) => {
+  const [showNotifications, setShowNotifications] = useState(false);
+  const notificationRef = useRef<HTMLDivElement>(null);
+  const userMenuRef = useRef<HTMLDivElement>(null);
   const location = useLocation();
   const isLabsPath = location.pathname.startsWith("/labs");
+
+  const handleClickOutside = (event: MouseEvent) => {
+    if (
+      notificationRef.current &&
+      !notificationRef.current.contains(event.target as Node)
+    ) {
+      setShowNotifications(false);
+    }
+  };
+
+  useEffect(() => {
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   return (
     <header className="bg-gray-800 text-white p-4 sticky top-0 z-50">
@@ -54,12 +73,16 @@ const Header: React.FC<HeaderProps> = ({
           )}
           {isLoggedIn && (
             <NotificationBell
+              ref={notificationRef}
               notifications={notifications}
               notificationsError={notificationsError}
+              showNotifications={showNotifications}
+              setShowNotifications={setShowNotifications}
               markNotificationAsRead={markNotificationAsRead}
             />
           )}
           <UserMenu
+            ref={userMenuRef}
             user={user}
             isLoggedIn={isLoggedIn}
             login={login}
