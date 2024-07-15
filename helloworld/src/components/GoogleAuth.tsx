@@ -1,11 +1,5 @@
 import React, { useEffect, useState, useCallback } from "react";
 
-declare global {
-  interface Window {
-    google: any;
-  }
-}
-
 interface GoogleAuthProps {
   onSuccess: (response: any) => void;
   onFailure: (error: any) => void;
@@ -40,15 +34,9 @@ const GoogleAuth: React.FC<GoogleAuthProps> = ({ onSuccess, onFailure }) => {
 
   useEffect(() => {
     if (isScriptLoaded && window.google) {
-      const allowedOrigins =
-        process.env.NODE_ENV === "production"
-          ? ["https://olympiads-ba812.web.app"]
-          : ["http://localhost:3000"];
-
       window.google.accounts.id.initialize({
-        client_id: process.env.REACT_APP_GOOGLE_API_KEY,
+        client_id: process.env.REACT_APP_GOOGLE_CLIENT_ID,
         callback: handleCredentialResponse,
-        allowed_origins: allowedOrigins,
       });
       window.google.accounts.id.renderButton(
         document.getElementById("googleSignInButton"),
