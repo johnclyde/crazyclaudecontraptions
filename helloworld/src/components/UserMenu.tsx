@@ -1,6 +1,6 @@
 import React, { forwardRef, useState } from "react";
 import { GoogleLogin } from "@react-oauth/google";
-import { LoginFunction } from "../hooks/useUserData";
+import { ChevronDown } from "lucide-react";
 
 interface User {
   name: string;
@@ -10,127 +10,72 @@ interface User {
 interface UserMenuProps {
   user: User | null;
   isLoggedIn: boolean;
-  login: LoginFunction;
+  login: () => void;
   logout: () => void;
-  bypassLogin: () => void; // New prop for bypassing login
 }
 
 const UserMenu = forwardRef<HTMLDivElement, UserMenuProps>(
-  ({ user, isLoggedIn, login, logout, bypassLogin }, ref) => {
-    const [showMenu, setShowMenu] = useState(false);
-    const [showLoginDialog, setShowLoginDialog] = useState(false);
+  ({ user, isLoggedIn, login, logout }, ref) => {
+    const [showDropdown, setShowDropdown] = useState(false);
 
-    const handleProfileClick = () => {
-      console.log("Navigate to profile");
-      setShowMenu(false);
-    };
-
-    const handleSettingsClick = () => {
-      console.log("Navigate to settings");
-      setShowMenu(false);
-    };
-
-    const handleLogout = () => {
-      logout();
-      setShowMenu(false);
-    };
-
-    const handleLoginClick = () => {
-      setShowLoginDialog(true);
-      setShowMenu(false);
+    const toggleDropdown = () => {
+      setShowDropdown(!showDropdown);
     };
 
     return (
       <div className="relative" ref={ref}>
         <button
-          onClick={() => setShowMenu(!showMenu)}
-          className="flex items-center space-x-2 hover:bg-gray-700 p-2 rounded-full"
+          onClick={toggleDropdown}
+          className="flex items-center justify-center w-12 h-12 bg-white rounded-full border-2 border-blue-500 hover:border-blue-600 transition-colors"
         >
-          {isLoggedIn ? (
-            <img
-              src={user?.avatar || "/default-avatar.png"}
-              alt={user?.name || "User"}
-              className="w-8 h-8 rounded-full"
-            />
-          ) : (
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-6 w-6"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-              />
-            </svg>
-          )}
+          {isLoggedIn ? user?.avatar : "🥷"}
+          <ChevronDown className="ml-1 h-4 w-4" />
         </button>
-        {showMenu && (
+        {showDropdown && (
           <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1">
             {isLoggedIn ? (
               <>
                 <button
-                  onClick={handleProfileClick}
+                  onClick={() => {
+                    console.log("Navigate to profile");
+                    setShowDropdown(false);
+                  }}
                   className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                 >
                   Profile
                 </button>
                 <button
-                  onClick={handleSettingsClick}
+                  onClick={() => {
+                    console.log("Navigate to settings");
+                    setShowDropdown(false);
+                  }}
                   className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                 >
                   Settings
                 </button>
                 <button
-                  onClick={handleLogout}
+                  onClick={() => {
+                    logout();
+                    setShowDropdown(false);
+                  }}
                   className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                 >
                   Logout
                 </button>
               </>
             ) : (
-              <button
-                onClick={handleLoginClick}
-                className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-              >
-                Login
-              </button>
+              <div className="px-4 py-2">
+                <GoogleLogin
+                  onSuccess={(credentialResponse) => {
+                    login();
+                    setShowDropdown(false);
+                  }}
+                  onError={() => {
+                    console.log("Login Failed");
+                  }}
+                />
+              </div>
             )}
-            {!isLoggedIn && (
-              <button
-                onClick={bypassLogin}
-                className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-              >
-                Bypass Login
-              </button>
-            )}
-          </div>
-        )}
-        {showLoginDialog && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-            <div className="bg-white p-6 rounded-lg">
-              <h2 className="text-xl font-bold mb-4">Login</h2>
-              <GoogleLogin
-                onSuccess={() => {
-                  login();
-                  setShowLoginDialog(false);
-                }}
-                onError={() => {
-                  console.log("Login Failed");
-                  setShowLoginDialog(false);
-                }}
-              />
-              <button
-                onClick={() => setShowLoginDialog(false)}
-                className="mt-4 px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300"
-              >
-                Cancel
-              </button>
-            </div>
           </div>
         )}
       </div>
