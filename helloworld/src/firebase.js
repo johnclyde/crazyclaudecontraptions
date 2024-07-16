@@ -2,12 +2,12 @@ import { initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 
 const firebaseConfig = {
-  apiKey: "AIzaSyACkFekGZJEnR9c1iYFaQLmElDuq7x_3wk",
+  apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
   authDomain: "olympiads-ba812.firebaseapp.com",
   projectId: "olympiads",
   storageBucket: "olympiads.appspot.com",
-  messagingSenderId: "1028322838576",
-  appId: "1:1028322838576:web:137289ff0402a31a8d45f5"
+  messagingSenderId: process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.REACT_APP_FIREBASE_APP_ID,
 };
 
 const app = initializeApp(firebaseConfig);

@@ -10,9 +10,18 @@ interface User {
   avatar: string;
 }
 
+interface UserProgress {
+  testId: string;
+  score: number;
+  completedAt: string;
+}
+
+export type LoginFunction = () => void;
+
 const useUserData = () => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [userProgress, setUserProgress] = useState<UserProgress[]>([]);
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((firebaseUser) => {
@@ -34,7 +43,7 @@ const useUserData = () => {
     return () => unsubscribe();
   }, []);
 
-  const login = async () => {
+  const login: LoginFunction = async () => {
     const provider = new GoogleAuthProvider();
     try {
       await signInWithPopup(auth, provider);
@@ -51,7 +60,7 @@ const useUserData = () => {
     }
   };
 
-  return { user, isLoggedIn, login, logout };
+  return { user, isLoggedIn, setIsLoggedIn, login, logout, userProgress };
 };
 
 export default useUserData;
