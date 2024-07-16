@@ -1,8 +1,9 @@
 import datetime
 
 import firebase_admin
-from firebase_admin import auth, credentials, firestore
+from firebase_admin import auth, credentials
 from flask import Request, Response, jsonify
+from google.cloud import firestore_v1
 
 # Initialize Firebase app if it hasn't been initialized yet
 if not firebase_admin._apps:
@@ -14,7 +15,7 @@ if not firebase_admin._apps:
         },
     )
 
-db = firestore.client()
+db = firestore_v1.Client(database="grindolympiads")
 
 
 def login(request: Request) -> Response:
