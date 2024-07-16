@@ -1,15 +1,20 @@
 import datetime
 
-import jwt
+import firebase_admin
+from firebase_admin import auth, credentials, firestore
 from flask import Request, Response, jsonify
-from google.auth.transport import requests
-from google.cloud import firestore_v1
-from google.oauth2 import id_token
 
-db = firestore_v1.Client(database="grindolympiads")
-SECRET_KEY = (
-    "a_secure_random_secret_key"  # Consider using a more secure method to store this
-)
+# Initialize Firebase app if it hasn't been initialized yet
+if not firebase_admin._apps:
+    cred = credentials.ApplicationDefault()
+    firebase_admin.initialize_app(
+        cred,
+        {
+            "projectId": "olympiads",
+        },
+    )
+
+db = firestore.client()
 
 
 def login(request: Request) -> Response:
@@ -22,58 +27,46 @@ def login(request: Request) -> Response:
         return Response(status=204, headers=headers)
 
     try:
-        request_json = request.get_json()
-        google_token = request_json.get("google_token")
+        if "Authorization" not in request.headers:
+            raise ValueError("No Authorization header present")
 
-        if not google_token:
-            return jsonify({"error": "No Google token provided"}), 400, headers
+        id_token = request.headers.get("Authorization", "").split("Bearer ").pop()
 
-        # Verify the Google token
-        idinfo = id_token.verify_oauth2_token(google_token, requests.Request())
+        # Verify the ID token
+        decoded_token = auth.verify_id_token(id_token)
+        uid = decoded_token["uid"]
 
-        # Get user info from the token
-        google_id = idinfo["sub"]
-        email = idinfo["email"]
-        name = idinfo.get("name", email)
-
-        # Check if user exists, if not create a new one
-        user_ref = db.collection("users").document(google_id)
+        # Get user data from Firestore
+        user_ref = db.collection("users").document(uid)
         user_doc = user_ref.get()
 
-        if not user_doc.exists:
+        if user_doc.exists:
+            # Update existing user
+            user_data = user_doc.to_dict()
+            user_data["last_login"] = datetime.datetime.now()
+            user_ref.update(user_data)
+        else:
             # Create new user
-            new_user = {
-                "email": email,
-                "name": name,
+            firebase_user = auth.get_user(uid)
+            user_data = {
+                "email": firebase_user.email,
+                "name": firebase_user.display_name or firebase_user.email,
                 "created_at": datetime.datetime.now(),
                 "last_login": datetime.datetime.now(),
             }
-            user_ref.set(new_user)
-        else:
-            # Update last login
-            user_ref.update({"last_login": datetime.datetime.now()})
+            user_ref.set(user_data)
 
-        # Create JWT token
-        token = jwt.encode(
-            {
-                "user_id": google_id,
-                "email": email,
-                "exp": datetime.datetime.utcnow() + datetime.timedelta(hours=24),
-            },
-            SECRET_KEY,
-            algorithm="HS256",
-        )
+        return jsonify({"message": "Login successful", "user": user_data}), 200, headers
 
-        return (
-            jsonify(
-                {"message": "Login successful", "token": token, "user_id": google_id}
-            ),
-            200,
-            headers,
-        )
-
-    except ValueError as e:
-        # Invalid token
-        return jsonify({"error": str(e)}), 401, headers
+    except ValueError as ve:
+        return jsonify({"error": str(ve)}), 400, headers
+    except auth.InvalidIdTokenError:
+        return jsonify({"error": "Invalid ID token"}), 401, headers
+    except auth.ExpiredIdTokenError:
+        return jsonify({"error": "Expired ID token"}), 401, headers
+    except auth.RevokedIdTokenError:
+        return jsonify({"error": "Revoked ID token"}), 401, headers
+    except auth.UserNotFoundError:
+        return jsonify({"error": "User not found"}), 404, headers
     except Exception as e:
-        return jsonify({"error": str(e)}), 500, headers
+        return jsonify({"error": "An unexpected error occurred"}), 500, headers
