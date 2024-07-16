@@ -20,6 +20,8 @@ interface UserProgress {
   completedAt: string;
 }
 
+export type LoginFunction = () => Promise<void>;
+
 const useUserData = () => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -87,7 +89,7 @@ const useUserData = () => {
     return () => unsubscribe();
   }, [fetchUserData]);
 
-  const login = async () => {
+  const login: LoginFunction = async () => {
     try {
       const provider = new GoogleAuthProvider();
       await signInWithPopup(auth, provider);
@@ -110,7 +112,7 @@ const useUserData = () => {
     }
   };
 
-  return { user, isLoggedIn, login, logout, userProgress };
+  return { user, isLoggedIn, setIsLoggedIn, login, logout, userProgress };
 };
 
 export default useUserData;
