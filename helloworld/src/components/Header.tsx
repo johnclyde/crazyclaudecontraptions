@@ -61,8 +61,8 @@ const Header: React.FC<HeaderProps> = ({
     };
   }, []);
 
-  const toggleLoginState = () => {
-    setIsLoggedIn((prevState) => !prevState);
+  const bypassLogin = () => {
+    setIsLoggedIn(true);
   };
 
   return (
@@ -93,7 +93,7 @@ const Header: React.FC<HeaderProps> = ({
             isLoggedIn={isLoggedIn}
             login={login}
             logout={logout}
-            toggleLoginState={toggleLoginState}
+            bypassLogin={bypassLogin}
           />
         </div>
       </div>
