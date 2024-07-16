@@ -1,7 +1,8 @@
 from flask import Request, Response, jsonify
 from google.cloud import firestore_v1
+from firebase_admin import firestore
 
-db = firestore_v1.Client(database="grindolympiads")
+db = firestore.Client()
 
 
 def list_users(request: Request) -> Response:
