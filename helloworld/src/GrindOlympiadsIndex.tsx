@@ -8,7 +8,7 @@ import useTests from "./hooks/useTests";
 
 const GrindOlympiadsIndex: React.FC = () => {
   const [showTests, setShowTests] = useState<boolean>(false);
-  const { isLoggedIn, userProgress } = useUserData();
+  const { isLoggedIn, user, userProgress } = useUserData();
   const {
     tests,
     loading,
@@ -40,6 +40,19 @@ const GrindOlympiadsIndex: React.FC = () => {
         </div>
       )}
       <Hero showTests={showTests} setShowTests={setShowTests} />
+
+      <div className="container mx-auto py-8">
+        {isLoggedIn ? (
+          <h2 className="text-2xl font-bold mb-4">
+            Welcome, {user?.name || "User"}!
+          </h2>
+        ) : (
+          <h2 className="text-2xl font-bold mb-4">
+            Please log in to access all features.
+          </h2>
+        )}
+      </div>
+
       {showTests && (
         <>
           <TestSearch
