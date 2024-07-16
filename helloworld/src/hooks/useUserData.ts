@@ -9,14 +9,6 @@ interface User {
   avatar: string;
 }
 
-interface UserProgress {
-  testId: string;
-  score: number;
-  completedAt: string;
-}
-
-export type LoginFunction = () => void;
-
 const useUserData = () => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -60,7 +52,7 @@ const useUserData = () => {
     }
   };
 
-  return { user, isLoggedIn, setIsLoggedIn, login, logout, userProgress };
+  return { user, isLoggedIn, login, logout };
 };
 
 export default useUserData;

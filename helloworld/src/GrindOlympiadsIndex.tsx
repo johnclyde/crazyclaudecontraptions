@@ -8,7 +8,7 @@ import useTests from "./hooks/useTests";
 
 const GrindOlympiadsIndex: React.FC = () => {
   const [showTests, setShowTests] = useState<boolean>(false);
-  const { isLoggedIn, userProgress } = useUserData();
+  const { user, isLoggedIn, login, logout } = useUserData();
   const {
     tests,
     loading,
