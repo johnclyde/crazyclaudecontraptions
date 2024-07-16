@@ -12,11 +12,11 @@ interface UserMenuProps {
   isLoggedIn: boolean;
   login: LoginFunction;
   logout: () => void;
-  toggleLoginState: () => void; // New prop for toggling login state
+  bypassLogin: () => void; // New prop for bypassing login
 }
 
 const UserMenu = forwardRef<HTMLDivElement, UserMenuProps>(
-  ({ user, isLoggedIn, login, logout, toggleLoginState }, ref) => {
+  ({ user, isLoggedIn, login, logout, bypassLogin }, ref) => {
     const [showMenu, setShowMenu] = useState(true);
     const [showLoginDialog, setShowLoginDialog] = useState(false);
 
@@ -100,13 +100,14 @@ const UserMenu = forwardRef<HTMLDivElement, UserMenuProps>(
                 Login
               </button>
             )}
-            {/* Temporary toggle for login state */}
-            <button
-              onClick={toggleLoginState}
-              className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-            >
-              {isLoggedIn ? "Toggle to Logged Out" : "Toggle to Logged In"}
-            </button>
+            {!isLoggedIn && (
+              <button
+                onClick={bypassLogin}
+                className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+              >
+                Bypass Login
+              </button>
+            )}
           </div>
         )}
         {showLoginDialog && (
