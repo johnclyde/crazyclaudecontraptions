@@ -18,7 +18,6 @@ db = firestore.client()
 
 
 def login(request: Request) -> Response:
-    print("Login function called")
     headers = {
         "Access-Control-Allow-Origin": "*",
         "Access-Control-Allow-Methods": "POST",
