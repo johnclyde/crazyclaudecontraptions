@@ -1,6 +1,7 @@
 import React, { forwardRef, useState } from "react";
 import { GoogleLogin } from "@react-oauth/google";
 import { LoginFunction } from "../hooks/useUserData";
+import { User as FirebaseUser } from 'firebase/auth';
 
 interface User {
   name: string;
@@ -8,7 +9,7 @@ interface User {
 }
 
 interface UserMenuProps {
-  user: User | null;
+  user: FirebaseUser | null;
   isLoggedIn: boolean;
   login: LoginFunction;
   logout: () => void;
@@ -48,8 +49,8 @@ const UserMenu = forwardRef<HTMLDivElement, UserMenuProps>(
         >
           {isLoggedIn ? (
             <img
-              src={user?.avatar || "/default-avatar.png"}
-              alt={user?.name || "User"}
+              src={"/default-avatar.png"}
+              alt={"User"}
               className="w-8 h-8 rounded-full"
             />
           ) : (
