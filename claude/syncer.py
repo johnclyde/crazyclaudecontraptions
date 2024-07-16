@@ -11,7 +11,8 @@ def get_local_files(directory: str):
         if "node_modules" in root or "build" in root:
             continue
         for file in files:
-            if file.endswith((".js", ".ts", ".tsx", "py")):
+            # if file.endswith((".js", ".ts", ".tsx", "py")):
+            if file.endswith((".yml")):
                 rel_path = os.path.relpath(os.path.join(root, file), directory)
                 local_files.add(rel_path)
     return local_files
