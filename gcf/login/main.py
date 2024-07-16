@@ -14,7 +14,7 @@ if not firebase_admin._apps:
         },
     )
 
-db = firestore.client(database="grindolympiads")
+db = firestore.client()
 
 
 def login(request: Request) -> Response:
