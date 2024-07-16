@@ -25,6 +25,7 @@ const useUserData = () => {
   );
 
   const fetchUserData = useCallback(async () => {
+    if (!token) return;
     try {
       const userResponse = await fetch(
         "https://us-central1-olympiads.cloudfunctions.net/user",
@@ -96,6 +97,7 @@ const useUserData = () => {
       }
     } catch (error) {
       console.error("Error logging in:", error);
+      setIsLoggedIn(false);
     }
   };
 
@@ -122,7 +124,7 @@ const useUserData = () => {
     }
   };
 
-  return { user, isLoggedIn, login, logout, userProgress };
+  return { user, isLoggedIn, setIsLoggedIn, login, logout, userProgress };
 };
 
 export default useUserData;

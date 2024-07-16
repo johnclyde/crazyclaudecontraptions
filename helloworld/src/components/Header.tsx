@@ -26,6 +26,7 @@ interface HeaderProps {
   markNotificationAsRead: (id: string) => void;
   login: LoginFunction;
   logout: () => void;
+  setIsLoggedIn: React.Dispatch<React.SetStateAction<boolean>>; // New prop for setting login state
 }
 
 const Header: React.FC<HeaderProps> = ({
@@ -36,9 +37,9 @@ const Header: React.FC<HeaderProps> = ({
   markNotificationAsRead,
   login,
   logout,
+  setIsLoggedIn,
 }) => {
   const [showNotifications, setShowNotifications] = useState(false);
-  const [showUserMenu, setShowUserMenu] = useState(false);
   const notificationRef = useRef<HTMLDivElement>(null);
   const userMenuRef = useRef<HTMLDivElement>(null);
   const location = useLocation();
@@ -51,12 +52,6 @@ const Header: React.FC<HeaderProps> = ({
     ) {
       setShowNotifications(false);
     }
-    if (
-      userMenuRef.current &&
-      !userMenuRef.current.contains(event.target as Node)
-    ) {
-      setShowUserMenu(false);
-    }
   };
 
   useEffect(() => {
@@ -65,6 +60,10 @@ const Header: React.FC<HeaderProps> = ({
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
+
+  const toggleLoginState = () => {
+    setIsLoggedIn((prevState) => !prevState);
+  };
 
   return (
     <header className="bg-gray-800 text-white p-4 sticky top-0 z-50">
@@ -92,10 +91,9 @@ const Header: React.FC<HeaderProps> = ({
             ref={userMenuRef}
             user={user}
             isLoggedIn={isLoggedIn}
-            showUserMenu={showUserMenu}
-            setShowUserMenu={setShowUserMenu}
             login={login}
             logout={logout}
+            toggleLoginState={toggleLoginState}
           />
         </div>
       </div>

@@ -1,4 +1,4 @@
-import React, { forwardRef } from "react";
+import React, { forwardRef, useState } from "react";
 import { GoogleLogin } from "@react-oauth/google";
 import { LoginFunction } from "../hooks/useUserData";
 
@@ -10,49 +10,69 @@ interface User {
 interface UserMenuProps {
   user: User | null;
   isLoggedIn: boolean;
-  showUserMenu: boolean;
-  setShowUserMenu: React.Dispatch<React.SetStateAction<boolean>>;
   login: LoginFunction;
   logout: () => void;
+  toggleLoginState: () => void; // New prop for toggling login state
 }
 
 const UserMenu = forwardRef<HTMLDivElement, UserMenuProps>(
-  ({ user, isLoggedIn, showUserMenu, setShowUserMenu, login, logout }, ref) => {
+  ({ user, isLoggedIn, login, logout, toggleLoginState }, ref) => {
+    const [showMenu, setShowMenu] = useState(true);
+    const [showLoginDialog, setShowLoginDialog] = useState(false);
+
     const handleProfileClick = () => {
       console.log("Navigate to profile");
-      setShowUserMenu(false);
+      setShowMenu(false);
     };
 
     const handleSettingsClick = () => {
       console.log("Navigate to settings");
-      setShowUserMenu(false);
+      setShowMenu(false);
     };
 
     const handleLogout = () => {
       logout();
-      setShowUserMenu(false);
+      setShowMenu(false);
     };
 
-    const handleGoogleSignInFailure = () => {
-      console.error("Google Sign-In Failure");
+    const handleLoginClick = () => {
+      setShowLoginDialog(true);
+      setShowMenu(false);
     };
 
     return (
       <div className="relative" ref={ref}>
-        {isLoggedIn ? (
-          <>
-            <button
-              onClick={() => setShowUserMenu(!showUserMenu)}
-              className="flex items-center space-x-2 hover:bg-gray-700 p-2 rounded-full"
+        <button
+          onClick={() => setShowMenu(!showMenu)}
+          className="flex items-center space-x-2 hover:bg-gray-700 p-2 rounded-full"
+        >
+          {isLoggedIn ? (
+            <img
+              src={user?.avatar || "/default-avatar.png"}
+              alt={user?.name || "User"}
+              className="w-8 h-8 rounded-full"
+            />
+          ) : (
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-6 w-6"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
             >
-              <img
-                src={user?.avatar}
-                alt={user?.name}
-                className="w-8 h-8 rounded-full"
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
               />
-            </button>
-            {showUserMenu && (
-              <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1">
+            </svg>
+          )}
+        </button>
+        {showMenu && (
+          <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1">
+            {isLoggedIn ? (
+              <>
                 <button
                   onClick={handleProfileClick}
                   className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
@@ -71,15 +91,46 @@ const UserMenu = forwardRef<HTMLDivElement, UserMenuProps>(
                 >
                   Logout
                 </button>
-              </div>
+              </>
+            ) : (
+              <button
+                onClick={handleLoginClick}
+                className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+              >
+                Login
+              </button>
             )}
-          </>
-        ) : (
-          <GoogleLogin
-            onSuccess={login}
-            onError={handleGoogleSignInFailure}
-            useOneTap
-          />
+            {/* Temporary toggle for login state */}
+            <button
+              onClick={toggleLoginState}
+              className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+            >
+              {isLoggedIn ? "Toggle to Logged Out" : "Toggle to Logged In"}
+            </button>
+          </div>
+        )}
+        {showLoginDialog && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+            <div className="bg-white p-6 rounded-lg">
+              <h2 className="text-xl font-bold mb-4">Login</h2>
+              <GoogleLogin
+                onSuccess={() => {
+                  login();
+                  setShowLoginDialog(false);
+                }}
+                onError={() => {
+                  console.log("Login Failed");
+                  setShowLoginDialog(false);
+                }}
+              />
+              <button
+                onClick={() => setShowLoginDialog(false)}
+                className="mt-4 px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
         )}
       </div>
     );
