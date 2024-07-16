@@ -1,7 +1,7 @@
 import datetime
 
 import firebase_admin
-from firebase_admin import auth, credentials
+from firebase_admin import auth, credentials, firestore
 from flask import Request, Response, jsonify
 
 # Initialize Firebase app if it hasn't been initialized yet
@@ -13,6 +13,8 @@ if not firebase_admin._apps:
             "projectId": "olympiads",
         },
     )
+
+db = firestore.client(database="grindolympiads")
 
 
 def login(request: Request) -> Response:
@@ -29,7 +31,6 @@ def login(request: Request) -> Response:
         print(f"Request method: {request.method}")
         print(f"Request headers: {request.headers}")
 
-        # Check if Authorization header is present
         if "Authorization" not in request.headers:
             raise ValueError("No Authorization header present")
 
@@ -43,17 +44,25 @@ def login(request: Request) -> Response:
         uid = decoded_token["uid"]
         print(f"Authenticated UID: {uid}")
 
-        # Update user's last login time
-        auth.update_user(uid, {"lastLoginAt": datetime.datetime.now().isoformat()})
+        # Get user data from Firestore
+        user_ref = db.collection("users").document(uid)
+        user_doc = user_ref.get()
 
-        # Fetch user details
-        user = auth.get_user(uid)
-        user_data = {
-            "uid": user.uid,
-            "email": user.email,
-            "displayName": user.display_name,
-            "lastLoginAt": user.user_metadata.last_sign_in_timestamp,
-        }
+        if user_doc.exists:
+            # Update existing user
+            user_data = user_doc.to_dict()
+            user_data["last_login"] = datetime.datetime.now()
+            user_ref.update(user_data)
+        else:
+            # Create new user
+            firebase_user = auth.get_user(uid)
+            user_data = {
+                "email": firebase_user.email,
+                "name": firebase_user.display_name or firebase_user.email,
+                "created_at": datetime.datetime.now(),
+                "last_login": datetime.datetime.now(),
+            }
+            user_ref.set(user_data)
 
         return jsonify({"message": "Login successful", "user": user_data}), 200, headers
 
