@@ -3,7 +3,6 @@ import { Link, useLocation } from "react-router-dom";
 import NotificationBell from "./NotificationBell";
 import UserMenu from "./UserMenu";
 import { LoginFunction } from "../hooks/useUserData";
-import { User as FirebaseUser } from 'firebase/auth';
 
 interface User {
   id: string;
@@ -20,7 +19,7 @@ interface Notification {
 }
 
 interface HeaderProps {
-  user: FirebaseUser | null;
+  user: User | null;
   isLoggedIn: boolean;
   notifications: Notification[];
   notificationsError: string | null;
