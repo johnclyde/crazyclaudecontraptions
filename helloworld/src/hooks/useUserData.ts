@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import { auth } from '../firebase';
-import { GoogleAuthProvider, signInWithPopup, signOut } from 'firebase/auth';
+import { auth } from "../firebase";
+import { GoogleAuthProvider, signInWithPopup, signOut } from "firebase/auth";
 
 interface User {
   id: string;
@@ -28,9 +28,9 @@ const useUserData = () => {
       if (firebaseUser) {
         const userData: User = {
           id: firebaseUser.uid,
-          name: firebaseUser.displayName || 'Anonymous',
-          email: firebaseUser.email || '',
-          avatar: firebaseUser.photoURL || '',
+          name: firebaseUser.displayName || "Anonymous",
+          email: firebaseUser.email || "",
+          avatar: firebaseUser.photoURL || "",
         };
         setUser(userData);
         setIsLoggedIn(true);
