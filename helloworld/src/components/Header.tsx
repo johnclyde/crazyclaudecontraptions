@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import NotificationBell from "./NotificationBell";
 import UserMenu from "./UserMenu";
-import useUserData, { LoginFunction } from "../hooks/useUserData";
+import { LoginFunction } from "../hooks/useUserData";
 
 interface User {
   id: string;
