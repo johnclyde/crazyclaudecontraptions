@@ -15,7 +15,7 @@ const Users: React.FC = () => {
     const fetchUsers = async () => {
       try {
         const response = await fetch(
-          "https://us-central1-olympiads.cloudfunctions.net/users",
+          "https://us-central1-olympiads.cloudfunctions.net/admin_users",
         );
         if (!response.ok) {
           throw new Error("Failed to fetch users");
