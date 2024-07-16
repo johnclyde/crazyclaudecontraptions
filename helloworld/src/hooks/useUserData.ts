@@ -2,6 +2,13 @@ import { useState, useEffect } from "react";
 import { auth } from '../firebase';
 import { GoogleAuthProvider, signInWithPopup, signOut } from 'firebase/auth';
 
+interface User {
+  id: string;
+  name: string;
+  email: string;
+  avatar: string;
+}
+
 interface UserProgress {
   testId: string;
   score: number;
@@ -11,7 +18,7 @@ interface UserProgress {
 export type LoginFunction = () => void;
 
 const useUserData = () => {
-  const [user, setUser] = useState<FirebaseUser | null>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   // eslint-disable-next-line
   const [userProgress, setUserProgress] = useState<UserProgress[]>([]);
@@ -19,7 +26,7 @@ const useUserData = () => {
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((firebaseUser) => {
       if (firebaseUser) {
-        const userData: FirebaseUser = {
+        const userData: User = {
           id: firebaseUser.uid,
           name: firebaseUser.displayName || 'Anonymous',
           email: firebaseUser.email || '',
