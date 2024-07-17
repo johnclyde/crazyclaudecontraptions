@@ -16,6 +16,10 @@ jobs:
         run: yarn install
         working-directory: ./helloworld
 
+      - name: Run tests
+        run: yarn test
+        working-directory: ./helloworld
+
       - name: Build the project
         run: yarn build
         env:
