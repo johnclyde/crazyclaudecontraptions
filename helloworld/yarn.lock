@@ -2345,7 +2345,7 @@
     "@svgr/plugin-svgo" "^5.5.0"
     loader-utils "^2.0.0"
 
-"@testing-library/dom@^10.0.0", "@testing-library/dom@>=7.21.4":
+"@testing-library/dom@^10.0.0", "@testing-library/dom@^10.3.2", "@testing-library/dom@>=7.21.4":
   version "10.3.2"
   resolved "https://registry.npmjs.org/@testing-library/dom/-/dom-10.3.2.tgz"
   integrity sha512-0bxIdP9mmPiOJ6wHLj8bdJRq+51oddObeCGdEf6PNEhYd93ZYAN+lPRnEOVFtheVwDM7+p+tza3LAQgp0PTudg==
