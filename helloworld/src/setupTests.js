@@ -10,3 +10,12 @@ jest.mock("firebase/auth", () => ({
   signOut: jest.fn(),
   GoogleAuthProvider: jest.fn(),
 }));
+
+jest.mock("firebase/app", () => {
+  const auth = {
+    onAuthStateChanged: jest.fn(),
+  };
+  return {
+    auth: jest.fn(() => auth),
+  };
+});
