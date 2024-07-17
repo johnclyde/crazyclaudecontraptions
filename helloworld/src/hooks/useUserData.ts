@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { auth } from "../firebase";
-import { GoogleAuthProvider, signInWithPopup, signOut } from "firebase/auth";
+import { GoogleAuthProvider, signInWithPopup, signOut, User as FirebaseUser } from "firebase/auth";
 
 interface User {
   id: string;
@@ -20,43 +20,54 @@ export type LoginFunction = () => void;
 const useUserData = () => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  // eslint-disable-next-line
   const [userProgress, setUserProgress] = useState<UserProgress[]>([]);
 
   useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged((firebaseUser) => {
-      if (firebaseUser) {
-        const userData: User = {
-          id: firebaseUser.uid,
-          name: firebaseUser.displayName || "Anonymous",
-          email: firebaseUser.email || "",
-          avatar: firebaseUser.photoURL || "",
-        };
-        setUser(userData);
-        setIsLoggedIn(true);
-      } else {
-        setUser(null);
-        setIsLoggedIn(false);
-      }
-    });
+    if (auth && typeof auth.onAuthStateChanged === 'function') {
+      const unsubscribe = auth.onAuthStateChanged((firebaseUser: FirebaseUser | null) => {
+        if (firebaseUser) {
+          const userData: User = {
+            id: firebaseUser.uid,
+            name: firebaseUser.displayName || "Anonymous",
+            email: firebaseUser.email || "",
+            avatar: firebaseUser.photoURL || "",
+          };
+          setUser(userData);
+          setIsLoggedIn(true);
+        } else {
+          setUser(null);
+          setIsLoggedIn(false);
+        }
+      });
 
-    return () => unsubscribe();
+      return () => unsubscribe();
+    } else {
+      console.error('Firebase auth is not initialized correctly');
+    }
   }, []);
 
   const login: LoginFunction = async () => {
-    const provider = new GoogleAuthProvider();
-    try {
-      await signInWithPopup(auth, provider);
-    } catch (error) {
-      console.error("Error signing in with Google", error);
+    if (auth) {
+      const provider = new GoogleAuthProvider();
+      try {
+        await signInWithPopup(auth, provider);
+      } catch (error) {
+        console.error("Error signing in with Google", error);
+      }
+    } else {
+      console.error('Firebase auth is not initialized');
     }
   };
 
   const logout = async () => {
-    try {
-      await signOut(auth);
-    } catch (error) {
-      console.error("Error signing out", error);
+    if (auth) {
+      try {
+        await signOut(auth);
+      } catch (error) {
+        console.error("Error signing out", error);
+      }
+    } else {
+      console.error('Firebase auth is not initialized');
     }
   };
 
