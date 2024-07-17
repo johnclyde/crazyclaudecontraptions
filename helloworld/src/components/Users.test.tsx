@@ -8,50 +8,57 @@ describe("Users Component", () => {
     fetch.mockClear();
   });
 
+  it("displays loading state initially", async () => {
+    render(<Users />);
+    expect(screen.getByText("Loading...")).toBeInTheDocument();
+  });
+
   it("fetches and displays users", async () => {
     const mockUsers = [
       { id: "1", name: "User 1", email: "user1@example.com" },
       { id: "2", name: "User 2", email: "user2@example.com" },
     ];
 
-    fetch.mockResolvedValueOnce({
+    (global.fetch as jest.Mock).mockResolvedValueOnce({
       ok: true,
       json: async () => ({ users: mockUsers }),
     });
 
     render(<Users />);
 
-    // Check for loading state
-    expect(screen.getByText("Loading...")).toBeInTheDocument();
-
     await waitFor(() => {
-      expect(fetch).toHaveBeenCalledTimes(1);
-      expect(fetch).toHaveBeenCalledWith(
-        "https://us-central1-olympiads.cloudfunctions.net/admin_users",
-      );
+      expect(screen.queryByText("Loading...")).not.toBeInTheDocument();
     });
 
-    // Check if users are displayed
     for (const user of mockUsers) {
       expect(screen.getByText(user.name)).toBeInTheDocument();
       expect(screen.getByText(user.email)).toBeInTheDocument();
     }
+
+    expect(global.fetch).toHaveBeenCalledTimes(1);
+    expect(global.fetch).toHaveBeenCalledWith(
+      "https://us-central1-olympiads.cloudfunctions.net/admin_users",
+    );
   });
 
   it("handles fetch error", async () => {
-    fetch.mockRejectedValueOnce(new Error("Failed to fetch users"));
+    (global.fetch as jest.Mock).mockRejectedValueOnce(
+      new Error("Failed to fetch users"),
+    );
 
     render(<Users />);
 
     await waitFor(() => {
-      expect(
-        screen.getByText(/Failed to load users. Please try again later./i),
-      ).toBeInTheDocument();
+      expect(screen.queryByText("Loading...")).not.toBeInTheDocument();
     });
+
+    expect(
+      screen.getByText("Failed to load users. Please try again later."),
+    ).toBeInTheDocument();
   });
 
   it("displays message when no users are found", async () => {
-    fetch.mockResolvedValueOnce({
+    (global.fetch as jest.Mock).mockResolvedValueOnce({
       ok: true,
       json: async () => ({ users: [] }),
     });
@@ -59,7 +66,9 @@ describe("Users Component", () => {
     render(<Users />);
 
     await waitFor(() => {
-      expect(screen.getByText(/No users found/i)).toBeInTheDocument();
+      expect(screen.queryByText("Loading...")).not.toBeInTheDocument();
     });
+
+    expect(screen.getByText("No users found.")).toBeInTheDocument();
   });
 });
