@@ -16,6 +16,7 @@ jest.mock("firebase/app", () => {
     onAuthStateChanged: jest.fn(),
   };
   return {
+    initializeApp: jest.fn(),
     auth: jest.fn(() => auth),
   };
 });
