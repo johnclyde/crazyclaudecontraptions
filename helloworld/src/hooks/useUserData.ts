@@ -25,6 +25,7 @@ export type LoginFunction = () => void;
 const useUserData = () => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  // eslint-disable-next-line
   const [userProgress, setUserProgress] = useState<UserProgress[]>([]);
 
   useEffect(() => {
