@@ -3,6 +3,7 @@ import { TextEncoder, TextDecoder } from "util";
 
 global.TextEncoder = TextEncoder;
 global.TextDecoder = TextDecoder;
+global.fetch = jest.fn();
 
 jest.mock("firebase/auth", () => ({
   getAuth: jest.fn(),
