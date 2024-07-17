@@ -2,7 +2,7 @@
   "name": "helloworld",
   "version": "0.1.0",
   "private": true,
-  "homepage": "https://olympiads-ba812.web.app",
+  "homepage": "https://congenial-space-enigma-jrv7wq6rgf596j.github.dev",
   "dependencies": {
     "@react-oauth/google": "^0.12.1",
     "@testing-library/jest-dom": "^5.17.0",
