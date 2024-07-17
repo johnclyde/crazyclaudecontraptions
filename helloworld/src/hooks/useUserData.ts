@@ -1,6 +1,11 @@
 import { useState, useEffect } from "react";
 import { auth } from "../firebase";
-import { GoogleAuthProvider, signInWithPopup, signOut, User as FirebaseUser } from "firebase/auth";
+import {
+  GoogleAuthProvider,
+  signInWithPopup,
+  signOut,
+  User as FirebaseUser,
+} from "firebase/auth";
 
 interface User {
   id: string;
@@ -23,26 +28,28 @@ const useUserData = () => {
   const [userProgress, setUserProgress] = useState<UserProgress[]>([]);
 
   useEffect(() => {
-    if (auth && typeof auth.onAuthStateChanged === 'function') {
-      const unsubscribe = auth.onAuthStateChanged((firebaseUser: FirebaseUser | null) => {
-        if (firebaseUser) {
-          const userData: User = {
-            id: firebaseUser.uid,
-            name: firebaseUser.displayName || "Anonymous",
-            email: firebaseUser.email || "",
-            avatar: firebaseUser.photoURL || "",
-          };
-          setUser(userData);
-          setIsLoggedIn(true);
-        } else {
-          setUser(null);
-          setIsLoggedIn(false);
-        }
-      });
+    if (auth && typeof auth.onAuthStateChanged === "function") {
+      const unsubscribe = auth.onAuthStateChanged(
+        (firebaseUser: FirebaseUser | null) => {
+          if (firebaseUser) {
+            const userData: User = {
+              id: firebaseUser.uid,
+              name: firebaseUser.displayName || "Anonymous",
+              email: firebaseUser.email || "",
+              avatar: firebaseUser.photoURL || "",
+            };
+            setUser(userData);
+            setIsLoggedIn(true);
+          } else {
+            setUser(null);
+            setIsLoggedIn(false);
+          }
+        },
+      );
 
       return () => unsubscribe();
     } else {
-      console.error('Firebase auth is not initialized correctly');
+      console.error("Firebase auth is not initialized correctly");
     }
   }, []);
 
@@ -55,7 +62,7 @@ const useUserData = () => {
         console.error("Error signing in with Google", error);
       }
     } else {
-      console.error('Firebase auth is not initialized');
+      console.error("Firebase auth is not initialized");
     }
   };
 
@@ -67,7 +74,7 @@ const useUserData = () => {
         console.error("Error signing out", error);
       }
     } else {
-      console.error('Firebase auth is not initialized');
+      console.error("Firebase auth is not initialized");
     }
   };
 
