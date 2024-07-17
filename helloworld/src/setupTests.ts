@@ -81,6 +81,12 @@ jest.mock("firebase/auth", () => ({
   GoogleAuthProvider: jest.fn(),
 }));
 
-jest.mock("firebase/app", () => ({
-  initializeApp: jest.fn(),
-}));
+jest.mock("firebase/app", () => {
+  const auth = {
+    onAuthStateChanged: jest.fn(),
+  };
+  return {
+    initializeApp: jest.fn(),
+    auth: jest.fn(() => auth),
+  };
+});

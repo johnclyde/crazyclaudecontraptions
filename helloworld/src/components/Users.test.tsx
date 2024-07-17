@@ -4,10 +4,6 @@ import "@testing-library/jest-dom";
 import Users from "./Users";
 
 describe("Users Component", () => {
-  beforeEach(() => {
-    fetch.mockClear();
-  });
-
   it("displays loading state initially", async () => {
     render(<Users />);
     expect(screen.getByText("Loading...")).toBeInTheDocument();
