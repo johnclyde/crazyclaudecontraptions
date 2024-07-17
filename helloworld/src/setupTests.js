@@ -1,10 +1,9 @@
 import "@testing-library/jest-dom";
 import { TextEncoder, TextDecoder } from "util";
+import { server } from "./mocks/server";
 
 global.TextEncoder = TextEncoder;
 global.TextDecoder = TextDecoder;
-
-import { server } from "./mocks/server";
 
 beforeAll(() => server.listen());
 afterEach(() => server.resetHandlers());
@@ -26,3 +25,13 @@ jest.mock("firebase/auth", () => ({
 jest.mock("@react-oauth/google", () => ({
   GoogleOAuthProvider: ({ children }) => children,
 }));
+
+jest.mock("firebase/app", () => {
+  const auth = {
+    onAuthStateChanged: jest.fn(),
+  };
+  return {
+    initializeApp: jest.fn(),
+    auth: jest.fn(() => auth),
+  };
+});

@@ -7,15 +7,20 @@ interface Notification {
   read: boolean;
 }
 
-const useNotifications = () => {
+const useNotifications = (isLoggedIn: boolean) => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [notificationsError, setNotificationsError] = useState<string | null>(
     null,
   );
 
   useEffect(() => {
-    fetchNotifications();
-  }, []);
+    if (isLoggedIn) {
+      fetchNotifications();
+    } else {
+      setNotifications([]);
+      setNotificationsError(null);
+    }
+  }, [isLoggedIn]);
 
   const fetchNotifications = async () => {
     try {
@@ -36,6 +41,8 @@ const useNotifications = () => {
   };
 
   const markNotificationAsRead = async (notificationId: string) => {
+    if (!isLoggedIn) return;
+
     try {
       const response = await fetch(
         "https://us-central1-olympiads.cloudfunctions.net/mark_notification_read",

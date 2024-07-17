@@ -1,6 +1,11 @@
 import { useState, useEffect } from "react";
 import { auth } from "../firebase";
-import { GoogleAuthProvider, signInWithPopup, signOut } from "firebase/auth";
+import {
+  GoogleAuthProvider,
+  signInWithPopup,
+  signOut,
+  User as FirebaseUser,
+} from "firebase/auth";
 
 interface User {
   id: string;
@@ -25,30 +30,44 @@ const useUserData = () => {
   const [userProgress, setUserProgress] = useState<UserProgress[]>([]);
 
   useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged((firebaseUser) => {
-      if (firebaseUser) {
-        const userData: User = {
-          id: firebaseUser.uid,
-          name: firebaseUser.displayName || "Anonymous",
-          email: firebaseUser.email || "",
-          avatar: firebaseUser.photoURL || "",
-        };
-        setUser(userData);
-        setIsLoggedIn(true);
-      } else {
-        setUser(null);
-        setIsLoggedIn(false);
-      }
-    });
+    if (auth && typeof auth.onAuthStateChanged === "function") {
+      const unsubscribe = auth.onAuthStateChanged(
+        (firebaseUser: FirebaseUser | null) => {
+          if (firebaseUser) {
+            const userData: User = {
+              id: firebaseUser.uid,
+              name: firebaseUser.displayName || "Anonymous",
+              email: firebaseUser.email || "",
+              avatar: firebaseUser.photoURL || "",
+            };
+            setUser(userData);
+            setIsLoggedIn(true);
+          } else {
+            setUser(null);
+            setIsLoggedIn(false);
+          }
+        },
+      );
 
-    return () => unsubscribe();
+      return () => unsubscribe();
+    } else {
+      console.error("Firebase auth is not initialized correctly");
+    }
   }, []);
 
-  const login = async () => {
+  const login: LoginFunction = async () => {
     setError(null);
     try {
+    if (auth) {
       const provider = new GoogleAuthProvider();
-      const result = await signInWithPopup(auth, provider);
+      try {
+        const result = await signInWithPopup(auth, provider);
+      } catch (error) {
+        console.error("Error signing in with Google", error);
+      }
+    } else {
+      console.error("Firebase auth is not initialized");
+    }
       const user = result.user;
 
       // Call your login GCF here
@@ -76,8 +95,12 @@ const useUserData = () => {
     } catch (err) {
       setError(err.message);
       console.error("Login error:", error);
-    }
-  };
+    if (auth) {
+      const provider = new GoogleAuthProvider();
+      try {
+        await signInWithPopup(auth, provider);
+      } catch (error) {
+
 
   const logout = async () => {
     try {

@@ -29,3 +29,9 @@ test("renders App without crashing", () => {
     </BrowserRouter>,
   );
 });
+
+test("renders GrindOlympiads header", () => {
+  render(<App />);
+  const headerElement = screen.getByText(/GrindOlympiads/i);
+  expect(headerElement).toBeInTheDocument();
+});
