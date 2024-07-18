@@ -77,7 +77,7 @@ describe("useTests", () => {
   it("should update searchTerm", async () => {
     const { result } = renderHook(() => useTests());
 
-    act(() => {
+    await act(async () => {
       result.current.setSearchTerm("Math");
     });
 
@@ -87,7 +87,7 @@ describe("useTests", () => {
   it("should update selectedCompetition", async () => {
     const { result } = renderHook(() => useTests());
 
-    act(() => {
+    await act(async () => {
       result.current.setSelectedCompetition("Physics");
     });
 
@@ -110,9 +110,7 @@ describe("useTests", () => {
 
     await act(async () => {
       await new Promise((resolve) => setTimeout(resolve, 0));
-    });
 
-    act(() => {
       result.current.setSearchTerm("fall");
       result.current.setSelectedCompetition("Math");
     });

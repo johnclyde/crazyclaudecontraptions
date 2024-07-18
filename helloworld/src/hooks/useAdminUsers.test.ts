@@ -27,7 +27,7 @@ describe("useAdminUsers", () => {
     expect(result.current.users).toEqual([]);
 
     await act(async () => {
-      await result.current.fetchUsers();
+      await new Promise((resolve) => setTimeout(resolve, 0));
     });
 
     expect(result.current.loading).toBe(false);
@@ -42,8 +42,11 @@ describe("useAdminUsers", () => {
 
     const { result } = renderHook(() => useAdminUsers());
 
+    expect(result.current.loading).toBe(true);
+    expect(result.current.error).toBe(null);
+
     await act(async () => {
-      await result.current.fetchUsers();
+      await new Promise((resolve) => setTimeout(resolve, 0));
     });
 
     expect(result.current.loading).toBe(false);
@@ -128,13 +131,14 @@ describe("useAdminUsers", () => {
     const { result } = renderHook(() => useAdminUsers());
 
     await act(async () => {
-      await result.current.fetchUsers();
+      await new Promise((resolve) => setTimeout(resolve, 0));
     });
 
     expect(result.current.users).toEqual(mockUsers1);
 
     await act(async () => {
-      await result.current.fetchUsers();
+      result.current.fetchUsers();
+      await new Promise((resolve) => setTimeout(resolve, 0));
     });
 
     expect(result.current.users).toEqual(mockUsers2);
