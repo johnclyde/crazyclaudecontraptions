@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback } from 'react';
 
 interface User {
   id: string;
@@ -6,22 +6,27 @@ interface User {
   email: string;
 }
 
+export const fetchUsers = async (): Promise<User[]> => {
+  const response = await fetch(
+    "https://us-central1-olympiads.cloudfunctions.net/admin_users"
+  );
+  if (!response.ok) {
+    throw new Error("Failed to fetch users");
+  }
+  const data = await response.json();
+  return data.users || [];
+};
+
 const useAdminUsers = () => {
   const [users, setUsers] = useState<User[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchUsers = useCallback(async () => {
+  const loadUsers = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await fetch(
-        "https://us-central1-olympiads.cloudfunctions.net/admin_users",
-      );
-      if (!response.ok) {
-        throw new Error("Failed to fetch users");
-      }
-      const data = await response.json();
-      setUsers(data.users || []);
+      const fetchedUsers = await fetchUsers();
+      setUsers(fetchedUsers);
       setError(null);
     } catch (err) {
       console.error("Error fetching users:", err);
@@ -32,10 +37,10 @@ const useAdminUsers = () => {
   }, []);
 
   useEffect(() => {
-    fetchUsers();
-  }, [fetchUsers]);
+    loadUsers();
+  }, [loadUsers]);
 
-  return { users, loading, error, fetchUsers };
+  return { users, loading, error, refetch: loadUsers };
 };
 
 export default useAdminUsers;

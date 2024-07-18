@@ -1,15 +1,15 @@
-import { renderHook, act } from "@testing-library/react-hooks";
-import useTests from "./useTests";
+import { renderHook, act } from '@testing-library/react-hooks';
+import useTests from './useTests';
 
 // Mock fetch globally
 global.fetch = jest.fn();
 
-describe("useTests", () => {
+describe('useTests', () => {
   beforeEach(() => {
     jest.resetAllMocks();
   });
 
-  it("should fetch tests and set initial state", async () => {
+  it('should fetch tests and set initial state', async () => {
     const mockTests = [
       { competition: "Math", year: "2023", exam: "Spring" },
       { competition: "Physics", year: "2023", exam: "Fall" },
@@ -36,10 +36,8 @@ describe("useTests", () => {
     expect(result.current.selectedCompetition).toBe("All");
   });
 
-  it("should handle fetch error", async () => {
-    (global.fetch as jest.Mock).mockRejectedValueOnce(
-      new Error("Fetch failed"),
-    );
+  it('should handle fetch error', async () => {
+    (global.fetch as jest.Mock).mockRejectedValueOnce(new Error('Fetch failed'));
 
     const { result, waitForNextUpdate } = renderHook(() => useTests());
 
@@ -70,9 +68,7 @@ describe("useTests", () => {
     });
 
     expect(result.current.loading).toBe(false);
-    expect(result.current.error).toBe(
-      "Failed to load tests. Please try refreshing the page.",
-    );
+    expect(result.current.error).toBe('Failed to load tests. Please try refreshing the page.');
     expect(result.current.tests).toEqual([]);
   });
 
@@ -96,7 +92,7 @@ describe("useTests", () => {
     expect(result.current.selectedCompetition).toBe("Physics");
   });
 
-  it("should filter tests based on searchTerm and selectedCompetition", async () => {
+  it('should filter tests based on searchTerm and selectedCompetition', async () => {
     const mockTests = [
       { competition: "Math", year: "2023", exam: "Spring" },
       { competition: "Physics", year: "2023", exam: "Fall" },
