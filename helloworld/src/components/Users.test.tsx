@@ -41,6 +41,21 @@ describe("Users component", () => {
     expect(screen.queryByText("Loading...")).not.toBeInTheDocument();
   });
 
+  it("should display error message on fetch failure", async () => {
+    (useAdminUsers as jest.Mock).mockReturnValue({
+      users: [],
+      loading: false,
+      error: "Failed to load users. Please try again later.",
+    });
+
+    render(<Users />);
+
+    expect(
+      screen.getByText("Failed to load users. Please try again later."),
+    ).toBeInTheDocument();
+    expect(screen.queryByText("Loading...")).not.toBeInTheDocument();
+  });
+
   it("should handle empty response from API", async () => {
     (useAdminUsers as jest.Mock).mockReturnValue({
       users: [],
