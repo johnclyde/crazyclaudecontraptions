@@ -1,4 +1,5 @@
-import { renderHook, act } from "@testing-library/react-hooks";
+import { renderHook } from "@testing-library/react-hooks";
+import { act } from "react";
 import useTests from "./useTests";
 
 // Mock fetch globally
@@ -41,19 +42,20 @@ describe("useTests", () => {
       new Error("Fetch failed"),
     );
 
-    const { result, waitForNextUpdate } = renderHook(() => useTests());
-
-    expect(result.current.loading).toBe(true);
-
+    let hook;
     await act(async () => {
-      await waitForNextUpdate();
+      hook = renderHook(() => useTests());
+
+      expect(hook.result.current.loading).toBe(true);
+
+      await hook.waitForNextUpdate();
     });
 
-    expect(result.current.loading).toBe(false);
-    expect(result.current.error).toBe(
+    expect(hook.result.current.loading).toBe(false);
+    expect(hook.result.current.error).toBe(
       "Failed to load tests. Please try refreshing the page.",
     );
-    expect(result.current.tests).toEqual([]);
+    expect(hook.result.current.tests).toEqual([]);
   });
 
   it("should handle API error response", async () => {
