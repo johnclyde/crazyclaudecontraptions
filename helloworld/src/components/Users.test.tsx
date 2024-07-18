@@ -11,7 +11,8 @@ describe("Users Component", () => {
   beforeEach(() => {
     jest.resetAllMocks();
   });
-  it("displays loading state initially", async () => {
+
+  it("should render loading state initially", () => {
     (useAdminUsers as jest.Mock).mockReturnValue({
       users: [],
       loading: true,
