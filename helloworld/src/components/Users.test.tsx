@@ -2,7 +2,6 @@ import React from "react";
 import { render, screen, waitFor } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import Users from "./Users";
-import Users from "./Users";
 import useAdminUsers from "../hooks/useAdminUsers";
 
 // Mock the custom hook
@@ -111,10 +110,6 @@ describe("Users Component", () => {
     });
 
     render(<Users />);
-
-    await waitFor(() => {
-      expect(screen.queryByText("Loading...")).not.toBeInTheDocument();
-    });
 
     expect(screen.getByText("No users found.")).toBeInTheDocument();
     expect(screen.queryByText("Loading...")).not.toBeInTheDocument();
