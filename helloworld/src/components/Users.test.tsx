@@ -1,24 +1,28 @@
-import React from "react";
-import { render, screen, waitFor } from "@testing-library/react";
+import { act }, React from "react";
+import { render, screen } from "@testing-library/react";
 import Users from "./Users";
 import useAdminUsers from "../hooks/useAdminUsers";
 
 // Mock the custom hook
 jest.mock("../hooks/useAdminUsers");
 
-describe("Users component", () => {
+describe("Users component", async () => {
   beforeEach(() => {
     jest.resetAllMocks();
   });
 
-  it("should render loading state initially", () => {
+  it("should render loading state initially", async () => {
     (useAdminUsers as jest.Mock).mockReturnValue({
       users: [],
       loading: true,
       error: null,
+      fetchUsers: jest.fn(),
     });
 
-    render(<Users />);
+    await act(async () => {
+      render(<Users />);
+    });
+
     expect(screen.getByText("Loading...")).toBeInTheDocument();
   });
 
@@ -32,9 +36,12 @@ describe("Users component", () => {
       users: mockUsers,
       loading: false,
       error: null,
+      fetchUsers: jest.fn(),
     });
 
-    render(<Users />);
+    await act(async () => {
+      render(<Users />);
+    });
 
     expect(screen.getByText("John Doe")).toBeInTheDocument();
     expect(screen.getByText("jane@example.com")).toBeInTheDocument();
@@ -46,9 +53,12 @@ describe("Users component", () => {
       users: [],
       loading: false,
       error: "Failed to load users. Please try again later.",
+      fetchUsers: jest.fn(),
     });
 
-    render(<Users />);
+    await act(async () => {
+      render(<Users />);
+    });
 
     expect(
       screen.getByText("Failed to load users. Please try again later."),
@@ -61,9 +71,12 @@ describe("Users component", () => {
       users: [],
       loading: false,
       error: null,
+      fetchUsers: jest.fn(),
     });
 
-    render(<Users />);
+    await act(async () => {
+      render(<Users />);
+    });
 
     expect(screen.getByText("No users found.")).toBeInTheDocument();
     expect(screen.queryByText("Loading...")).not.toBeInTheDocument();

@@ -1,8 +1,18 @@
 import "@testing-library/jest-dom";
+import { configure } from "@testing-library/react";
 import { TextEncoder, TextDecoder } from "util";
 
 global.TextEncoder = TextEncoder;
 global.TextDecoder = TextDecoder;
+
+jest.mock("./firebase", () => ({
+  auth: {
+    onAuthStateChanged: jest.fn((callback) => {
+      callback(null);
+      return jest.fn();
+    }),
+  },
+}));
 
 jest.mock("firebase/auth", () => ({
   getAuth: jest.fn(),
@@ -20,3 +30,10 @@ jest.mock("firebase/app", () => {
     auth: jest.fn(() => auth),
   };
 });
+
+jest.mock("react", () => ({
+  ...jest.requireActual("react"),
+  useEffect: jest.fn(),
+}));
+
+configure({ asyncUtilTimeout: 5000 });
