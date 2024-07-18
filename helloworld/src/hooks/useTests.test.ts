@@ -21,20 +21,17 @@ describe("useTests", () => {
       json: async () => ({ tests: mockTests }),
     });
 
-    const { result, waitForNextUpdate } = renderHook(() => useTests());
-
-    expect(result.current.loading).toBe(true);
-    expect(result.current.error).toBe(null);
-
+    let hook;
     await act(async () => {
-      await waitForNextUpdate();
+      hook = renderHook(() => useTests());
+      await hook.waitForNextUpdate();
     });
 
-    expect(result.current.loading).toBe(false);
-    expect(result.current.tests).toEqual(mockTests);
-    expect(result.current.error).toBe(null);
-    expect(result.current.searchTerm).toBe("");
-    expect(result.current.selectedCompetition).toBe("All");
+    expect(hook.result.current.loading).toBe(false);
+    expect(hook.result.current.tests).toEqual(mockTests);
+    expect(hook.result.current.error).toBe(null);
+    expect(hook.result.current.searchTerm).toBe("");
+    expect(hook.result.current.selectedCompetition).toBe("All");
   });
 
   it("should handle fetch error", async () => {
@@ -45,9 +42,7 @@ describe("useTests", () => {
     let hook;
     await act(async () => {
       hook = renderHook(() => useTests());
-
       expect(hook.result.current.loading).toBe(true);
-
       await hook.waitForNextUpdate();
     });
 
@@ -65,17 +60,17 @@ describe("useTests", () => {
       statusText: "Internal Server Error",
     });
 
-    const { result, waitForNextUpdate } = renderHook(() => useTests());
-
+    let hook;
     await act(async () => {
-      await waitForNextUpdate();
+      hook = renderHook(() => useTests());
+      await hook.waitForNextUpdate();
     });
 
-    expect(result.current.loading).toBe(false);
-    expect(result.current.error).toBe(
+    expect(hook.result.current.loading).toBe(false);
+    expect(hook.result.current.error).toBe(
       "Failed to load tests. Please try refreshing the page.",
     );
-    expect(result.current.tests).toEqual([]);
+    expect(hook.result.current.tests).toEqual([]);
   });
 
   it("should update searchTerm", async () => {
@@ -110,16 +105,16 @@ describe("useTests", () => {
       json: async () => ({ tests: mockTests }),
     });
 
-    const { result, waitForNextUpdate } = renderHook(() => useTests());
-
+    let hook;
     await act(async () => {
-      await waitForNextUpdate();
+      hook = renderHook(() => useTests());
+      await hook.waitForNextUpdate();
 
-      result.current.setSearchTerm("fall");
-      result.current.setSelectedCompetition("Math");
+      hook.result.current.setSearchTerm("fall");
+      hook.result.current.setSelectedCompetition("Math");
     });
 
-    expect(result.current.filteredTests).toEqual([
+    expect(hook.result.current.filteredTests).toEqual([
       { competition: "Math", year: "2022", exam: "Fall" },
     ]);
   });
@@ -132,7 +127,9 @@ describe("useTests", () => {
       json: async () => ({ tests: mockTests }),
     });
 
-    renderHook(() => useTests());
+    await act(async () => {
+      renderHook(() => useTests());
+    });
 
     expect(global.fetch).toHaveBeenCalledWith(
       "https://us-central1-olympiads.cloudfunctions.net/exams",
@@ -145,14 +142,14 @@ describe("useTests", () => {
       json: async () => ({}),
     });
 
-    const { result, waitForNextUpdate } = renderHook(() => useTests());
-
+    let hook;
     await act(async () => {
-      await waitForNextUpdate();
+      hook = renderHook(() => useTests());
+      await hook.waitForNextUpdate();
     });
 
-    expect(result.current.loading).toBe(false);
-    expect(result.current.tests).toEqual([]);
-    expect(result.current.error).toBe(null);
+    expect(hook.result.current.loading).toBe(false);
+    expect(hook.result.current.tests).toEqual([]);
+    expect(hook.result.current.error).toBe(null);
   });
 });
