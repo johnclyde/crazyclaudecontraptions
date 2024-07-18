@@ -1,23 +1,12 @@
-import React from "react";
-import { render, screen, waitFor } from "@testing-library/react";
-import { act } from "react-dom/test-utils";
+import { act }, React from "react";
+import { render, screen } from "@testing-library/react";
 import Users from "./Users";
 import useAdminUsers from "../hooks/useAdminUsers";
 
 // Mock the custom hook
 jest.mock("../hooks/useAdminUsers");
 
-// Mock the Firebase auth
-jest.mock("../firebase", () => ({
-  auth: {
-    onAuthStateChanged: jest.fn((callback) => {
-      callback(null);
-      return jest.fn();
-    }),
-  },
-}));
-
-describe("Users component", () => {
+describe("Users component", async () => {
   beforeEach(() => {
     jest.resetAllMocks();
   });
