@@ -117,9 +117,7 @@ describe("useTests", () => {
   });
 
   it("should call the correct GCF endpoint", async () => {
-    const mockTests = [
-      { competition: "Math", year: "2023", exam: "Spring" },
-    ];
+    const mockTests = [{ competition: "Math", year: "2023", exam: "Spring" }];
 
     (global.fetch as jest.Mock).mockResolvedValueOnce({
       ok: true,
@@ -129,7 +127,7 @@ describe("useTests", () => {
     renderHook(() => useTests());
 
     expect(global.fetch).toHaveBeenCalledWith(
-      "https://us-central1-olympiads.cloudfunctions.net/exams"
+      "https://us-central1-olympiads.cloudfunctions.net/exams",
     );
   });
 
