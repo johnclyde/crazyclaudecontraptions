@@ -51,7 +51,7 @@ describe("Users component", () => {
     render(<Users />);
 
     expect(
-      screen.getByText("Error: Failed to load users. Please try again later."),
+      screen.getByText("Failed to load users. Please try again later."),
     ).toBeInTheDocument();
     expect(screen.queryByText("Loading...")).not.toBeInTheDocument();
   });
