@@ -82,7 +82,9 @@ describe("useAdminUsers", () => {
       json: async () => ({ users: [] }),
     });
 
-    renderHook(() => useAdminUsers());
+    await act(async () => {
+      renderHook(() => useAdminUsers());
+    });
 
     expect(global.fetch).toHaveBeenCalledWith(
       "https://us-central1-olympiads.cloudfunctions.net/admin_users",
@@ -126,15 +128,14 @@ describe("useAdminUsers", () => {
 
     const { result, waitForNextUpdate } = renderHook(() => useAdminUsers());
 
-    await waitForNextUpdate();
+    await act(async () => {
+      await waitForNextUpdate();
+    });
 
     expect(result.current.users).toEqual(mockUsers1);
 
     await act(async () => {
       result.current.fetchUsers();
-    });
-
-    await act(async () => {
       await waitForNextUpdate();
     });
 
