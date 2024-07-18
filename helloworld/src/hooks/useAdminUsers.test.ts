@@ -26,7 +26,9 @@ describe("useAdminUsers", () => {
     expect(result.current.error).toBe(null);
     expect(result.current.users).toEqual([]);
 
-    await waitForNextUpdate();
+    await act(async () => {
+      await waitForNextUpdate();
+    });
 
     expect(result.current.loading).toBe(false);
     expect(result.current.error).toBe(null);
@@ -43,7 +45,9 @@ describe("useAdminUsers", () => {
     expect(result.current.loading).toBe(true);
     expect(result.current.error).toBe(null);
 
-    await waitForNextUpdate();
+    await act(async () => {
+      await waitForNextUpdate();
+    });
 
     expect(result.current.loading).toBe(false);
     expect(result.current.error).toBe(
@@ -61,7 +65,9 @@ describe("useAdminUsers", () => {
 
     const { result, waitForNextUpdate } = renderHook(() => useAdminUsers());
 
-    await waitForNextUpdate();
+    await act(async () => {
+      await waitForNextUpdate();
+    });
 
     expect(result.current.loading).toBe(false);
     expect(result.current.error).toBe(
@@ -91,7 +97,9 @@ describe("useAdminUsers", () => {
 
     const { result, waitForNextUpdate } = renderHook(() => useAdminUsers());
 
-    await waitForNextUpdate();
+    await act(async () => {
+      await waitForNextUpdate();
+    });
 
     expect(result.current.loading).toBe(false);
     expect(result.current.error).toBe(null);
@@ -122,11 +130,13 @@ describe("useAdminUsers", () => {
 
     expect(result.current.users).toEqual(mockUsers1);
 
-    act(() => {
+    await act(async () => {
       result.current.fetchUsers();
     });
 
-    await waitForNextUpdate();
+    await act(async () => {
+      await waitForNextUpdate();
+    });
 
     expect(result.current.users).toEqual(mockUsers2);
   });
