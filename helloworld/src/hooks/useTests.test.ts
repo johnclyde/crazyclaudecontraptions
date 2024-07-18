@@ -1,4 +1,4 @@
-import { renderHook, act } from "@testing-library/react-hooks";
+import { renderHook, act } from "@testing-library/react";
 import useTests from "./useTests";
 
 // Mock fetch globally
@@ -20,13 +20,13 @@ describe("useTests", () => {
       json: async () => ({ tests: mockTests }),
     });
 
-    const { result, waitForNextUpdate } = renderHook(() => useTests());
+    const { result } = renderHook(() => useTests());
 
     expect(result.current.loading).toBe(true);
     expect(result.current.error).toBe(null);
 
     await act(async () => {
-      await waitForNextUpdate();
+      await new Promise((resolve) => setTimeout(resolve, 0));
     });
 
     expect(result.current.loading).toBe(false);
@@ -41,12 +41,10 @@ describe("useTests", () => {
       new Error("Fetch failed"),
     );
 
-    const { result, waitForNextUpdate } = renderHook(() => useTests());
-
-    expect(result.current.loading).toBe(true);
+    const { result } = renderHook(() => useTests());
 
     await act(async () => {
-      await waitForNextUpdate();
+      await new Promise((resolve) => setTimeout(resolve, 0));
     });
 
     expect(result.current.loading).toBe(false);
@@ -63,10 +61,10 @@ describe("useTests", () => {
       statusText: "Internal Server Error",
     });
 
-    const { result, waitForNextUpdate } = renderHook(() => useTests());
+    const { result } = renderHook(() => useTests());
 
     await act(async () => {
-      await waitForNextUpdate();
+      await new Promise((resolve) => setTimeout(resolve, 0));
     });
 
     expect(result.current.loading).toBe(false);
@@ -108,10 +106,10 @@ describe("useTests", () => {
       json: async () => ({ tests: mockTests }),
     });
 
-    const { result, waitForNextUpdate } = renderHook(() => useTests());
+    const { result } = renderHook(() => useTests());
 
     await act(async () => {
-      await waitForNextUpdate();
+      await new Promise((resolve) => setTimeout(resolve, 0));
 
       result.current.setSearchTerm("fall");
       result.current.setSelectedCompetition("Math");
@@ -132,6 +130,10 @@ describe("useTests", () => {
 
     renderHook(() => useTests());
 
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+
     expect(global.fetch).toHaveBeenCalledWith(
       "https://us-central1-olympiads.cloudfunctions.net/exams",
     );
@@ -143,10 +145,10 @@ describe("useTests", () => {
       json: async () => ({}),
     });
 
-    const { result, waitForNextUpdate } = renderHook(() => useTests());
+    const { result } = renderHook(() => useTests());
 
     await act(async () => {
-      await waitForNextUpdate();
+      await new Promise((resolve) => setTimeout(resolve, 0));
     });
 
     expect(result.current.loading).toBe(false);
