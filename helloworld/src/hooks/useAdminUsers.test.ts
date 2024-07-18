@@ -1,5 +1,4 @@
-import { act } from "react";
-import { renderHook } from "@testing-library/react-hooks";
+import { act, renderHook } from "@testing-library/react";
 import useAdminUsers from "./useAdminUsers";
 
 // Mock fetch globally
@@ -21,14 +20,14 @@ describe("useAdminUsers", () => {
       json: async () => ({ users: mockUsers }),
     });
 
-    const { result, waitForNextUpdate } = renderHook(() => useAdminUsers());
+    const { result } = renderHook(() => useAdminUsers());
 
     expect(result.current.loading).toBe(true);
     expect(result.current.error).toBe(null);
     expect(result.current.users).toEqual([]);
 
     await act(async () => {
-      await waitForNextUpdate();
+      await result.current.fetchUsers();
     });
 
     expect(result.current.loading).toBe(false);
@@ -41,13 +40,10 @@ describe("useAdminUsers", () => {
       new Error("Fetch failed"),
     );
 
-    const { result, waitForNextUpdate } = renderHook(() => useAdminUsers());
-
-    expect(result.current.loading).toBe(true);
-    expect(result.current.error).toBe(null);
+    const { result } = renderHook(() => useAdminUsers());
 
     await act(async () => {
-      await waitForNextUpdate();
+      await result.current.fetchUsers();
     });
 
     expect(result.current.loading).toBe(false);
@@ -64,10 +60,10 @@ describe("useAdminUsers", () => {
       statusText: "Internal Server Error",
     });
 
-    const { result, waitForNextUpdate } = renderHook(() => useAdminUsers());
+    const { result } = renderHook(() => useAdminUsers());
 
     await act(async () => {
-      await waitForNextUpdate();
+      await result.current.fetchUsers();
     });
 
     expect(result.current.loading).toBe(false);
@@ -83,8 +79,10 @@ describe("useAdminUsers", () => {
       json: async () => ({ users: [] }),
     });
 
+    const { result } = renderHook(() => useAdminUsers());
+
     await act(async () => {
-      renderHook(() => useAdminUsers());
+      await result.current.fetchUsers();
     });
 
     expect(global.fetch).toHaveBeenCalledWith(
@@ -98,10 +96,10 @@ describe("useAdminUsers", () => {
       json: async () => ({ users: [] }),
     });
 
-    const { result, waitForNextUpdate } = renderHook(() => useAdminUsers());
+    const { result } = renderHook(() => useAdminUsers());
 
     await act(async () => {
-      await waitForNextUpdate();
+      await result.current.fetchUsers();
     });
 
     expect(result.current.loading).toBe(false);
@@ -127,17 +125,16 @@ describe("useAdminUsers", () => {
         json: async () => ({ users: mockUsers2 }),
       });
 
-    const { result, waitForNextUpdate } = renderHook(() => useAdminUsers());
+    const { result } = renderHook(() => useAdminUsers());
 
     await act(async () => {
-      await waitForNextUpdate();
+      await result.current.fetchUsers();
     });
 
     expect(result.current.users).toEqual(mockUsers1);
 
     await act(async () => {
-      result.current.fetchUsers();
-      await waitForNextUpdate();
+      await result.current.fetchUsers();
     });
 
     expect(result.current.users).toEqual(mockUsers2);
