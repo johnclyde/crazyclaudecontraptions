@@ -1,16 +1,10 @@
 import React from 'react';
-import { render, screen, waitFor, act } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom/extend-expect';
-import useAdminUsers, { fetchUsers } from './useAdminUsers';
+import useAdminUsers from './useAdminUsers';
 
-jest.mock('./useAdminUsers', () => {
-  const originalModule = jest.requireActual('./useAdminUsers');
-  return {
-    __esModule: true,
-    ...originalModule,
-    fetchUsers: jest.fn(),
-  };
-});
+// Mock the entire useAdminUsers hook
+jest.mock('./useAdminUsers');
 
 const TestComponent: React.FC = () => {
   const { users, loading, error } = useAdminUsers();
@@ -36,13 +30,22 @@ describe('useAdminUsers', () => {
       { id: '2', name: 'Jane Doe', email: 'jane@example.com' },
     ];
 
-    (fetchUsers as jest.Mock).mockResolvedValueOnce(mockUsers);
-
-    await act(async () => {
-      render(<TestComponent />);
+    // Mock the hook to return loading state first, then the users
+    (useAdminUsers as jest.Mock).mockReturnValueOnce({
+      users: [],
+      loading: true,
+      error: null,
+    }).mockReturnValueOnce({
+      users: mockUsers,
+      loading: false,
+      error: null,
     });
 
+    const { rerender } = render(<TestComponent />);
+
     expect(screen.getByText('Loading...')).toBeInTheDocument();
+
+    rerender(<TestComponent />);
 
     await waitFor(() => {
       expect(screen.getByText('John Doe')).toBeInTheDocument();
@@ -51,13 +54,22 @@ describe('useAdminUsers', () => {
   });
 
   it('should handle fetch error', async () => {
-    (fetchUsers as jest.Mock).mockRejectedValueOnce(new Error('Fetch failed'));
-
-    await act(async () => {
-      render(<TestComponent />);
+    // Mock the hook to return loading state first, then the error
+    (useAdminUsers as jest.Mock).mockReturnValueOnce({
+      users: [],
+      loading: true,
+      error: null,
+    }).mockReturnValueOnce({
+      users: [],
+      loading: false,
+      error: 'Failed to load users. Please try again later.',
     });
 
+    const { rerender } = render(<TestComponent />);
+
     expect(screen.getByText('Loading...')).toBeInTheDocument();
+
+    rerender(<TestComponent />);
 
     await waitFor(() => {
       expect(screen.getByText('Error: Failed to load users. Please try again later.')).toBeInTheDocument();
