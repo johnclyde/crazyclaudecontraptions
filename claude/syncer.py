@@ -5,7 +5,6 @@ import tempfile
 
 from dotenv import load_dotenv
 
-# Load environment variables from .env file
 load_dotenv()
 
 domain: str = os.getenv("DOMAIN", "")
