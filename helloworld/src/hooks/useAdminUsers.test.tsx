@@ -1,8 +1,8 @@
 import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
+import '@testing-library/jest-dom/extend-expect';
 import useAdminUsers, { fetchUsers } from './useAdminUsers';
 
-// Mock the fetchUsers function
 jest.mock('./useAdminUsers', () => {
   const originalModule = jest.requireActual('./useAdminUsers');
   return {
@@ -12,7 +12,7 @@ jest.mock('./useAdminUsers', () => {
   };
 });
 
-const TestComponent = () => {
+const TestComponent: React.FC = () => {
   const { users, loading, error } = useAdminUsers();
   if (loading) return <div>Loading...</div>;
   if (error) return <div>Error: {error}</div>;
