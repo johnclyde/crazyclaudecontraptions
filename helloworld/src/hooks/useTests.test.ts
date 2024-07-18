@@ -26,7 +26,6 @@ describe("useTests", () => {
     expect(result.current.error).toBe(null);
 
     await act(async () => {
-      // Wait for the effect to run
       await new Promise((resolve) => setTimeout(resolve, 0));
     });
 
@@ -45,13 +44,12 @@ describe("useTests", () => {
     const { result } = renderHook(() => useTests());
 
     await act(async () => {
-      // Wait for the effect to run
       await new Promise((resolve) => setTimeout(resolve, 0));
     });
 
     expect(result.current.loading).toBe(false);
     expect(result.current.error).toBe(
-      "Failed to load tests. Please try again later.",
+      "Failed to load tests. Please try refreshing the page.",
     );
     expect(result.current.tests).toEqual([]);
   });
@@ -66,13 +64,12 @@ describe("useTests", () => {
     const { result } = renderHook(() => useTests());
 
     await act(async () => {
-      // Wait for the effect to run
       await new Promise((resolve) => setTimeout(resolve, 0));
     });
 
     expect(result.current.loading).toBe(false);
     expect(result.current.error).toBe(
-      "Failed to load tests. Please try again later.",
+      "Failed to load tests. Please try refreshing the page.",
     );
     expect(result.current.tests).toEqual([]);
   });
@@ -112,7 +109,6 @@ describe("useTests", () => {
     const { result } = renderHook(() => useTests());
 
     await act(async () => {
-      // Wait for the effect to run
       await new Promise((resolve) => setTimeout(resolve, 0));
     });
 
@@ -137,7 +133,6 @@ describe("useTests", () => {
     renderHook(() => useTests());
 
     await act(async () => {
-      // Wait for the effect to run
       await new Promise((resolve) => setTimeout(resolve, 0));
     });
 
@@ -155,7 +150,6 @@ describe("useTests", () => {
     const { result } = renderHook(() => useTests());
 
     await act(async () => {
-      // Wait for the effect to run
       await new Promise((resolve) => setTimeout(resolve, 0));
     });
 
