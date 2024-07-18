@@ -76,7 +76,7 @@ describe("useTests", () => {
     expect(result.current.tests).toEqual([]);
   });
 
-  it("should update searchTerm", () => {
+  it("should update searchTerm", async () => {
     const { result } = renderHook(() => useTests());
 
     await act(async () => {
@@ -86,7 +86,7 @@ describe("useTests", () => {
     expect(result.current.searchTerm).toBe("Math");
   });
 
-  it("should update selectedCompetition", () => {
+  it("should update selectedCompetition", async () => {
     const { result } = renderHook(() => useTests());
 
     await act(async () => {
