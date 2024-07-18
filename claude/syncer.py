@@ -1,23 +1,22 @@
 import json
 import os
-import shutil
 import subprocess
 import tempfile
 
 
-def get_local_files(directory: str):
+def get_local_files(directory: str) -> set[str]:
     local_files = set()
     for root, _, files in os.walk(directory):
         if "node_modules" in root or "build" in root:
             continue
         for file in files:
-            if file.endswith((".js", ".ts", ".tsx", "py")):
+            if file.endswith((".js", ".ts", ".tsx", ".py", ".yml")):
                 rel_path = os.path.relpath(os.path.join(root, file), directory)
                 local_files.add(rel_path)
     return local_files
 
 
-def fetch_remote_files():
+def fetch_remote_files() -> set[str] | None:
     try:
         result = subprocess.run(
             ["./fetch_project_files"], capture_output=True, text=True, shell=True
@@ -34,11 +33,12 @@ def fetch_remote_files():
         return None
 
 
-def compare_files(local_files, remote_files):
+def compare_files(
+    local_files: set[str], remote_files: set[str]
+) -> tuple[set[str], set[str], list[tuple[str, str]]]:
     only_local = local_files - remote_files
     only_remote = remote_files - local_files
     partial_matches = []
-
     for local_file in only_local.copy():
         local_filename = os.path.basename(local_file)
         for remote_file in only_remote:
@@ -47,7 +47,6 @@ def compare_files(local_files, remote_files):
                 only_local.remove(local_file)
                 only_remote.remove(remote_file)
                 break
-
     return only_local, only_remote, partial_matches
 
 
@@ -58,52 +57,89 @@ def modify_and_execute_script(file_path: str) -> None:
     with open(file_path, "r") as file:
         file_contents = file.read()
     json_safe_content = file_contents.replace('"', '\\"').replace("\n", "\\n")
-
     original_script = "./upload_project_file_TEMPLATE"
     with open(original_script, "r") as file:
         script_content = file.read()
-
     with tempfile.TemporaryDirectory() as temp_dir:
         new_script_path = os.path.join(temp_dir, "new_script.sh")
         modified_content = script_content.replace("FILENAME", file_path)
         modified_content = modified_content.replace("CONTENTSJSON", json_safe_content)
-
         with open(new_script_path, "w") as file:
             file.write(modified_content)
-
         os.chmod(new_script_path, 0o755)
         subprocess.run(new_script_path, shell=True)
+
+
+def display_menu():
+    print("\nFile Synchronization Menu:")
+    print("1. Upload files")
+    print("2. Show files to download")
+    print("3. Show potential path mismatches")
+    print("4. Exit")
+
+
+def upload_files(only_local):
+    print("\nFiles to upload:")
+    for i, file_path in enumerate(sorted(only_local), 1):
+        print(f"{i}. {file_path}")
+    print("0. Go back")
+
+    while True:
+        choice = input("Enter the number of the file to upload (0 to go back): ")
+        if choice == "0":
+            break
+        try:
+            index = int(choice) - 1
+            if 0 <= index < len(only_local):
+                file_path = sorted(only_local)[index]
+                modify_and_execute_script(file_path)
+                print(f"Uploaded: {file_path}")
+            else:
+                print("Invalid choice. Please try again.")
+        except ValueError:
+            print("Invalid input. Please enter a number.")
+
+
+def show_download_files(only_remote):
+    print("\nFiles to download:")
+    for file in sorted(only_remote):
+        print(f"- {file}")
+    input("Press Enter to continue...")
+
+
+def show_path_mismatches(partial_matches):
+    print("\nFiles with potential path mismatches:")
+    for local, remote in sorted(partial_matches):
+        print(f"? {local} <-> {remote}")
+    input("Press Enter to continue...")
 
 
 def main() -> None:
     print("Analyzing files...")
     local_files = get_local_files(".")
     remote_files = fetch_remote_files()
-
     if remote_files is None:
         raise Exception(
-            "Failed to fetch remote files. Try running the curl in ./fetch_project_files."
+            "Failed to fetch remote files. Try running the curl in "
+            "./fetch_project_files."
         )
-
     only_local, only_remote, partial_matches = compare_files(local_files, remote_files)
 
-    if only_local:
-        print("\nFiles to upload:")
-        for file_path in sorted(only_local):
-            response = input(f"Upload {file_path}? (y/n): ").lower().strip()
-            if response == "y":
-                modify_and_execute_script(file_path)
-                print(f"Uploaded: {file_path}")
+    while True:
+        display_menu()
+        choice = input("Enter your choice (1-4): ")
 
-    if only_remote:
-        print("\nFiles to download:")
-        for file in sorted(only_remote):
-            print(f"- {file}")
-
-    if partial_matches:
-        print("\nFiles with potential path mismatches:")
-        for local, remote in sorted(partial_matches):
-            print(f"? {local} <-> {remote}")
+        if choice == "1":
+            upload_files(only_local)
+        elif choice == "2":
+            show_download_files(only_remote)
+        elif choice == "3":
+            show_path_mismatches(partial_matches)
+        elif choice == "4":
+            print("Exiting...")
+            break
+        else:
+            print("Invalid choice. Please try again.")
 
     if not (only_local or only_remote or partial_matches):
         print("\nAll files are in sync!")
