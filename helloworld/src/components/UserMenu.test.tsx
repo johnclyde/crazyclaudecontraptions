@@ -1,7 +1,6 @@
 import React from "react";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import UserMenu from "./UserMenu";
-import { UserDataProvider } from "../contexts/UserDataContext";
 
 // Mock the fetch function
 global.fetch = jest.fn(() =>
@@ -27,10 +26,19 @@ describe("UserMenu", () => {
 
   it("calls logout endpoint when logout is clicked", async () => {
     const mockLogout = jest.fn();
+    const mockUser = {
+      name: "Test User",
+      avatar: "https://example.com/avatar.jpg",
+    };
+
     render(
-      <UserDataProvider value={{ isLoggedIn: true, logout: mockLogout }}>
-        <UserMenu bypassLogin={() => {}} />
-      </UserDataProvider>,
+      <UserMenu
+        user={mockUser}
+        isLoggedIn={true}
+        login={jest.fn()}
+        logout={mockLogout}
+        bypassLogin={jest.fn()}
+      />,
     );
 
     // Open the menu
@@ -51,9 +59,13 @@ describe("UserMenu", () => {
 
   it("does not show logout option when user is not logged in", () => {
     render(
-      <UserDataProvider value={{ isLoggedIn: false, logout: jest.fn() }}>
-        <UserMenu bypassLogin={() => {}} />
-      </UserDataProvider>,
+      <UserMenu
+        user={null}
+        isLoggedIn={false}
+        login={jest.fn()}
+        logout={jest.fn()}
+        bypassLogin={jest.fn()}
+      />,
     );
 
     // Open the menu
