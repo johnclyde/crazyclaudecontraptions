@@ -110,11 +110,9 @@ describe("useTests", () => {
 
     const { result, waitForNextUpdate } = renderHook(() => useTests());
 
-    await act(async() => {
+    await act(async () => {
       await waitForNextUpdate();
-    });
-    
-    await act(async() => {
+
       result.current.setSearchTerm("fall");
       result.current.setSelectedCompetition("Math");
     });
@@ -147,7 +145,7 @@ describe("useTests", () => {
 
     const { result, waitForNextUpdate } = renderHook(() => useTests());
 
-    await act(async() => {
+    await act(async () => {
       await waitForNextUpdate();
     });
 
