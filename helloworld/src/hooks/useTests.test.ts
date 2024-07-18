@@ -52,6 +52,24 @@ describe("useTests", () => {
     expect(result.current.tests).toEqual([]);
   });
 
+  it("should handle API error response", async () => {
+    (global.fetch as jest.Mock).mockResolvedValueOnce({
+      ok: false,
+      status: 500,
+      statusText: "Internal Server Error",
+    });
+
+    const { result, waitForNextUpdate } = renderHook(() => useTests());
+
+    await waitForNextUpdate();
+
+    expect(result.current.loading).toBe(false);
+    expect(result.current.error).toBe(
+      "Failed to load tests. Please try refreshing the page.",
+    );
+    expect(result.current.tests).toEqual([]);
+  });
+
   it("should update searchTerm", () => {
     const { result } = renderHook(() => useTests());
 
@@ -96,5 +114,37 @@ describe("useTests", () => {
     expect(result.current.filteredTests).toEqual([
       { competition: "Math", year: "2022", exam: "Fall" },
     ]);
+  });
+
+  it("should call the correct GCF endpoint", async () => {
+    const mockTests = [
+      { competition: "Math", year: "2023", exam: "Spring" },
+    ];
+
+    (global.fetch as jest.Mock).mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ tests: mockTests }),
+    });
+
+    renderHook(() => useTests());
+
+    expect(global.fetch).toHaveBeenCalledWith(
+      "https://us-central1-olympiads.cloudfunctions.net/exams"
+    );
+  });
+
+  it("should handle empty response from API", async () => {
+    (global.fetch as jest.Mock).mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({}),
+    });
+
+    const { result, waitForNextUpdate } = renderHook(() => useTests());
+
+    await waitForNextUpdate();
+
+    expect(result.current.loading).toBe(false);
+    expect(result.current.tests).toEqual([]);
+    expect(result.current.error).toBe(null);
   });
 });
