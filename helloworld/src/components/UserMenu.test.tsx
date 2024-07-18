@@ -1,23 +1,14 @@
 import React from "react";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
-import { rest } from "msw";
-import { setupServer } from "msw/node";
 import UserMenu from "./UserMenu";
 import { UserDataProvider } from "../contexts/UserDataContext";
 
 // Mock the fetch function
-const server = setupServer(
-  rest.post(
-    "https://us-central1-olympiads.cloudfunctions.net/logout",
-    (req, res, ctx) => {
-      return res(ctx.json({ message: "Logout successful" }));
-    },
-  ),
-);
-
-beforeAll(() => server.listen());
-afterEach(() => server.resetHandlers());
-afterAll(() => server.close());
+global.fetch = jest.fn(() =>
+  Promise.resolve({
+    json: () => Promise.resolve({ message: "Logout successful" }),
+  }),
+) as jest.Mock;
 
 // Mock the Firebase auth
 jest.mock("../firebase", () => ({
@@ -30,6 +21,10 @@ jest.mock("../firebase", () => ({
 }));
 
 describe("UserMenu", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
   it("calls logout endpoint when logout is clicked", async () => {
     const mockLogout = jest.fn();
     render(
@@ -47,10 +42,10 @@ describe("UserMenu", () => {
     // Wait for the logout function to be called
     await waitFor(() => expect(mockLogout).toHaveBeenCalled());
 
-    // Verify that the logout endpoint was called
-    await waitFor(() => expect(server.handledRequests.length).toBe(1));
-    expect(server.handledRequests[0].url.href).toBe(
+    // Verify that the fetch function was called with the correct URL
+    expect(global.fetch).toHaveBeenCalledWith(
       "https://us-central1-olympiads.cloudfunctions.net/logout",
+      expect.any(Object),
     );
   });
 
