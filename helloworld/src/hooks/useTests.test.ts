@@ -25,7 +25,9 @@ describe("useTests", () => {
     expect(result.current.loading).toBe(true);
     expect(result.current.error).toBe(null);
 
-    await waitForNextUpdate();
+    await act(async () => {
+      await waitForNextUpdate();
+    });
 
     expect(result.current.loading).toBe(false);
     expect(result.current.tests).toEqual(mockTests);
@@ -43,7 +45,9 @@ describe("useTests", () => {
 
     expect(result.current.loading).toBe(true);
 
-    await waitForNextUpdate();
+    await act(async () => {
+      await waitForNextUpdate();
+    });
 
     expect(result.current.loading).toBe(false);
     expect(result.current.error).toBe(
@@ -61,7 +65,9 @@ describe("useTests", () => {
 
     const { result, waitForNextUpdate } = renderHook(() => useTests());
 
-    await waitForNextUpdate();
+    await act(async () => {
+      await waitForNextUpdate();
+    });
 
     expect(result.current.loading).toBe(false);
     expect(result.current.error).toBe(
@@ -70,20 +76,20 @@ describe("useTests", () => {
     expect(result.current.tests).toEqual([]);
   });
 
-  it("should update searchTerm", () => {
+  it("should update searchTerm", async () => {
     const { result } = renderHook(() => useTests());
 
-    act(() => {
+    await act(async () => {
       result.current.setSearchTerm("Math");
     });
 
     expect(result.current.searchTerm).toBe("Math");
   });
 
-  it("should update selectedCompetition", () => {
+  it("should update selectedCompetition", async () => {
     const { result } = renderHook(() => useTests());
 
-    act(() => {
+    await act(async () => {
       result.current.setSelectedCompetition("Physics");
     });
 
@@ -104,9 +110,11 @@ describe("useTests", () => {
 
     const { result, waitForNextUpdate } = renderHook(() => useTests());
 
-    await waitForNextUpdate();
-
-    act(() => {
+    await act(async() => {
+      await waitForNextUpdate();
+    });
+    
+    await act(async() => {
       result.current.setSearchTerm("fall");
       result.current.setSelectedCompetition("Math");
     });
@@ -139,7 +147,9 @@ describe("useTests", () => {
 
     const { result, waitForNextUpdate } = renderHook(() => useTests());
 
-    await waitForNextUpdate();
+    await act(async() => {
+      await waitForNextUpdate();
+    });
 
     expect(result.current.loading).toBe(false);
     expect(result.current.tests).toEqual([]);
