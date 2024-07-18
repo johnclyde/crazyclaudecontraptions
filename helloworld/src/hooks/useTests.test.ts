@@ -25,7 +25,9 @@ describe("useTests", () => {
     expect(result.current.loading).toBe(true);
     expect(result.current.error).toBe(null);
 
-    await waitForNextUpdate();
+    await act(async () => {
+      await waitForNextUpdate();
+    });
 
     expect(result.current.loading).toBe(false);
     expect(result.current.tests).toEqual(mockTests);
@@ -43,7 +45,9 @@ describe("useTests", () => {
 
     expect(result.current.loading).toBe(true);
 
-    await waitForNextUpdate();
+    await act(async () => {
+      await waitForNextUpdate();
+    });
 
     expect(result.current.loading).toBe(false);
     expect(result.current.error).toBe(
@@ -61,7 +65,9 @@ describe("useTests", () => {
 
     const { result, waitForNextUpdate } = renderHook(() => useTests());
 
-    await waitForNextUpdate();
+    await act(async () => {
+      await waitForNextUpdate();
+    });
 
     expect(result.current.loading).toBe(false);
     expect(result.current.error).toBe(
@@ -73,7 +79,7 @@ describe("useTests", () => {
   it("should update searchTerm", () => {
     const { result } = renderHook(() => useTests());
 
-    act(() => {
+    await act(async () => {
       result.current.setSearchTerm("Math");
     });
 
@@ -83,7 +89,7 @@ describe("useTests", () => {
   it("should update selectedCompetition", () => {
     const { result } = renderHook(() => useTests());
 
-    act(() => {
+    await act(async () => {
       result.current.setSelectedCompetition("Physics");
     });
 
@@ -104,9 +110,11 @@ describe("useTests", () => {
 
     const { result, waitForNextUpdate } = renderHook(() => useTests());
 
-    await waitForNextUpdate();
-
-    act(() => {
+    await act(async() => {
+      await waitForNextUpdate();
+    });
+    
+    await act(async() => {
       result.current.setSearchTerm("fall");
       result.current.setSelectedCompetition("Math");
     });
@@ -139,7 +147,9 @@ describe("useTests", () => {
 
     const { result, waitForNextUpdate } = renderHook(() => useTests());
 
-    await waitForNextUpdate();
+    await act(async() => {
+      await waitForNextUpdate();
+    });
 
     expect(result.current.loading).toBe(false);
     expect(result.current.tests).toEqual([]);
