@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, act } from '@testing-library/react';
 import '@testing-library/jest-dom/extend-expect';
 import useAdminUsers, { fetchUsers } from './useAdminUsers';
 
@@ -38,7 +38,9 @@ describe('useAdminUsers', () => {
 
     (fetchUsers as jest.Mock).mockResolvedValueOnce(mockUsers);
 
-    render(<TestComponent />);
+    await act(async () => {
+      render(<TestComponent />);
+    });
 
     expect(screen.getByText('Loading...')).toBeInTheDocument();
 
@@ -51,7 +53,9 @@ describe('useAdminUsers', () => {
   it('should handle fetch error', async () => {
     (fetchUsers as jest.Mock).mockRejectedValueOnce(new Error('Fetch failed'));
 
-    render(<TestComponent />);
+    await act(async () => {
+      render(<TestComponent />);
+    });
 
     expect(screen.getByText('Loading...')).toBeInTheDocument();
 
