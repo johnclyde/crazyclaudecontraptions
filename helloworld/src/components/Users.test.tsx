@@ -1,39 +1,24 @@
 import React from "react";
 import { render, screen, waitFor } from "@testing-library/react";
-import { act } from "react-dom/test-utils";
 import Users from "./Users";
 import useAdminUsers from "../hooks/useAdminUsers";
 
 // Mock the custom hook
 jest.mock("../hooks/useAdminUsers");
 
-// Mock the Firebase auth
-jest.mock("../firebase", () => ({
-  auth: {
-    onAuthStateChanged: jest.fn((callback) => {
-      callback(null);
-      return jest.fn();
-    }),
-  },
-}));
-
 describe("Users component", () => {
   beforeEach(() => {
     jest.resetAllMocks();
   });
 
-  it("should render loading state initially", async () => {
+  it("should render loading state initially", () => {
     (useAdminUsers as jest.Mock).mockReturnValue({
       users: [],
       loading: true,
       error: null,
-      fetchUsers: jest.fn(),
     });
 
-    await act(async () => {
-      render(<Users />);
-    });
-
+    render(<Users />);
     expect(screen.getByText("Loading...")).toBeInTheDocument();
   });
 
@@ -47,12 +32,9 @@ describe("Users component", () => {
       users: mockUsers,
       loading: false,
       error: null,
-      fetchUsers: jest.fn(),
     });
 
-    await act(async () => {
-      render(<Users />);
-    });
+    render(<Users />);
 
     expect(screen.getByText("John Doe")).toBeInTheDocument();
     expect(screen.getByText("jane@example.com")).toBeInTheDocument();
@@ -64,12 +46,9 @@ describe("Users component", () => {
       users: [],
       loading: false,
       error: "Failed to load users. Please try again later.",
-      fetchUsers: jest.fn(),
     });
 
-    await act(async () => {
-      render(<Users />);
-    });
+    render(<Users />);
 
     expect(
       screen.getByText("Error: Failed to load users. Please try again later."),
@@ -82,12 +61,9 @@ describe("Users component", () => {
       users: [],
       loading: false,
       error: null,
-      fetchUsers: jest.fn(),
     });
 
-    await act(async () => {
-      render(<Users />);
-    });
+    render(<Users />);
 
     expect(screen.getByText("No users found.")).toBeInTheDocument();
     expect(screen.queryByText("Loading...")).not.toBeInTheDocument();
