@@ -1,6 +1,7 @@
 import React, { forwardRef, useState } from "react";
 import { GoogleLogin } from "@react-oauth/google";
 import { LoginFunction } from "../hooks/useUserData";
+import { useUserDataContext } from "../contexts/UserDataContext";
 import { Link } from "react-router-dom";
 
 interface User {
@@ -9,15 +10,12 @@ interface User {
 }
 
 interface UserMenuProps {
-  user: User | null;
-  isLoggedIn: boolean;
-  login: LoginFunction;
-  logout: () => void;
   bypassLogin: () => void;
 }
 
 const UserMenu = forwardRef<HTMLDivElement, UserMenuProps>(
-  ({ user, isLoggedIn, login, logout, bypassLogin }, ref) => {
+  ({ bypassLogin }, ref) => {
+    const { user, isLoggedIn, login, logout } = useUserDataContext();
     const [showMenu, setShowMenu] = useState(false);
     const [showLoginDialog, setShowLoginDialog] = useState(false);
 
