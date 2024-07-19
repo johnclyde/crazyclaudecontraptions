@@ -1,52 +1,129 @@
 {
-  "hosting": {
-    "public": "build",
-    "ignore": [
-      "firebase.json",
-      "**/.*",
-      "**/node_modules/**"
-    ],
-    "rewrites": [
-      {
-        "source": "/api/admin/users",
-        "function": "admin_users"
-      },
-      {
-        "source": "/api/exam",
-        "function": "exam-data"
-      },
-      {
-        "source": "/api/exams",
-        "function": "exams"
-      },
-      {
-        "source": "/api/login",
-        "function": "login"
-      },
-      {
-        "source": "/api/logout",
-        "function": "logout"
-      },
-      {
-        "source": "/api/notifications",
-        "function": "notifications"
-      },
-      {
-        "source": "/api/notification/read",
-        "function": "mark-notification-read"
-      },
-      {
-        "source": "/api/userprogress",
-        "function": "user_progress"
-      },
-      {
-        "source": "/api/user",
-        "function": "user"
-      },
-      {
-        "source": "**",
-        "destination": "/index.html"
-      }
-    ]
-  }
+  "hosting": [
+    {
+      "target": "production",
+      "public": "build",
+      "ignore": [
+        "firebase.json",
+        "**/.*",
+        "**/node_modules/**"
+      ],
+      "rewrites": [
+        {
+          "source": "/api/exam",
+          "function": "exam-data"
+        },
+        {
+          "source": "/api/exams",
+          "function": "exams"
+        },
+        {
+          "source": "/api/login",
+          "function": "login"
+        },
+        {
+          "source": "/api/logout",
+          "function": "logout"
+        },
+        {
+          "source": "/api/notifications",
+          "function": "notifications"
+        },
+        {
+          "source": "/api/notification/read",
+          "function": "mark-notification-read"
+        },
+        {
+          "source": "/api/userprogress",
+          "function": "user_progress"
+        },
+        {
+          "source": "/api/user",
+          "function": "user"
+        },
+        {
+          "source": "**",
+          "destination": "/index.html"
+        }
+      ]
+    },
+    {
+      "target": "staging",
+      "public": "build",
+      "ignore": [
+        "firebase.json",
+        "**/.*",
+        "**/node_modules/**"
+      ],
+      "rewrites": [
+        {
+          "source": "/api/exam",
+          "function": "exam-data"
+        },
+        {
+          "source": "/api/exams",
+          "function": "exams"
+        },
+        {
+          "source": "/api/login",
+          "function": "login"
+        },
+        {
+          "source": "/api/logout",
+          "function": "logout"
+        },
+        {
+          "source": "/api/notifications",
+          "function": "notifications"
+        },
+        {
+          "source": "/api/notification/read",
+          "function": "mark-notification-read"
+        },
+        {
+          "source": "/api/userprogress",
+          "function": "user_progress"
+        },
+        {
+          "source": "/api/user",
+          "function": "user"
+        },
+        {
+          "source": "**",
+          "destination": "/index.html"
+        }
+      ]
+    },
+    {
+      "target": "admin",
+      "public": "build",
+      "ignore": [
+        "firebase.json",
+        "**/.*",
+        "**/node_modules/**"
+      ],
+      "rewrites": [
+        {
+          "source": "/api/users",
+          "function": "admin_users"
+        },
+        {
+          "source": "/api/exam",
+          "function": "exam-admin"
+        },
+        {
+          "source": "/api/exams",
+          "function": "exams-admin"
+        },
+        {
+          "source": "/api/user",
+          "function": "user-admin"
+        },
+        {
+          "source": "**",
+          "destination": "/index.html"
+        }
+      ]
+    }
+  ]
 }
