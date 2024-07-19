@@ -19,6 +19,10 @@ jobs:
         run: yarn install
         working-directory: ./helloworld
 
+      - name: Run tests
+        run: yarn test
+        working-directory: ./helloworld
+
       - name: Build the project
         run: yarn build
         env:
@@ -34,5 +38,6 @@ jobs:
         with:
           repoToken: ${{ secrets.GITHUB_TOKEN }}
           firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_OLYMPIADS }}
+          channelId: staging
           projectId: olympiads
           entryPoint: helloworld

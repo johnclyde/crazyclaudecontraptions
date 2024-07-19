@@ -8,6 +8,7 @@ import GrindOlympiadsIndex from "./GrindOlympiadsIndex";
 import GrindOlympiadsLayout from "./GrindOlympiadsLayout";
 import InteractiveCounter from "./components/InteractiveCounter";
 import ExamComponent from "./components/ExamComponent";
+import Users from "./components/Users";
 
 const LabsLayout: React.FC = () => {
   return (
@@ -35,6 +36,7 @@ const App: React.FC = () => {
               path="competition/:competition/:year/:exam"
               element={<ExamComponent />}
             />
+            <Route path="users" element={<Users />} />
             <Route path="labs/*" element={<LabsLayout />} />
           </Route>
         </Routes>

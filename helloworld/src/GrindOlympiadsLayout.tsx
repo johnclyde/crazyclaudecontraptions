@@ -7,7 +7,7 @@ import useUserData from "./hooks/useUserData";
 const GrindOlympiadsLayout: React.FC = () => {
   const { user, isLoggedIn, login, logout } = useUserData();
   const { notifications, notificationsError, markNotificationAsRead } =
-    useNotifications();
+    useNotifications(isLoggedIn);
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-100">

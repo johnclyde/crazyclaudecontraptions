@@ -1,6 +1,7 @@
 import React, { forwardRef, useState } from "react";
 import { GoogleLogin } from "@react-oauth/google";
 import { LoginFunction } from "../hooks/useUserData";
+import { Link } from "react-router-dom";
 
 interface User {
   name: string;
@@ -84,6 +85,14 @@ const UserMenu = forwardRef<HTMLDivElement, UserMenuProps>(
                 >
                   Settings
                 </button>
+                <div className="border-t border-gray-200 my-1"></div>
+                <Link
+                  to="/users"
+                  className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  onClick={() => setShowMenu(false)}
+                >
+                  Users
+                </Link>
                 <button
                   onClick={handleLogout}
                   className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
@@ -106,7 +115,7 @@ const UserMenu = forwardRef<HTMLDivElement, UserMenuProps>(
             <div className="bg-white p-6 rounded-lg">
               <h2 className="text-xl font-bold mb-4">Login</h2>
               <GoogleLogin
-                onSuccess={() => {
+                onSuccess={(credentialResponse) => {
                   login();
                   setShowLoginDialog(false);
                 }}

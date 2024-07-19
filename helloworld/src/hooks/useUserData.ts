@@ -65,6 +65,30 @@ const useUserData = () => {
       setIsLoggedIn(false);
       localStorage.removeItem("token");
       setToken(null);
+
+useEffect(() => {
+    if (auth && typeof auth.onAuthStateChanged === "function") {
+      const unsubscribe = auth.onAuthStateChanged(
+        (firebaseUser: FirebaseUser | null) => {
+          if (firebaseUser) {
+            const userData: User = {
+              id: firebaseUser.uid,
+              name: firebaseUser.displayName || "Anonymous",
+              email: firebaseUser.email || "",
+              avatar: firebaseUser.photoURL || "",
+            };
+            setUser(userData);
+            setIsLoggedIn(true);
+          } else {
+            setUser(null);
+            setIsLoggedIn(false);
+          }
+        },
+      );
+
+      return () => unsubscribe();
+    } else {
+      console.error("Firebase auth is not initialized correctly");
     }
   }, []);
 
@@ -90,11 +114,15 @@ const useUserData = () => {
   }, [fetchUserData]);
 
   const login: LoginFunction = async () => {
-    try {
+    if (auth) {
       const provider = new GoogleAuthProvider();
-      await signInWithPopup(auth, provider);
-    } catch (error) {
-      console.error("Error signing in with Google", error);
+      try {
+        await signInWithPopup(auth, provider);
+      } catch (error) {
+        console.error("Error signing in with Google", error);
+      }
+    } else {
+      console.error("Firebase auth is not initialized");
     }
   };
 
