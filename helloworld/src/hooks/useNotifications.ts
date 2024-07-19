@@ -24,9 +24,7 @@ const useNotifications = (isLoggedIn: boolean) => {
 
   const fetchNotifications = async () => {
     try {
-      const response = await fetch(
-        "https://us-central1-olympiads.cloudfunctions.net/notifications",
-      );
+      const response = await fetch("api/notifications");
       if (!response.ok) {
         throw new Error("Failed to fetch notifications");
       }
@@ -45,7 +43,7 @@ const useNotifications = (isLoggedIn: boolean) => {
 
     try {
       const response = await fetch(
-        "https://us-central1-olympiads.cloudfunctions.net/mark_notification_read",
+        "/api/notification/read",
         {
           method: "POST",
           headers: {

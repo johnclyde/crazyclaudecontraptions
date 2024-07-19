@@ -37,7 +37,7 @@ export const useLogin = () => {
       const idToken = await user.getIdToken();
       console.log("Calling login GCF...");
       const response = await fetch(
-        "https://us-central1-olympiads.cloudfunctions.net/login",
+        "/api/login",
         {
           method: "POST",
           headers: {
