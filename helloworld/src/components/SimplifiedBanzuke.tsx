@@ -1,5 +1,10 @@
-import React, { useState } from 'react';
-import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautiful-dnd';
+import React, { useState } from "react";
+import {
+  DragDropContext,
+  Droppable,
+  Draggable,
+  DropResult,
+} from "react-beautiful-dnd";
 
 interface Rikishi {
   id: string;
@@ -9,11 +14,11 @@ interface Rikishi {
 }
 
 const initialRikishi: Rikishi[] = [
-  { id: '1', name: 'Terunofuji', rank: 'Y1e', wins: 0 },
-  { id: '2', name: 'Hoshoryu', rank: 'O1e', wins: 10 },
-  { id: '3', name: 'Kotozakura', rank: 'O1w', wins: 11 },
-  { id: '4', name: 'Takakeisho', rank: 'O2e', wins: 0 },
-  { id: '5', name: 'Kirishima', rank: 'O2w', wins: 1 },
+  { id: "1", name: "Terunofuji", rank: "Y1e", wins: 0 },
+  { id: "2", name: "Hoshoryu", rank: "O1e", wins: 10 },
+  { id: "3", name: "Kotozakura", rank: "O1w", wins: 11 },
+  { id: "4", name: "Takakeisho", rank: "O2e", wins: 0 },
+  { id: "5", name: "Kirishima", rank: "O2w", wins: 1 },
 ];
 
 const SimplifiedBanzuke: React.FC = () => {
@@ -37,17 +42,23 @@ const SimplifiedBanzuke: React.FC = () => {
           {(provided) => (
             <ul {...provided.droppableProps} ref={provided.innerRef}>
               {rikishi.map((wrestler, index) => (
-                <Draggable key={wrestler.id} draggableId={wrestler.id} index={index}>
+                <Draggable
+                  key={wrestler.id}
+                  draggableId={wrestler.id}
+                  index={index}
+                >
                   {(provided) => (
                     <li
                       ref={provided.innerRef}
                       {...provided.draggableProps}
                       {...provided.dragHandleProps}
-                      className={`rikishi-card ${wrestler.wins >= 8 ? 'kachi-koshi' : 'make-koshi'}`}
+                      className={`rikishi-card ${wrestler.wins >= 8 ? "kachi-koshi" : "make-koshi"}`}
                     >
                       <span className="rank">{wrestler.rank}</span>
                       <span className="name">{wrestler.name}</span>
-                      <span className="wins">{wrestler.wins}-{15 - wrestler.wins}</span>
+                      <span className="wins">
+                        {wrestler.wins}-{15 - wrestler.wins}
+                      </span>
                     </li>
                   )}
                 </Draggable>
