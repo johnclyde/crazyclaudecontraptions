@@ -33,7 +33,7 @@
       },
       {
         "source": "/api/notification/read",
-        "function": "mark_notification_read"
+        "function": "mark-notification-read"
       },
       {
         "source": "/api/userprogress",
@@ -41,7 +41,7 @@
       },
       {
         "source": "/api/user",
-        "function": "get_user_info"
+        "function": "user"
       },
       {
         "source": "**",
