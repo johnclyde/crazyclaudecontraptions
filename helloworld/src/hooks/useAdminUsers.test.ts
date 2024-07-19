@@ -4,9 +4,17 @@ import useAdminUsers from "./useAdminUsers";
 // Mock fetch globally
 global.fetch = jest.fn();
 
+// Mock console.error to catch and assert on error messages.
+const originalConsoleError = console.error;
+console.error = jest.fn();
+
 describe("useAdminUsers", () => {
   beforeEach(() => {
     jest.resetAllMocks();
+  });
+
+  afterAll(() => {
+    console.error = originalConsoleError;
   });
 
   it("should fetch users and update state", async () => {
@@ -36,9 +44,8 @@ describe("useAdminUsers", () => {
   });
 
   it("should handle fetch error", async () => {
-    (global.fetch as jest.Mock).mockRejectedValueOnce(
-      new Error("Fetch failed"),
-    );
+    const fetchError = new Error("Fetch failed");
+    (global.fetch as jest.Mock).mockRejectedValueOnce(fetchError);
 
     const { result } = renderHook(() => useAdminUsers());
 
@@ -54,6 +61,10 @@ describe("useAdminUsers", () => {
       "Failed to load users. Please try again later.",
     );
     expect(result.current.users).toEqual([]);
+    expect(console.error).toHaveBeenCalledWith(
+      "Error fetching users:",
+      fetchError,
+    );
   });
 
   it("should handle API error response", async () => {
@@ -74,6 +85,10 @@ describe("useAdminUsers", () => {
       "Failed to load users. Please try again later.",
     );
     expect(result.current.users).toEqual([]);
+    expect(console.error).toHaveBeenCalledWith(
+      "Error fetching users:",
+      expect.any(Error),
+    );
   });
 
   it("should call the correct GCF endpoint", async () => {

@@ -70,10 +70,11 @@ describe("BanzukeTable", () => {
 
   test("displays correct win-loss records", () => {
     render(<BanzukeTable initialRikishi={mockRikishi} />);
-    mockRikishi.forEach((rikishi) => {
-      expect(
-        screen.getByText(`${rikishi.wins}-${rikishi.losses}`),
-      ).toBeInTheDocument();
+    const rows = screen.getAllByRole("row").slice(1); // Exclude header row
+
+    mockRikishi.forEach((rikishi, index) => {
+      const cells = within(rows[index]).getAllByRole("cell");
+      expect(cells[2]).toHaveTextContent(`${rikishi.wins}-${rikishi.losses}`);
     });
   });
 
