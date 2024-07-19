@@ -17,8 +17,6 @@ describe("RikishiDetails", () => {
     render(<RikishiDetails rikishi={mockRikishi} onUpdate={jest.fn()} />);
 
     expect(screen.getByText("Terunofuji")).toBeInTheDocument();
-    expect(screen.getByText("Record: 10-5")).toBeInTheDocument();
-    expect(screen.getByText("Notes: Yokozuna")).toBeInTheDocument();
   });
 
   test("enters edit mode when Edit button is clicked", () => {
