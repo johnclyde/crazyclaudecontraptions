@@ -8,6 +8,10 @@
     ],
     "rewrites": [
       {
+        "source": "/api/admin/users",
+        "function": "admin_users"
+      },
+      {
         "source": "/api/exam",
         "function": "exam-data"
       },
