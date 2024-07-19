@@ -17,7 +17,7 @@ describe("RikishiDetails", () => {
     render(<RikishiDetails rikishi={mockRikishi} onUpdate={jest.fn()} />);
 
     expect(screen.getByText("Terunofuji")).toBeInTheDocument();
-    expect(screen.getByText("Rank: Y1e")).toBeInTheDocument();
+    expect(screen.getByLabelText("Rank:")).toHaveValue("Y1e");
     expect(screen.getByText("Record: 10-5")).toBeInTheDocument();
     expect(screen.getByText("Notes: Yokozuna")).toBeInTheDocument();
   });
