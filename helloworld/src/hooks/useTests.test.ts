@@ -4,9 +4,17 @@ import useTests from "./useTests";
 // Mock fetch globally
 global.fetch = jest.fn();
 
+// Mock console.error
+const originalConsoleError = console.error;
+console.error = jest.fn();
+
 describe("useTests", () => {
   beforeEach(() => {
     jest.resetAllMocks();
+  });
+
+  afterAll(() => {
+    console.error = originalConsoleError;
   });
 
   it("should fetch tests and set initial state", async () => {
@@ -34,6 +42,7 @@ describe("useTests", () => {
     expect(result.current.error).toBe(null);
     expect(result.current.searchTerm).toBe("");
     expect(result.current.selectedCompetition).toBe("All");
+    expect(console.error).not.toHaveBeenCalled();
   });
 
   it("should handle fetch error", async () => {
@@ -52,6 +61,10 @@ describe("useTests", () => {
       "Failed to load tests. Please try refreshing the page.",
     );
     expect(result.current.tests).toEqual([]);
+    expect(console.error).toHaveBeenCalledWith(
+      "Error fetching tests:",
+      expect.any(Error),
+    );
   });
 
   it("should handle API error response", async () => {
@@ -72,6 +85,10 @@ describe("useTests", () => {
       "Failed to load tests. Please try refreshing the page.",
     );
     expect(result.current.tests).toEqual([]);
+    expect(console.error).toHaveBeenCalledWith(
+      "Error fetching tests:",
+      expect.any(Error),
+    );
   });
 
   it("should update searchTerm", async () => {
@@ -118,6 +135,7 @@ describe("useTests", () => {
     expect(result.current.filteredTests).toEqual([
       { competition: "Math", year: "2022", exam: "Fall" },
     ]);
+    expect(console.error).not.toHaveBeenCalled();
   });
 
   it("should call the correct GCF endpoint", async () => {
@@ -152,5 +170,6 @@ describe("useTests", () => {
     expect(result.current.loading).toBe(false);
     expect(result.current.tests).toEqual([]);
     expect(result.current.error).toBe(null);
+    expect(console.error).not.toHaveBeenCalled();
   });
 });
