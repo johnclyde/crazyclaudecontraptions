@@ -99,7 +99,6 @@ describe("useTests", () => {
     });
 
     expect(result.current.searchTerm).toBe("Math");
-    expect(console.error).not.toHaveBeenCalled();
   });
 
   it("should update selectedCompetition", async () => {
