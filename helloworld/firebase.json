@@ -29,7 +29,7 @@
       },
       {
         "source": "/api/notifications",
-        "function": "user_notifications"
+        "function": "notifications"
       },
       {
         "source": "/api/notification/read",
