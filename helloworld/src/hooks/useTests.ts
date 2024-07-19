@@ -31,9 +31,7 @@ const useTests = (): UseTestsReturn => {
   const fetchTests = async () => {
     try {
       setLoading(true);
-      const response = await fetch(
-        "https://us-central1-olympiads.cloudfunctions.net/exams",
-      );
+      const response = await fetch("/api/exams");
       if (!response.ok) {
         throw new Error("Failed to fetch tests");
       }

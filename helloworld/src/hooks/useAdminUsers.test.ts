@@ -103,9 +103,7 @@ describe("useAdminUsers", () => {
       await result.current.fetchUsers();
     });
 
-    expect(global.fetch).toHaveBeenCalledWith(
-      "https://us-central1-olympiads.cloudfunctions.net/admin_users",
-    );
+    expect(global.fetch).toHaveBeenCalledWith("/api/admin/users");
   });
 
   it("should handle empty response from API", async () => {
