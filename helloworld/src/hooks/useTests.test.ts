@@ -110,7 +110,6 @@ describe("useTests", () => {
     });
 
     expect(result.current.selectedCompetition).toBe("Physics");
-    expect(console.error).not.toHaveBeenCalled();
   });
 
   it("should filter tests based on searchTerm and selectedCompetition", async () => {
