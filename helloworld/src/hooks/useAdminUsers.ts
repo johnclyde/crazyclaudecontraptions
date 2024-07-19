@@ -14,9 +14,7 @@ const useAdminUsers = () => {
   const fetchUsers = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await fetch(
-        "https://us-central1-olympiads.cloudfunctions.net/admin_users",
-      );
+      const response = await fetch("/api/admin/users");
       if (!response.ok) {
         throw new Error("Failed to fetch users");
       }

@@ -134,9 +134,7 @@ describe("useTests", () => {
       await new Promise((resolve) => setTimeout(resolve, 0));
     });
 
-    expect(global.fetch).toHaveBeenCalledWith(
-      "https://us-central1-olympiads.cloudfunctions.net/exams",
-    );
+    expect(global.fetch).toHaveBeenCalledWith("/api/exams");
   });
 
   it("should handle empty response from API", async () => {

@@ -25,9 +25,7 @@ const ExamComponent: React.FC = () => {
     const fetchExamData = async () => {
       setLoading(true);
       try {
-        const response = await fetch(
-          `https://us-central1-olympiads.cloudfunctions.net/exam-data?competition=${competition}&year=${year}&exam=${exam}`,
-        );
+        const response = await fetch(`/api/exam?competition=${competition}&year=${year}&exam=${exam}`);
         if (!response.ok) {
           throw new Error("Failed to fetch exam data");
         }
@@ -66,7 +64,7 @@ const ExamComponent: React.FC = () => {
       </div>
       {problem.image_url && (
         <img
-          src={`https://prod.grindolympiads.com/api${problem.image_url}`}
+          src={`/images/{problem.image_url}`}
           alt="Problem illustration"
           className="mt-2 max-w-full h-auto"
         />
