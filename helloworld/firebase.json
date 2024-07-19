@@ -8,7 +8,7 @@
     ],
     "rewrites": [
       {
-        "source": "/api/exam-data",
+        "source": "/api/exam",
         "function": "exam-data"
       },
       {
@@ -28,11 +28,11 @@
         "function": "user_notifications"
       },
       {
-        "source": "/api/mark-notification-read",
+        "source": "/api/notification/read",
         "function": "mark_notification_read"
       },
       {
-        "source": "/api/user-progress",
+        "source": "/api/userprogress",
         "function": "user_progress"
       },
       {
