@@ -29,7 +29,7 @@ def get_local_files(directory: str) -> set[str]:
     return local_files
 
 
-def fetch_remote_files() -> set[str] | None:
+def fetch_remote_files() -> tuple[dict[str, str], set[str]] | None:
     curl_command: str = (
         f"curl '{url}' -H 'cookie: sessionKey={session_key}' -H 'user-agent: {user_agent}'"
     )
@@ -42,9 +42,11 @@ def fetch_remote_files() -> set[str] | None:
             ["sh", temp_file_path], capture_output=True, text=True, check=True
         )
         remote_files: list[dict] = json.loads(result.stdout)
-        if isinstance(remote_files, list):
-            return {file["file_name"] for file in remote_files if "file_name" in file}
-        return set(remote_files.keys())
+        uuid_map: dict[str, str] = {
+            file["file_name"]: file["uuid"] for file in remote_files
+        }
+        file_names: set[str] = set(uuid_map.keys())
+        return uuid_map, file_names
     except (subprocess.CalledProcessError, json.JSONDecodeError) as e:
         print(f"Error fetching remote files: {e}")
         return None
@@ -84,14 +86,14 @@ def execute_curl_command(command: str) -> None:
         os.remove(temp_file_path)
 
 
-def remove_file(file_path: str) -> None:
+def remove_file(file_path: str, doc_uuid: str) -> None:
     curl_command: str = f"""
-    curl '{url}/{file_path}' \\
+    curl '{url}/{doc_uuid}' \\
       -X 'DELETE' \\
       -H 'cookie: sessionKey={session_key}' \\
       -H 'user-agent: {user_agent}' \\
       -H 'content-type: application/json' \\
-      --data-raw '{{"docUuid":"{file_path}"}}'
+      --data-raw '{{"docUuid":"{doc_uuid}"}}'
     """
     execute_curl_command(curl_command)
     print(f"Successfully deleted: {file_path}")
@@ -127,7 +129,9 @@ def display_menu(fetched: bool) -> None:
     print("0. Exit")
 
 
-def process_files(action: str, files: set[str]) -> None:
+def process_files(
+    action: str, files: set[str], uuid_map: dict[str, str] | None = None
+) -> None:
     print(f"\nFiles to {action}:")
     for i, file_path in enumerate(sorted(files), 1):
         print(f"{i}. {file_path}")
@@ -146,7 +150,10 @@ def process_files(action: str, files: set[str]) -> None:
                 if action == "upload":
                     upload_file(file_path)
                 elif action == "delete":
-                    remove_file(file_path)
+                    if uuid_map and file_path in uuid_map:
+                        remove_file(file_path, uuid_map[file_path])
+                    else:
+                        print(f"Error: UUID not found for {file_path}")
             else:
                 print("Invalid choice. Please try again.")
         except ValueError:
@@ -171,6 +178,7 @@ def main() -> None:
     only_local: set[str] = set()
     only_remote: set[str] = set()
     partial_matches: list[tuple[str, str]] = []
+    uuid_map: dict[str, str] = {}
     fetched: bool = False
 
     while True:
@@ -180,10 +188,11 @@ def main() -> None:
         if choice == "1":
             print("Fetching remote files...")
             local_files: set[str] = get_local_files(".")
-            remote_files: set[str] | None = fetch_remote_files()
-            if remote_files is None:
+            remote_data = fetch_remote_files()
+            if remote_data is None:
                 print("Failed to fetch remote files. Please try again.")
                 continue
+            uuid_map, remote_files = remote_data
             only_local, only_remote, partial_matches = compare_files(
                 local_files, remote_files
             )
@@ -193,7 +202,7 @@ def main() -> None:
             if choice == "2":
                 process_files("upload", only_local)
             elif choice == "3":
-                process_files("delete", only_remote)
+                process_files("delete", only_remote, uuid_map)
             elif choice == "4":
                 show_files("Files to download", only_remote)
             elif choice == "5":
