@@ -1,63 +1,112 @@
+import json
 import os
-from dotenv import load_dotenv
-import pycurl
+from abc import ABC, abstractmethod
 from io import BytesIO
 
-# Load environment variables from the .env file
+import pycurl
+from dotenv import load_dotenv
+
 load_dotenv()
 
-# Assign environment variables to local variables
-domain = os.getenv('DOMAIN')
-organization = os.getenv('ORGANIZATION')
-project = os.getenv('PROJECT')
-session_key = os.getenv('SESSION_KEY')
-activity_session_id = os.getenv('ACTIVITY_SESSION_ID')
-fbp = os.getenv('FBP')
-ssid = os.getenv('SSID')
-rdt_uuid = os.getenv('RDT_UUID')
-stripe_mid = os.getenv('STRIPE_MID')
-cf_clearance = os.getenv('CF_CLEARANCE')
-cf_bm = os.getenv('CF_BM')
-intercom_session = os.getenv('INTERCOM_SESSION')
-sentry_trace = os.getenv('SENTRY_TRACE')
 
-# Construct the URL
-url = f'{domain}/api/organizations/{organization}/projects/{project}/docs'
+class CurlHelper(ABC):
+    def __init__(self):
+        self.domain: str = os.getenv("DOMAIN", "")
+        self.organization: str = os.getenv("ORGANIZATION", "")
+        self.project: str = os.getenv("PROJECT", "")
+        self.session_key: str = os.getenv("SESSION_KEY", "")
+        self.user_agent: str = (
+            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36"
+        )
 
-# Construct the cookies
-cookies = [
-    f'_fbp={fbp}',
-    f'__ssid={ssid}',
-    'CH-prefers-color-scheme=light',
-    'user-sidebar-pinned=false',
-    f'_rdt_uuid={rdt_uuid}',
-    f'__stripe_mid={stripe_mid}',
-    f'sessionKey={session_key}',
-    f'lastActiveOrg={organization}',
-    f'activitySessionId={activity_session_id}',
-    f'__cf_bm={cf_bm}',
-    f'cf_clearance={cf_clearance}',
-    f'intercom-session-lupk8zyo={intercom_session}',
-]
+    def _get_base_url(self) -> str:
+        return f"{self.domain}/api/organizations/{self.organization}/projects/{self.project}/docs"
 
-headers = [
-    f'cookie: {"; ".join(cookies)}',
-    'priority: u=1, i',
-    f'referer: {domain}/project/{project}',
-    'sec-fetch-dest: empty',
-    'sec-fetch-mode: cors',
-    'sec-fetch-site: same-origin',
-    f'sentry-trace: {sentry_trace}',
-    'user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36'
-]
+    def _get_base_headers(self) -> list[str]:
+        return [
+            f"cookie: sessionKey={self.session_key}",
+            f"user-agent: {self.user_agent}",
+        ]
 
-# Create a BytesIO object to capture the response
-response_buffer = BytesIO()
-curl = pycurl.Curl()
-curl.setopt(curl.URL, url)
-curl.setopt(curl.HTTPHEADER, headers)
-curl.setopt(curl.WRITEDATA, response_buffer)
-curl.perform()
-curl.close()
-response_content = response_buffer.getvalue().decode('utf-8')
-print(response_content)
+    @abstractmethod
+    def perform_request(self) -> str:
+        pass
+
+
+class CurlGet(CurlHelper):
+    def perform_request(self) -> str:
+        buffer = BytesIO()
+        c = pycurl.Curl()
+        c.setopt(c.URL, self._get_base_url())
+        c.setopt(c.HTTPHEADER, self._get_base_headers())
+        c.setopt(c.WRITEDATA, buffer)
+        c.perform()
+
+        status_code = c.getinfo(pycurl.HTTP_CODE)
+        c.close()
+
+        response = buffer.getvalue().decode("utf-8")
+
+        if status_code >= 400:
+            raise Exception(f"HTTP Error {status_code}: {response}")
+
+        return response
+
+
+class CurlPost(CurlHelper):
+    def __init__(self, file_name: str, content: str):
+        super().__init__()
+        self.file_name = file_name
+        self.content = content
+
+    def perform_request(self) -> str:
+        buffer = BytesIO()
+        c = pycurl.Curl()
+        c.setopt(c.URL, self._get_base_url())
+        c.setopt(c.POST, 1)
+        c.setopt(
+            c.HTTPHEADER, self._get_base_headers() + ["content-type: application/json"]
+        )
+        data = json.dumps({"file_name": self.file_name, "content": self.content})
+        c.setopt(c.POSTFIELDS, data)
+        c.setopt(c.WRITEDATA, buffer)
+        c.perform()
+
+        status_code = c.getinfo(pycurl.HTTP_CODE)
+        c.close()
+
+        response = buffer.getvalue().decode("utf-8")
+
+        if status_code >= 400:
+            raise Exception(f"HTTP Error {status_code}: {response}")
+
+        return response
+
+
+class CurlDelete(CurlHelper):
+    def __init__(self, doc_uuid: str):
+        super().__init__()
+        self.doc_uuid = doc_uuid
+
+    def perform_request(self) -> str:
+        buffer = BytesIO()
+        c = pycurl.Curl()
+        c.setopt(c.URL, f"{self._get_base_url()}/{self.doc_uuid}")
+        c.setopt(c.CUSTOMREQUEST, "DELETE")
+        c.setopt(
+            c.HTTPHEADER, self._get_base_headers() + ["content-type: application/json"]
+        )
+        data = json.dumps({"docUuid": self.doc_uuid})
+        c.setopt(c.POSTFIELDS, data)
+        c.setopt(c.WRITEDATA, buffer)
+        c.perform()
+
+        status_code = c.getinfo(pycurl.HTTP_CODE)
+        c.close()
+
+        response = buffer.getvalue().decode("utf-8")
+
+        if status_code >= 400:
+            raise Exception(f"HTTP Error {status_code}: {response}")
+
+        return response
