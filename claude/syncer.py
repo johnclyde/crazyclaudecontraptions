@@ -1,20 +1,7 @@
 import json
 import os
-import subprocess
-import tempfile
 
-from dotenv import load_dotenv
-
-load_dotenv()
-
-domain: str = os.getenv("DOMAIN", "")
-organization: str = os.getenv("ORGANIZATION", "")
-project: str = os.getenv("PROJECT", "")
-session_key: str = os.getenv("SESSION_KEY", "")
-url: str = f"{domain}/api/organizations/{organization}/projects/{project}/docs"
-user_agent: str = (
-    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36"
-)
+from curl_helper import CurlDelete, CurlGet, CurlPost
 
 
 def get_local_files(directory: str) -> set[str]:
@@ -29,29 +16,19 @@ def get_local_files(directory: str) -> set[str]:
     return local_files
 
 
-def fetch_remote_files() -> tuple[dict[str, str], set[str]] | None:
-    curl_command: str = (
-        f"curl '{url}' -H 'cookie: sessionKey={session_key}' -H 'user-agent: {user_agent}'"
-    )
-    with tempfile.NamedTemporaryFile(delete=False, mode="w", suffix=".sh") as temp_file:
-        temp_file.write(curl_command)
-        temp_file_path: str = temp_file.name
-
+def fetch_remote_files(curl_get: CurlGet) -> tuple[dict[str, str], set[str]]:
     try:
-        result: subprocess.CompletedProcess = subprocess.run(
-            ["sh", temp_file_path], capture_output=True, text=True, check=True
-        )
-        remote_files: list[dict] = json.loads(result.stdout)
+        result: str = curl_get.perform_request()
+        remote_files: list[dict] = json.loads(result)
         uuid_map: dict[str, str] = {
             file["file_name"]: file["uuid"] for file in remote_files
         }
         file_names: set[str] = set(uuid_map.keys())
         return uuid_map, file_names
-    except (subprocess.CalledProcessError, json.JSONDecodeError) as e:
-        print(f"Error fetching remote files: {e}")
-        return None
-    finally:
-        os.remove(temp_file_path)
+    except json.JSONDecodeError as e:
+        raise ValueError(f"Error decoding JSON response: {e}")
+    except KeyError as e:
+        raise ValueError(f"Unexpected response format: {e}")
 
 
 def compare_files(
@@ -71,51 +48,28 @@ def compare_files(
     return only_local, only_remote, partial_matches
 
 
-def execute_curl_command(command: str) -> None:
-    with tempfile.NamedTemporaryFile(delete=False, mode="w", suffix=".sh") as temp_file:
-        temp_file.write(command)
-        temp_file_path: str = temp_file.name
-
-    try:
-        subprocess.run(
-            ["sh", temp_file_path], capture_output=True, text=True, check=True
-        )
-    except subprocess.CalledProcessError as e:
-        print(f"Error executing command: {e.stderr}")
-    finally:
-        os.remove(temp_file_path)
-
-
-def remove_file(file_path: str, doc_uuid: str) -> None:
-    curl_command: str = f"""
-    curl '{url}/{doc_uuid}' \\
-      -X 'DELETE' \\
-      -H 'cookie: sessionKey={session_key}' \\
-      -H 'user-agent: {user_agent}' \\
-      -H 'content-type: application/json' \\
-      --data-raw '{{"docUuid":"{doc_uuid}"}}'
-    """
-    execute_curl_command(curl_command)
-    print(f"Successfully deleted: {file_path}")
-
-
 def upload_file(file_path: str) -> None:
     try:
         with open(file_path, "r") as file:
             content: str = file.read()
-
-        json_content: str = json.dumps(content)
-        curl_command: str = f"""
-        curl '{url}' \\
-          -H 'cookie: sessionKey={session_key}' \\
-          -H 'user-agent: {user_agent}' \\
-          -H 'content-type: application/json' \\
-          --data-raw '{{"file_name":"{file_path}","content":{json_content}}}'
-        """
-        execute_curl_command(curl_command)
+        curl_post = CurlPost(file_path, content)
+        result: str = curl_post.perform_request()
         print(f"Successfully uploaded: {file_path}")
+        print(f"Response: {result}")
     except IOError as e:
-        print(f"Error reading file: {e}")
+        raise IOError(f"Error reading file {file_path}: {e}")
+    except Exception as e:
+        raise Exception(f"Error uploading file {file_path}: {e}")
+
+
+def remove_file(file_path: str, doc_uuid: str) -> None:
+    try:
+        curl_delete = CurlDelete(doc_uuid)
+        result: str = curl_delete.perform_request()
+        print(f"Successfully deleted: {file_path}")
+        print(f"Response: {result}")
+    except Exception as e:
+        raise Exception(f"Error deleting file {file_path}: {e}")
 
 
 def display_menu(fetched: bool) -> None:
@@ -126,6 +80,7 @@ def display_menu(fetched: bool) -> None:
         print("3. Delete remote files")
         print("4. Show files to download")
         print("5. Show potential path mismatches")
+        print("6. List all pertinent files and their status")
     print("0. Exit")
 
 
@@ -158,6 +113,8 @@ def process_files(
                 print("Invalid choice. Please try again.")
         except ValueError:
             print("Invalid input. Please enter a number.")
+        except Exception as e:
+            print(f"Error: {e}")
 
 
 def show_files(title: str, files: set[str]) -> None:
@@ -174,7 +131,27 @@ def show_path_mismatches(partial_matches: list[tuple[str, str]]) -> None:
     input("Press Enter to continue...")
 
 
+def list_all_files(
+    only_local: set[str], only_remote: set[str], partial_matches: list[tuple[str, str]]
+) -> None:
+    print("\nAll pertinent files and their status:")
+    print("\nFiles only in local:")
+    for file in sorted(only_local):
+        print(f"+ {file}")
+
+    print("\nFiles only in remote:")
+    for file in sorted(only_remote):
+        print(f"- {file}")
+
+    print("\nFiles with potential path mismatches:")
+    for local, remote in sorted(partial_matches):
+        print(f"? {local} <-> {remote}")
+
+    input("Press Enter to continue...")
+
+
 def main() -> None:
+    curl_get = CurlGet()
     only_local: set[str] = set()
     only_remote: set[str] = set()
     partial_matches: list[tuple[str, str]] = []
@@ -185,19 +162,21 @@ def main() -> None:
         display_menu(fetched)
         choice: str = input("Enter your choice: ")
 
-        if choice == "1":
+        if choice == "0":
+            print("Exiting...")
+            break
+        elif choice == "1":
             print("Fetching remote files...")
-            local_files: set[str] = get_local_files(".")
-            remote_data = fetch_remote_files()
-            if remote_data is None:
-                print("Failed to fetch remote files. Please try again.")
-                continue
-            uuid_map, remote_files = remote_data
-            only_local, only_remote, partial_matches = compare_files(
-                local_files, remote_files
-            )
-            fetched = True
-            print("Remote files fetched successfully.")
+            try:
+                local_files: set[str] = get_local_files(".")
+                uuid_map, remote_files = fetch_remote_files(curl_get)
+                only_local, only_remote, partial_matches = compare_files(
+                    local_files, remote_files
+                )
+                fetched = True
+                print("Remote files fetched successfully.")
+            except Exception as e:
+                print(f"Error fetching remote files: {e}")
         elif fetched:
             if choice == "2":
                 process_files("upload", only_local)
@@ -207,9 +186,8 @@ def main() -> None:
                 show_files("Files to download", only_remote)
             elif choice == "5":
                 show_path_mismatches(partial_matches)
-        elif choice == "0":
-            print("Exiting...")
-            break
+            elif choice == "6":
+                list_all_files(only_local, only_remote, partial_matches)
         else:
             print("Invalid choice. Please try again.")
 
