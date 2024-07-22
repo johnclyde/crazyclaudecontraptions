@@ -48,6 +48,16 @@ def compare_files(
     return only_local, only_remote, partial_matches
 
 
+def remove_file(file_path: str, doc_uuid: str) -> None:
+    try:
+        curl_delete = CurlDelete(doc_uuid)
+        result: str = curl_delete.perform_request()
+        print(f"Successfully deleted: {file_path}")
+        print(f"Response: {result}")
+    except Exception as e:
+        raise Exception(f"Error deleting file {file_path}: {e}")
+
+
 def upload_file(file_path: str) -> None:
     try:
         with open(file_path, "r") as file:
@@ -60,16 +70,6 @@ def upload_file(file_path: str) -> None:
         raise IOError(f"Error reading file {file_path}: {e}")
     except Exception as e:
         raise Exception(f"Error uploading file {file_path}: {e}")
-
-
-def remove_file(file_path: str, doc_uuid: str) -> None:
-    try:
-        curl_delete = CurlDelete(doc_uuid)
-        result: str = curl_delete.perform_request()
-        print(f"Successfully deleted: {file_path}")
-        print(f"Response: {result}")
-    except Exception as e:
-        raise Exception(f"Error deleting file {file_path}: {e}")
 
 
 def display_menu(fetched: bool) -> None:
