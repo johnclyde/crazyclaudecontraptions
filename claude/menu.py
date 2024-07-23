@@ -12,30 +12,27 @@ class MenuOption:
         pass
 
 
-class ExitHandler:
-    def __init__(self) -> None:
-        self.should_exit = False
-
-
-class Menu(ABC):
-    def __init__(self, title: str) -> None:
-        self.title = title
+class Menu(MenuOption):
+    def __init__(self, label: str) -> None:
+        self.label = label
         self.options: list[MenuOption] = []
-        self.exit_handler = ExitHandler()
 
     def add_option(self, option: MenuOption) -> None:
         self.options.append(option)
 
     def display(self) -> None:
-        print(f"\n{self.title}")
+        print(f"\n{self.label}")
         for index, option in enumerate(self.options, 1):
             print(f"{index}. {option.label}")
+        print("0. Exit")
 
     def run(self) -> None:
-        while not self.exit_handler.should_exit:
+        while True:
             self.update_options()
             self.display()
             choice = int(input("Enter your choice: ")) - 1
+            if choice == -1:
+                return
             if 0 <= choice < len(self.options):
                 self.options[choice].run()
             else:
@@ -44,150 +41,3 @@ class Menu(ABC):
     @abstractmethod
     def update_options(self) -> None:
         pass
-
-
-class MainMenu(Menu):
-    def __init__(self, sync_manager: SyncManager) -> None:
-        super().__init__("File Synchronization Menu")
-        self.sync_manager = sync_manager
-
-    def update_options(self) -> None:
-        self.options.clear()
-        self.add_option(FetchRemoteOption(self.sync_manager))
-
-        if self.sync_manager.state.fetched:
-            self.add_option(UploadFilesOption(self.sync_manager))
-            self.add_option(DeleteRemoteOption(self.sync_manager))
-            self.add_option(ShowDownloadsOption(self.sync_manager))
-            self.add_option(ShowMismatchesOption(self.sync_manager))
-            self.add_option(ListAllFilesOption(self.sync_manager))
-            self.add_option(ShowManifestOption(self.sync_manager))
-            self.add_option(ShowAdditionalDirsOption(self.sync_manager))
-            self.add_option(SaveManifestOption(self.sync_manager))
-
-        self.add_option(ExitOption(self.exit_handler))
-
-
-class FetchRemoteOption(MenuOption):
-    def __init__(self, sync_manager: SyncManager) -> None:
-        super().__init__("Fetch remote files")
-        self.sync_manager = sync_manager
-
-    def run(self) -> None:
-        print("Fetching remote files...")
-        self.sync_manager.fetch_and_compare()
-        print("Remote files fetched successfully.")
-
-
-class UploadFilesOption(MenuOption):
-    def __init__(self, sync_manager: SyncManager) -> None:
-        super().__init__("Upload files")
-        self.sync_manager = sync_manager
-
-    def run(self) -> None:
-        self.sync_manager.process_files(
-            "upload", self.sync_manager.state.get_only_local()
-        )
-
-
-class DeleteRemoteOption(MenuOption):
-    def __init__(self, sync_manager: SyncManager) -> None:
-        super().__init__("Delete remote files")
-        self.sync_manager = sync_manager
-
-    def run(self) -> None:
-        self.sync_manager.process_files(
-            "delete", self.sync_manager.state.get_only_remote()
-        )
-
-
-class ShowDownloadsOption(MenuOption):
-    def __init__(self, sync_manager: SyncManager) -> None:
-        super().__init__("Show files to download")
-        self.sync_manager = sync_manager
-
-    def run(self) -> None:
-        files = self.sync_manager.state.get_only_remote()
-        print(f"\nFiles to download:")
-        for file in sorted(files, key=lambda f: f.path):
-            print(f"- {file.path}")
-
-
-class ShowMismatchesOption(MenuOption):
-    def __init__(self, sync_manager: SyncManager) -> None:
-        super().__init__("Show potential path mismatches")
-        self.sync_manager = sync_manager
-
-    def run(self) -> None:
-        partial_matches = self.sync_manager.state.partial_matches
-        print("\nFiles with potential path mismatches:")
-        for match in sorted(partial_matches, key=lambda m: m.local_file.path):
-            print(f"? {match.local_file.path} <-> {match.remote_file.path}")
-
-
-class ListAllFilesOption(MenuOption):
-    def __init__(self, sync_manager: SyncManager) -> None:
-        super().__init__("List all pertinent files and their status")
-        self.sync_manager = sync_manager
-
-    def run(self) -> None:
-        state = self.sync_manager.state
-        print("\nAll pertinent files and their status:")
-        print("\nFiles only in local:")
-        for file in sorted(state.get_only_local(), key=lambda f: f.path):
-            print(f"+ {file.path}")
-
-        print("\nFiles only in remote:")
-        for file in sorted(state.get_only_remote(), key=lambda f: f.path):
-            print(f"- {file.path}")
-
-        print("\nFiles with potential path mismatches:")
-        for match in sorted(state.partial_matches, key=lambda m: m.local_file.path):
-            print(f"? {match.local_file.path} <-> {match.remote_file.path}")
-
-
-class ShowManifestOption(MenuOption):
-    def __init__(self, sync_manager: SyncManager) -> None:
-        super().__init__("Show manifest")
-        self.sync_manager = sync_manager
-
-    def run(self) -> None:
-        state = self.sync_manager.state
-        manifest = state.build_manifest()
-        print("\nManifest:")
-        for file in sorted(manifest.files, key=lambda f: f["path"]):
-            print(f"{file['status']}: {file['path']}")
-        print("\nAdditional local directories:")
-        for dir in manifest.additional_local_directories:
-            print(f"- {dir}")
-
-
-class ShowAdditionalDirsOption(MenuOption):
-    def __init__(self, sync_manager: SyncManager) -> None:
-        super().__init__("Show additional local directories")
-        self.sync_manager = sync_manager
-
-    def run(self) -> None:
-        print("\nAdditional local directories:")
-        for dir in self.sync_manager.state.additional_local_directories:
-            print(f"- {dir}")
-        input("Press Enter to continue...")
-
-
-class SaveManifestOption(MenuOption):
-    def __init__(self, sync_manager: SyncManager) -> None:
-        super().__init__("Save manifest")
-        self.sync_manager = sync_manager
-
-    def run(self) -> None:
-        self.sync_manager.save_manifest()
-
-
-class ExitOption(MenuOption):
-    def __init__(self, exit_handler: ExitHandler) -> None:
-        super().__init__("Exit")
-        self.exit_handler = exit_handler
-
-    def run(self) -> None:
-        print("Exiting...")
-        self.exit_handler.should_exit = True
