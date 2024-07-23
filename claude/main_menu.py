@@ -73,23 +73,20 @@ class ShowMismatchesOption(MenuOption):
 
 class ListAllFilesOption(MenuOption):
     def __init__(self, sync_manager: SyncManager) -> None:
-        super().__init__("List all pertinent files and their status")
+        super().__init__("List all files")
         self.sync_manager = sync_manager
 
     def run(self) -> None:
         state = self.sync_manager.state
-        print("\nAll pertinent files and their status:")
-        print("\nFiles only in local:")
-        for file in sorted(state.get_only_local(), key=lambda f: f.path):
-            print(f"+ {file.path}")
+        print(f"{'File Path':<51} | {'Local Status':<15} | Remote Status")
+        print("-" * 85)
 
-        print("\nFiles only in remote:")
-        for file in sorted(state.get_only_remote(), key=lambda f: f.path):
-            print(f"- {file.path}")
+        all_files = set(f.path for f in state.local_files + state.remote_files)
 
-        print("\nFiles with potential path mismatches:")
-        for match in sorted(state.partial_matches, key=lambda m: m.local_file.path):
-            print(f"? {match.local_file.path} <-> {match.remote_file.path}")
+        for file_path in sorted(all_files):
+            local_status = next((f.status for f in state.local_files if f.path == file_path), "Not present")
+            remote_status = next((f.status for f in state.remote_files if f.path == file_path), "Not present")
+            print(f"{file_path:<51} | {local_status:<15} | {remote_status:<15}")
 
 
 class ShowManifestOption(MenuOption):
