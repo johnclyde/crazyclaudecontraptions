@@ -1,4 +1,4 @@
-from menu import MainMenu
+from main_menu import MainMenu
 from sync_state import SyncManager
 
 

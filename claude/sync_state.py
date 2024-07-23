@@ -124,13 +124,6 @@ class SyncManager:
         remote_dirs = set(os.path.dirname(f.path) for f in self.state.remote_files)
         self.state.additional_local_directories = sorted(local_dirs - remote_dirs)
 
-    def process_files(self, action: str, files: list[File]) -> None:
-        for file in files:
-            if action == "upload" and isinstance(file, LocalFile):
-                self.upload_file(file)
-            elif action == "delete" and isinstance(file, RemoteFile):
-                self.delete_file(file)
-
     def upload_file(self, file: LocalFile) -> None:
         try:
             with open(file.path, "r") as f:
