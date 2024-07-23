@@ -16,8 +16,7 @@ class MenuChoice(Enum):
     EXIT = 0
 
 
-def display_menu(state: SyncState) -> MenuChoice:
-    fetched = state.fetched
+def display_menu(fetched: bool) -> MenuChoice:
     print("\nFile Synchronization Menu:")
     print(f"{MenuChoice.FETCH_REMOTE.value}. Fetch remote files")
     if fetched:
@@ -25,16 +24,14 @@ def display_menu(state: SyncState) -> MenuChoice:
         print(f"{MenuChoice.DELETE_REMOTE.value}. Delete remote files")
         print(f"{MenuChoice.SHOW_DOWNLOADS.value}. Show files to download")
         print(f"{MenuChoice.SHOW_MISMATCHES.value}. Show potential path mismatches")
-        print(f"{MenuChoice.LIST_ALL_FILES.value}. List all pertinent files and their status")
+        print(
+            f"{MenuChoice.LIST_ALL_FILES.value}. List all pertinent files and their status"
+        )
         print(f"{MenuChoice.SHOW_MANIFEST.value}. Show manifest")
-        print(f"{MenuChoice.SHOW_ADDITIONAL_DIRS.value}. Show additional local directories")
+        print(
+            f"{MenuChoice.SHOW_ADDITIONAL_DIRS.value}. Show additional local directories"
+        )
         print(f"{MenuChoice.SAVE_MANIFEST.value}. Save manifest")
-
-        # Adding suggested option
-        if state.partial_matches:
-            print("\nSuggested action: Apply suggested mappings to resolve path mismatches.")
-            print(f"For this, consider selecting {MenuChoice.SHOW_MISMATCHES.value} to view mismatches or {MenuChoice.SAVE_MANIFEST.value} to save the updated manifest after review.")
-
     print(f"{MenuChoice.EXIT.value}. Exit")
 
     while True:
