@@ -18,7 +18,6 @@ class MainMenu(Menu):
             self.add_option(UploadFilesOption(self.sync_manager))
             self.add_option(DeleteMenu(self.sync_manager))
             self.add_option(ShowDownloadsOption(self.sync_manager))
-            self.add_option(ShowMismatchesOption(self.sync_manager))
             self.add_option(ListAllFilesOption(self.sync_manager))
             self.add_option(ShowManifestOption(self.sync_manager))
             self.add_option(UploadManifestOption(self.sync_manager))
@@ -57,18 +56,6 @@ class ShowDownloadsOption(MenuOption):
         print(f"\nFiles to download:")
         for file in sorted(files, key=lambda f: f.path):
             print(f"- {file.path}")
-
-
-class ShowMismatchesOption(MenuOption):
-    def __init__(self, sync_manager: SyncManager) -> None:
-        super().__init__("Show potential path mismatches")
-        self.sync_manager = sync_manager
-
-    def run(self) -> None:
-        partial_matches = self.sync_manager.state.partial_matches
-        print("\nFiles with potential path mismatches:")
-        for match in sorted(partial_matches, key=lambda m: m.local_file.path):
-            print(f"? {match.local_file.path} <-> {match.remote_file.path}")
 
 
 class ListAllFilesOption(MenuOption):

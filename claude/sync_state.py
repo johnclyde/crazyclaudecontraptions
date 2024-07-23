@@ -96,7 +96,6 @@ class SyncManager:
         local_files = get_local_files(".")
         self.fetch_remote_files(local_files)
         self.state.apply_directory_match_rules()
-        self.update_additional_directories()
         self.state.fetched = True
 
     def save_manifest(self) -> None:
@@ -141,11 +140,6 @@ class SyncManager:
             raise ValueError(f"Error decoding JSON response: {e}")
         except KeyError as e:
             raise ValueError(f"Unexpected response format: {e}")
-
-    def update_additional_directories(self) -> None:
-        local_dirs = set(os.path.dirname(f.path) for f in self.state.local_files)
-        remote_dirs = set(os.path.dirname(f.path) for f in self.state.remote_files)
-        self.state.additional_local_directories = sorted(local_dirs - remote_dirs)
 
     def upload_content(self, filename: str, content: str) -> None:
         try:
