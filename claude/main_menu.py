@@ -21,7 +21,6 @@ class MainMenu(Menu):
             self.add_option(ShowMismatchesOption(self.sync_manager))
             self.add_option(ListAllFilesOption(self.sync_manager))
             self.add_option(ShowManifestOption(self.sync_manager))
-            self.add_option(ShowAdditionalDirsOption(self.sync_manager))
             self.add_option(SaveManifestOption(self.sync_manager))
 
 
@@ -84,8 +83,14 @@ class ListAllFilesOption(MenuOption):
         all_files = set(f.path for f in state.local_files + state.remote_files)
 
         for file_path in sorted(all_files):
-            local_status = next((f.status for f in state.local_files if f.path == file_path), "Not present")
-            remote_status = next((f.status for f in state.remote_files if f.path == file_path), "Not present")
+            local_status = next(
+                (f.status for f in state.local_files if f.path == file_path),
+                "Not present",
+            )
+            remote_status = next(
+                (f.status for f in state.remote_files if f.path == file_path),
+                "Not present",
+            )
             print(f"{file_path:<51} | {local_status:<15} | {remote_status:<15}")
 
 
@@ -96,25 +101,11 @@ class ShowManifestOption(MenuOption):
 
     def run(self) -> None:
         state = self.sync_manager.state
-        manifest = state.build_manifest()
+        manifest = state.manifest
         print("\nManifest:")
         for file in sorted(manifest.files, key=lambda f: f["path"]):
             print(f"{file['status']}: {file['path']}")
-        print("\nAdditional local directories:")
-        for dir in manifest.additional_local_directories:
-            print(f"- {dir}")
-
-
-class ShowAdditionalDirsOption(MenuOption):
-    def __init__(self, sync_manager: SyncManager) -> None:
-        super().__init__("Show additional local directories")
-        self.sync_manager = sync_manager
-
-    def run(self) -> None:
-        print("\nAdditional local directories:")
-        for dir in self.sync_manager.state.additional_local_directories:
-            print(f"- {dir}")
-        input("Press Enter to continue...")
+        # We need to put the rules in here...
 
 
 class SaveManifestOption(MenuOption):
