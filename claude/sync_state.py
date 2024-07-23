@@ -53,13 +53,8 @@ class SyncState:
                     if f.path.startswith(f"{source}/")
                 ]
                 for file in source_files:
-                    corresponding_path = file.path.replace(
-                        f"{source}/", f"{target}/", 1
-                    )
-                    if any(
-                        f.path == corresponding_path
-                        for f in self.local_files + self.remote_files
-                    ):
+                    corresponding_path = file.path.replace(f"{source}/", f"{target}/", 1)
+                    if any(f.path == corresponding_path for f in self.local_files + self.remote_files):
                         # If the corresponding file exists, remove the original file
                         if file in self.local_files:
                             self.local_files.remove(file)
@@ -86,23 +81,12 @@ class SyncState:
                     remote_file.status = "partial_match"
                     break
 
-        # Identify directory-level similarities
-        local_dirs = set(os.path.dirname(f.path) for f in only_local)
-        remote_dirs = set(os.path.dirname(f.path) for f in only_remote)
-
-        for local_dir in local_dirs:
-            for remote_dir in remote_dirs:
-                if local_dir.endswith(remote_dir) or remote_dir.endswith(local_dir):
-                    # Map files within these directories
-                    for local_file in only_local:
-                        if local_file.path.startswith(local_dir):
-                            relative_path = os.path.relpath(local_file.path, local_dir)
-                            corresponding_remote = os.path.join(remote_dir, relative_path)
-                            if corresponding_remote in (f.path for f in only_remote):
-                                self.partial_matches.append(PartialMatch(local_file, RemoteFile(corresponding_remote, "")))
-                                local_file.status = "partial_match"
-                                remote_file = next(rf for rf in only_remote if rf.path == corresponding_remote)
-                                remote_file.status = "partial_match"
+    def build_manifest(self) -> Manifest:
+        files = [
+            {"path": f.path, "status": f.status}
+            for f in self.local_files + self.remote_files
+        ]
+        return Manifest(files, self.additional_local_directories)
 
 
 class SyncManager:
@@ -119,10 +103,7 @@ class SyncManager:
     def save_manifest(self) -> None:
         manifest = self.state.manifest
         manifest.files = [
-            {
-                "path": f.path,
-                "status": "local" if isinstance(f, LocalFile) else "remote",
-            }
+            {"path": f.path, "status": "local" if isinstance(f, LocalFile) else "remote"}
             for f in self.state.local_files + self.state.remote_files
         ]
         manifest.save_to_file()
