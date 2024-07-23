@@ -1,6 +1,5 @@
 import json
 from dataclasses import dataclass
-import os
 
 MANIFEST_FILE = "sync_manifest.json"
 
@@ -20,14 +19,4 @@ class Manifest:
 
     def save_to_file(self, filename="manifest.json") -> None:
         with open(filename, "w") as f:
-            json.dump(self.__dict__, f, indent=2)
-
-    @classmethod
-    def load_from_file(cls, filename="manifest.json"):
-        with open(filename, 'r') as f:
-            data = json.load(f)
-        return cls(**data)
-
-    def save_to_file(self, filename="manifest.json"):
-        with open(filename, 'w') as f:
             json.dump(self.__dict__, f, indent=2)
