@@ -1,6 +1,5 @@
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 
-from sync_state import PartialMatch, SyncManager, SyncState
 
 
 class MenuOption:

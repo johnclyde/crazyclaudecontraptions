@@ -53,8 +53,13 @@ class SyncState:
                     if f.path.startswith(f"{source}/")
                 ]
                 for file in source_files:
-                    corresponding_path = file.path.replace(f"{source}/", f"{target}/", 1)
-                    if any(f.path == corresponding_path for f in self.local_files + self.remote_files):
+                    corresponding_path = file.path.replace(
+                        f"{source}/", f"{target}/", 1
+                    )
+                    if any(
+                        f.path == corresponding_path
+                        for f in self.local_files + self.remote_files
+                    ):
                         # If the corresponding file exists, remove the original file
                         if file in self.local_files:
                             self.local_files.remove(file)
@@ -81,13 +86,6 @@ class SyncState:
                     remote_file.status = "partial_match"
                     break
 
-    def build_manifest(self) -> Manifest:
-        files = [
-            {"path": f.path, "status": f.status}
-            for f in self.local_files + self.remote_files
-        ]
-        return Manifest(files, self.additional_local_directories)
-
 
 class SyncManager:
     def __init__(self):
@@ -103,7 +101,10 @@ class SyncManager:
     def save_manifest(self) -> None:
         manifest = self.state.manifest
         manifest.files = [
-            {"path": f.path, "status": "local" if isinstance(f, LocalFile) else "remote"}
+            {
+                "path": f.path,
+                "status": "local" if isinstance(f, LocalFile) else "remote",
+            }
             for f in self.state.local_files + self.state.remote_files
         ]
         manifest.save_to_file()

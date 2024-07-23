@@ -1,8 +1,7 @@
-from abc import ABC, abstractmethod
 
 from delete_menu import DeleteMenu
 from menu import Menu, MenuOption
-from sync_state import PartialMatch, SyncManager, SyncState
+from sync_state import SyncManager
 
 
 class MainMenu(Menu):
@@ -53,7 +52,7 @@ class ShowDownloadsOption(MenuOption):
 
     def run(self) -> None:
         files = self.sync_manager.state.get_only_remote()
-        print(f"\nFiles to download:")
+        print("\nFiles to download:")
         for file in sorted(files, key=lambda f: f.path):
             print(f"- {file.path}")
 
