@@ -26,7 +26,6 @@ interface HeaderProps {
   markNotificationAsRead: (id: string) => void;
   login: LoginFunction;
   logout: () => void;
-  setIsLoggedIn: React.Dispatch<React.SetStateAction<boolean>>; // New prop for setting login state
 }
 
 const Header: React.FC<HeaderProps> = ({
@@ -37,7 +36,6 @@ const Header: React.FC<HeaderProps> = ({
   markNotificationAsRead,
   login,
   logout,
-  setIsLoggedIn,
 }) => {
   const [showNotifications, setShowNotifications] = useState(false);
   const notificationRef = useRef<HTMLDivElement>(null);
@@ -60,10 +58,6 @@ const Header: React.FC<HeaderProps> = ({
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
-
-  const bypassLogin = () => {
-    setIsLoggedIn(true);
-  };
 
   return (
     <header className="bg-gray-800 text-white p-4 sticky top-0 z-50">
@@ -93,7 +87,6 @@ const Header: React.FC<HeaderProps> = ({
             isLoggedIn={isLoggedIn}
             login={login}
             logout={logout}
-            bypassLogin={bypassLogin}
           />
         </div>
       </div>

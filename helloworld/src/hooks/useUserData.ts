@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { auth } from "../firebase";
 import {
   GoogleAuthProvider,
@@ -20,15 +20,53 @@ interface UserProgress {
   completedAt: string;
 }
 
-export type LoginFunction = () => void;
+export type LoginFunction = () => Promise<void>;
 
 const useUserData = () => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  // eslint-disable-next-line
   const [userProgress, setUserProgress] = useState<UserProgress[]>([]);
+  const [token, setToken] = useState<string | null>(
+    localStorage.getItem("token"),
+  );
 
-  useEffect(() => {
+  const fetchUserData = useCallback(async (idToken: string) => {
+    try {
+      const userResponse = await fetch(
+        "https://us-central1-olympiads.cloudfunctions.net/user",
+        {
+          headers: {
+            Authorization: `Bearer ${idToken}`,
+          },
+        },
+      );
+      if (!userResponse.ok) {
+        throw new Error("Failed to fetch user data");
+      }
+      const userData = await userResponse.json();
+      setUser(userData.user);
+      setIsLoggedIn(true);
+
+      const progressResponse = await fetch(
+        "https://us-central1-olympiads.cloudfunctions.net/user_progress",
+        {
+          headers: {
+            Authorization: `Bearer ${idToken}`,
+          },
+        },
+      );
+      if (!progressResponse.ok) {
+        throw new Error("Failed to fetch user progress");
+      }
+      const progressData = await progressResponse.json();
+      setUserProgress(progressData);
+    } catch (error) {
+      console.error("Error fetching user data:", error);
+      setIsLoggedIn(false);
+      localStorage.removeItem("token");
+      setToken(null);
+
+useEffect(() => {
     if (auth && typeof auth.onAuthStateChanged === "function") {
       const unsubscribe = auth.onAuthStateChanged(
         (firebaseUser: FirebaseUser | null) => {
@@ -54,6 +92,27 @@ const useUserData = () => {
     }
   }, []);
 
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged(
+      async (firebaseUser: FirebaseUser | null) => {
+        if (firebaseUser) {
+          const idToken = await firebaseUser.getIdToken();
+          setToken(idToken);
+          localStorage.setItem("token", idToken);
+          await fetchUserData(idToken);
+        } else {
+          setUser(null);
+          setIsLoggedIn(false);
+          setUserProgress([]);
+          localStorage.removeItem("token");
+          setToken(null);
+        }
+      },
+    );
+
+    return () => unsubscribe();
+  }, [fetchUserData]);
+
   const login: LoginFunction = async () => {
     if (auth) {
       const provider = new GoogleAuthProvider();
@@ -68,18 +127,20 @@ const useUserData = () => {
   };
 
   const logout = async () => {
-    if (auth) {
-      try {
-        await signOut(auth);
-      } catch (error) {
-        console.error("Error signing out", error);
-      }
-    } else {
-      console.error("Firebase auth is not initialized");
+    try {
+      await signOut(auth);
+      await fetch("https://us-central1-olympiads.cloudfunctions.net/logout", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+    } catch (error) {
+      console.error("Error logging out:", error);
     }
   };
 
-  return { user, isLoggedIn, setIsLoggedIn, login, logout, userProgress };
+  return { user, isLoggedIn, login, logout, userProgress };
 };
 
 export default useUserData;
