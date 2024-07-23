@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from sync_state import SyncManager, SyncState
+from sync_state import PartialMatch, SyncManager, SyncState
 
 
 class MenuOption:
@@ -176,7 +176,7 @@ def show_files(title: str, files: list[any]) -> None:
     input("Press Enter to continue...")
 
 
-def show_path_mismatches(partial_matches: list[any]) -> None:
+def show_path_mismatches(partial_matches: list[PartialMatch]) -> None:
     print("\nFiles with potential path mismatches:")
     for match in sorted(partial_matches, key=lambda m: m.local_file.path):
         print(f"? {match.local_file.path} <-> {match.remote_file.path}")
