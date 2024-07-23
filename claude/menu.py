@@ -1,4 +1,4 @@
-from enum import Enum, auto
+from enum import Enum
 
 
 class MenuChoice(Enum):
@@ -8,11 +8,13 @@ class MenuChoice(Enum):
     SHOW_DOWNLOADS = auto()
     SHOW_MISMATCHES = auto()
     LIST_ALL_FILES = auto()
-    UPLOAD_MANIFEST = auto()
+    SHOW_MANIFEST = auto()
+    SHOW_ADDITIONAL_DIRS = auto()
+    SAVE_MANIFEST = auto()
     EXIT = 0
 
 
-def display_menu(fetched: bool, manifest_status: tuple[bool, bool]) -> MenuChoice:
+def display_menu(fetched: bool) -> MenuChoice:
     print("\nFile Synchronization Menu:")
     print(f"{MenuChoice.FETCH_REMOTE.value}. Fetch remote files")
     if fetched:
@@ -23,8 +25,11 @@ def display_menu(fetched: bool, manifest_status: tuple[bool, bool]) -> MenuChoic
         print(
             f"{MenuChoice.LIST_ALL_FILES.value}. List all pertinent files and their status"
         )
-        if manifest_status[0] and not manifest_status[1]:
-            print(f"{MenuChoice.UPLOAD_MANIFEST.value}. Upload manifest.json")
+        print(f"{MenuChoice.SHOW_MANIFEST.value}. Show manifest")
+        print(
+            f"{MenuChoice.SHOW_ADDITIONAL_DIRS.value}. Show additional local directories"
+        )
+        print(f"{MenuChoice.SAVE_MANIFEST.value}. Save manifest")
     print(f"{MenuChoice.EXIT.value}. Exit")
 
     while True:
@@ -34,19 +39,13 @@ def display_menu(fetched: bool, manifest_status: tuple[bool, bool]) -> MenuChoic
                 return MenuChoice.EXIT
             elif choice == MenuChoice.FETCH_REMOTE.value:
                 return MenuChoice.FETCH_REMOTE
-            elif fetched:
-                if (
-                    MenuChoice.UPLOAD_FILES.value
-                    <= choice
-                    <= MenuChoice.LIST_ALL_FILES.value
-                ):
-                    return MenuChoice(choice)
-                elif (
-                    choice == MenuChoice.UPLOAD_MANIFEST.value
-                    and manifest_status[0]
-                    and not manifest_status[1]
-                ):
-                    return MenuChoice.UPLOAD_MANIFEST
+            elif (
+                fetched
+                and MenuChoice.UPLOAD_FILES.value
+                <= choice
+                <= MenuChoice.SAVE_MANIFEST.value
+            ):
+                return MenuChoice(choice)
             raise ValueError
         except ValueError:
             print("Invalid choice. Please try again.")
@@ -82,4 +81,11 @@ def list_all_files(
     for local, remote in sorted(partial_matches):
         print(f"? {local} <-> {remote}")
 
+    input("Press Enter to continue...")
+
+
+def show_manifest(manifest: dict) -> None:
+    print("\nManifest:")
+    for file in manifest["files"]:
+        print(f"{file['status']}: {file['path']}")
     input("Press Enter to continue...")

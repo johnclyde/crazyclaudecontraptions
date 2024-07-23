@@ -3,16 +3,17 @@ from menu import (
     display_menu,
     list_all_files,
     show_files,
+    show_manifest,
     show_path_mismatches,
 )
-from sync_state import SyncState, upload_file
+from sync_state import SyncState
 
 
 def main() -> None:
     sync_state = SyncState()
 
     while True:
-        choice = display_menu(sync_state.fetched, sync_state.manifest_status)
+        choice = display_menu(sync_state.fetched)
 
         if choice == MenuChoice.EXIT:
             print("Exiting...")
@@ -39,12 +40,12 @@ def main() -> None:
                     sync_state.only_remote,
                     sync_state.partial_matches,
                 )
-            elif choice == MenuChoice.UPLOAD_MANIFEST:
-                try:
-                    upload_file("manifest.json")
-                    sync_state.manifest_status = (True, True)
-                except Exception as e:
-                    print(f"Error uploading manifest.json: {e}")
+            elif choice == MenuChoice.SHOW_MANIFEST:
+                show_manifest(sync_state.manifest)
+            elif choice == MenuChoice.SHOW_ADDITIONAL_DIRS:
+                sync_state.show_additional_directories()
+            elif choice == MenuChoice.SAVE_MANIFEST:
+                sync_state.save_manifest()
 
     if sync_state.fetched and not (
         sync_state.only_local or sync_state.only_remote or sync_state.partial_matches

@@ -78,6 +78,29 @@ def check_manifest(local_files: set[str], remote_files: set[str]) -> tuple[bool,
     return local_manifest, remote_manifest
 
 
+def build_manifest(local_files: set[str], remote_files: set[str]) -> dict:
+    manifest = {"files": [], "additional_local_directories": []}
+
+    for file in sorted(local_files):
+        file_info = {
+            "path": file,
+            "status": "local_only" if file not in remote_files else "synced",
+        }
+        manifest["files"].append(file_info)
+
+        # Check for additional local directory hierarchy
+        local_dirs = set(os.path.dirname(f) for f in local_files)
+        remote_dirs = set(os.path.dirname(f) for f in remote_files)
+        additional_dirs = local_dirs - remote_dirs
+        manifest["additional_local_directories"] = sorted(additional_dirs)
+
+    for file in sorted(remote_files - local_files):
+        file_info = {"path": file, "status": "remote_only"}
+        manifest["files"].append(file_info)
+
+    return manifest
+
+
 class SyncState:
     def __init__(self):
         self.curl_get = CurlGet()
@@ -87,6 +110,7 @@ class SyncState:
         self.uuid_map: dict[str, str] = {}
         self.fetched: bool = False
         self.manifest_status: tuple[bool, bool] = (False, False)
+        self.manifest: dict = {}
 
     def fetch_and_compare(self):
         local_files: set[str] = get_local_files(".")
@@ -95,6 +119,7 @@ class SyncState:
             local_files, remote_files
         )
         self.manifest_status = check_manifest(local_files, remote_files)
+        self.manifest = build_manifest(local_files, remote_files)
         self.fetched = True
 
     def process_files(self, action: str, files: set[str]) -> None:
@@ -126,3 +151,16 @@ class SyncState:
                 print("Invalid input. Please enter a number.")
             except Exception as e:
                 print(f"Error: {e}")
+
+    def save_manifest(self):
+        with open("manifest.json", "w") as f:
+            json.dump(self.manifest, f, indent=2)
+        print("Manifest saved to manifest.json")
+
+    def show_additional_directories(self):
+        if self.manifest["additional_local_directories"]:
+            print("\nAdditional local directories:")
+            for dir in self.manifest["additional_local_directories"]:
+                print(f"- {dir}")
+        else:
+            print("\nNo additional local directories found.")
