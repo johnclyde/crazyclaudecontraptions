@@ -13,7 +13,7 @@ def main() -> None:
     sync_manager = SyncManager()
 
     while True:
-        choice = display_menu(sync_manager.state.fetched)
+        choice = display_menu(sync_manager.state)
 
         if choice == MenuChoice.EXIT:
             print("Exiting...")
