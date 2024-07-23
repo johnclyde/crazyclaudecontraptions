@@ -36,16 +36,13 @@ export const useLogin = () => {
       // Call your login GCF here
       const idToken = await user.getIdToken();
       console.log("Calling login GCF...");
-      const response = await fetch(
-        "/api/login",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${idToken}`,
-          },
+      const response = await fetch("/api/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${idToken}`,
         },
-      );
+      });
 
       if (!response.ok) {
         const errorData = await response.json();

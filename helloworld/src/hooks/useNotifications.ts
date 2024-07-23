@@ -42,16 +42,13 @@ const useNotifications = (isLoggedIn: boolean) => {
     if (!isLoggedIn) return;
 
     try {
-      const response = await fetch(
-        "/api/notification/read",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ notification_id: notificationId }),
+      const response = await fetch("/api/notification/read", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
         },
-      );
+        body: JSON.stringify({ notification_id: notificationId }),
+      });
 
       if (!response.ok) {
         throw new Error("Failed to mark notification as read");
