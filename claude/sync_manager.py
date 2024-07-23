@@ -1,8 +1,10 @@
-import os
 import json
+import os
+
+from curl_helper import CurlDelete, CurlGet, CurlPost
 from file_types import File, SyncState
 from manifest import load_manifest, save_manifest, update_manifest
-from curl_helper import CurlGet, CurlPost, CurlDelete
+
 
 class SyncManager:
     def __init__(self):
@@ -15,7 +17,10 @@ class SyncManager:
             if "node_modules" in root or "build" in root:
                 continue
             for file in files:
-                if file.endswith((".js", ".ts", ".tsx", ".py")) or file == "manifest.json":
+                if (
+                    file.endswith((".js", ".ts", ".tsx", ".py"))
+                    or file == "manifest.json"
+                ):
                     rel_path = os.path.relpath(os.path.join(root, file), directory)
                     local_files.append(File(path=rel_path))
         return local_files
@@ -24,16 +29,21 @@ class SyncManager:
         try:
             result = self.curl_get.perform_request()
             remote_files_data = json.loads(result)
-            
-            remote_files = [File(path=file["file_name"], uuid=file["uuid"]) for file in remote_files_data]
-            
+
+            remote_files = [
+                File(path=file["file_name"], uuid=file["uuid"])
+                for file in remote_files_data
+            ]
+
             # Use manifest to match local and remote files
             manifest = load_manifest()
             for local_file in local_files:
                 for prefix, remote_prefix in manifest.items():
                     if local_file.path.startswith(prefix):
                         remote_path = local_file.path.replace(prefix, remote_prefix, 1)
-                        matching_remote = next((rf for rf in remote_files if rf.path == remote_path), None)
+                        matching_remote = next(
+                            (rf for rf in remote_files if rf.path == remote_path), None
+                        )
                         if matching_remote:
                             local_file.status = "synced"
                             matching_remote.status = "synced"
@@ -49,7 +59,11 @@ class SyncManager:
             raise ValueError(f"Unexpected response format: {e}")
 
     def show_unsynced_files(self):
-        unsynced = [f for f in self.state.local_files + self.state.remote_files if f.status == "unsynced"]
+        unsynced = [
+            f
+            for f in self.state.local_files + self.state.remote_files
+            if f.status == "unsynced"
+        ]
         if not unsynced:
             print("All files are synced!")
         else:
