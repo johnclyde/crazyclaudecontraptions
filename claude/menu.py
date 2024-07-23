@@ -1,5 +1,7 @@
 from enum import Enum, auto
 
+from sync_state import File, LocalFile, PartialMatch, RemoteFile, SyncManager, SyncState
+
 
 class MenuChoice(Enum):
     FETCH_REMOTE = auto()
@@ -8,11 +10,13 @@ class MenuChoice(Enum):
     SHOW_DOWNLOADS = auto()
     SHOW_MISMATCHES = auto()
     LIST_ALL_FILES = auto()
-    UPLOAD_MANIFEST = auto()
+    SHOW_MANIFEST = auto()
+    SHOW_ADDITIONAL_DIRS = auto()
+    SAVE_MANIFEST = auto()
     EXIT = 0
 
 
-def display_menu(fetched: bool, manifest_status: tuple[bool, bool]) -> MenuChoice:
+def display_menu(fetched: bool) -> MenuChoice:
     print("\nFile Synchronization Menu:")
     print(f"{MenuChoice.FETCH_REMOTE.value}. Fetch remote files")
     if fetched:
@@ -23,8 +27,11 @@ def display_menu(fetched: bool, manifest_status: tuple[bool, bool]) -> MenuChoic
         print(
             f"{MenuChoice.LIST_ALL_FILES.value}. List all pertinent files and their status"
         )
-        if manifest_status[0] and not manifest_status[1]:
-            print(f"{MenuChoice.UPLOAD_MANIFEST.value}. Upload manifest.json")
+        print(f"{MenuChoice.SHOW_MANIFEST.value}. Show manifest")
+        print(
+            f"{MenuChoice.SHOW_ADDITIONAL_DIRS.value}. Show additional local directories"
+        )
+        print(f"{MenuChoice.SAVE_MANIFEST.value}. Save manifest")
     print(f"{MenuChoice.EXIT.value}. Exit")
 
     while True:
@@ -34,52 +41,55 @@ def display_menu(fetched: bool, manifest_status: tuple[bool, bool]) -> MenuChoic
                 return MenuChoice.EXIT
             elif choice == MenuChoice.FETCH_REMOTE.value:
                 return MenuChoice.FETCH_REMOTE
-            elif fetched:
-                if (
-                    MenuChoice.UPLOAD_FILES.value
-                    <= choice
-                    <= MenuChoice.LIST_ALL_FILES.value
-                ):
-                    return MenuChoice(choice)
-                elif (
-                    choice == MenuChoice.UPLOAD_MANIFEST.value
-                    and manifest_status[0]
-                    and not manifest_status[1]
-                ):
-                    return MenuChoice.UPLOAD_MANIFEST
+            elif (
+                fetched
+                and MenuChoice.UPLOAD_FILES.value
+                <= choice
+                <= MenuChoice.SAVE_MANIFEST.value
+            ):
+                return MenuChoice(choice)
             raise ValueError
         except ValueError:
             print("Invalid choice. Please try again.")
 
 
-def show_files(title: str, files: set[str]) -> None:
+def show_files(title: str, files: list[File]) -> None:
     print(f"\n{title}:")
-    for file in sorted(files):
-        print(f"- {file}")
+    for file in sorted(files, key=lambda f: f.path):
+        print(f"- {file.path}")
     input("Press Enter to continue...")
 
 
-def show_path_mismatches(partial_matches: list[tuple[str, str]]) -> None:
+def show_path_mismatches(partial_matches: list[PartialMatch]) -> None:
     print("\nFiles with potential path mismatches:")
-    for local, remote in sorted(partial_matches):
-        print(f"? {local} <-> {remote}")
+    for match in sorted(partial_matches, key=lambda m: m.local_file.path):
+        print(f"? {match.local_file.path} <-> {match.remote_file.path}")
     input("Press Enter to continue...")
 
 
-def list_all_files(
-    only_local: set[str], only_remote: set[str], partial_matches: list[tuple[str, str]]
-) -> None:
+def list_all_files(state: SyncState) -> None:
     print("\nAll pertinent files and their status:")
     print("\nFiles only in local:")
-    for file in sorted(only_local):
-        print(f"+ {file}")
+    for file in sorted(state.get_only_local(), key=lambda f: f.path):
+        print(f"+ {file.path}")
 
     print("\nFiles only in remote:")
-    for file in sorted(only_remote):
-        print(f"- {file}")
+    for file in sorted(state.get_only_remote(), key=lambda f: f.path):
+        print(f"- {file.path}")
 
     print("\nFiles with potential path mismatches:")
-    for local, remote in sorted(partial_matches):
-        print(f"? {local} <-> {remote}")
+    for match in sorted(state.partial_matches, key=lambda m: m.local_file.path):
+        print(f"? {match.local_file.path} <-> {match.remote_file.path}")
 
+    input("Press Enter to continue...")
+
+
+def show_manifest(state: SyncState) -> None:
+    manifest = state.build_manifest()
+    print("\nManifest:")
+    for file in sorted(manifest.files, key=lambda f: f["path"]):
+        print(f"{file['status']}: {file['path']}")
+    print("\nAdditional local directories:")
+    for dir in manifest.additional_local_directories:
+        print(f"- {dir}")
     input("Press Enter to continue...")
