@@ -4,6 +4,7 @@ from abc import ABC
 from dataclasses import dataclass, field
 
 from curl_helper import CurlDelete, CurlGet, CurlPost
+from manifest import Manifest
 
 
 @dataclass
@@ -37,10 +38,24 @@ class PartialMatch:
 class SyncState:
     local_files: list[LocalFile] = field(default_factory=list)
     remote_files: list[RemoteFile] = field(default_factory=list)
-    partial_matches: list[PartialMatch] = field(default_factory=list)
-    uuid_map: dict[str, str] = field(default_factory=dict)
     fetched: bool = False
-    additional_local_directories: list[str] = field(default_factory=list)
+    uuid_map: dict[str, str] = field(default_factory=dict)
+    manifest: Manifest = field(default_factory=lambda: Manifest.load_from_file())
+
+    def apply_directory_match_rules(self):
+        source_files = [f for f in self.local_files + self.remote_files if f.path.startswith(f"{source}/")]
+        for rule in self.manifest.rules:
+            if rule["type"] == "directory_match":
+                source = rule["source"]
+                target = rule["target"]
+                for file in source_files:
+                    corresponding_path = file.path.replace(f"{source}/", f"{target}/", 1)
+                    if any(f.path == corresponding_path for f in self.local_files + self.remote_files):
+                        # If the corresponding file exists, remove the original file
+                        if file in self.local_files:
+                            self.local_files.remove(file)
+                        elif file in self.remote_files:
+                            self.remote_files.remove(file)
 
     def get_only_local(self) -> list[LocalFile]:
         return [f for f in self.local_files if f.status == "local_only"]
@@ -62,23 +77,12 @@ class SyncState:
                     remote_file.status = "partial_match"
                     break
 
-        # Identify directory-level similarities
-        local_dirs = set(os.path.dirname(f.path) for f in only_local)
-        remote_dirs = set(os.path.dirname(f.path) for f in only_remote)
-
-        for local_dir in local_dirs:
-            for remote_dir in remote_dirs:
-                if local_dir.endswith(remote_dir) or remote_dir.endswith(local_dir):
-                    # Map files within these directories
-                    for local_file in only_local:
-                        if local_file.path.startswith(local_dir):
-                            relative_path = os.path.relpath(local_file.path, local_dir)
-                            corresponding_remote = os.path.join(remote_dir, relative_path)
-                            if corresponding_remote in (f.path for f in only_remote):
-                                self.partial_matches.append(PartialMatch(local_file, RemoteFile(corresponding_remote, "")))
-                                local_file.status = "partial_match"
-                                remote_file = next(rf for rf in only_remote if rf.path == corresponding_remote)
-                                remote_file.status = "partial_match"
+    def build_manifest(self) -> Manifest:
+        files = [
+            {"path": f.path, "status": f.status}
+            for f in self.local_files + self.remote_files
+        ]
+        return Manifest(files, self.additional_local_directories)
 
 
 class SyncManager:
@@ -89,9 +93,18 @@ class SyncManager:
     def fetch_and_compare(self) -> None:
         local_files = get_local_files(".")
         self.fetch_remote_files(local_files)
-        self.state.find_partial_matches()
+        self.state.apply_directory_match_rules()
         self.update_additional_directories()
         self.state.fetched = True
+
+    def save_manifest(self) -> None:
+        manifest = self.state.manifest
+        manifest.files = [
+            {"path": f.path, "status": "local" if isinstance(f, LocalFile) else "remote"}
+            for f in self.state.local_files + self.state.remote_files
+        ]
+        manifest.save_to_file()
+        print("Manifest saved to manifest.json")
 
     def fetch_remote_files(self, local_files: set[str]) -> None:
         try:
@@ -150,12 +163,6 @@ class SyncManager:
             print(f"Response: {result}")
         except Exception as e:
             raise Exception(f"Error deleting file {file.path}: {e}")
-
-    def save_manifest(self) -> None:
-        manifest = self.state.build_manifest()
-        with open("manifest.json", "w") as f:
-            json.dump(manifest.__dict__, f, indent=2)
-        print("Manifest saved to manifest.json")
 
 
 def get_local_files(directory: str) -> set[str]:
