@@ -68,16 +68,17 @@ const useUserData = () => {
   };
 
   const logout = async () => {
-    try {
-      await signOut(auth);
+    if (auth) {
+      try {
+        await signOut(auth);
       
-      // Call your custom logout API
-      const response = await fetch('/logout', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
+        // Call your custom logout API
+        const response = await fetch('/logout', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        })};
 
       if (!response.ok) {
         throw new Error('Logout API call failed');
