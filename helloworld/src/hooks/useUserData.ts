@@ -78,17 +78,20 @@ const useUserData = () => {
           headers: {
             'Content-Type': 'application/json',
           },
-        })};
+        });
 
-      if (!response.ok) {
-        throw new Error('Logout API call failed');
+        if (!response.ok) {
+          throw new Error('Logout API call failed');
+        }
+
+        // Clear user data and update state
+        setUser(null);
+        setIsLoggedIn(false);
+      } catch (error) {
+        console.error("Error during logout:", error);
       }
-
-      // Clear user data and update state
-      setUser(null);
-      setIsLoggedIn(false);
-    } catch (error) {
-      console.error("Error during logout:", error);
+    } else {
+      console.error("Firebase auth is not initialized");
     }
   };
 
