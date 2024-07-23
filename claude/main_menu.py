@@ -21,6 +21,7 @@ class MainMenu(Menu):
             self.add_option(ShowMismatchesOption(self.sync_manager))
             self.add_option(ListAllFilesOption(self.sync_manager))
             self.add_option(ShowManifestOption(self.sync_manager))
+            self.add_option(UploadManifestOption(self.sync_manager))
             self.add_option(SaveManifestOption(self.sync_manager))
 
 
@@ -105,7 +106,17 @@ class ShowManifestOption(MenuOption):
         print("\nManifest:")
         for file in sorted(manifest.files, key=lambda f: f["path"]):
             print(f"{file['status']}: {file['path']}")
-        # We need to put the rules in here...
+        for rule in manifest.rules:
+            print(f"Rule: {rule}")
+
+
+class UploadManifestOption(MenuOption):
+    def __init__(self, sync_manager: SyncManager) -> None:
+        super().__init__("Upload manifest")
+        self.sync_manager = sync_manager
+
+    def run(self) -> None:
+        self.sync_manager.upload_manifest()
 
 
 class SaveManifestOption(MenuOption):

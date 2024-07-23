@@ -147,18 +147,27 @@ class SyncManager:
         remote_dirs = set(os.path.dirname(f.path) for f in self.state.remote_files)
         self.state.additional_local_directories = sorted(local_dirs - remote_dirs)
 
-    def upload_file(self, file: LocalFile) -> None:
+    def upload_content(self, filename: str, content: str) -> None:
         try:
-            with open(file.path, "r") as f:
-                content = f.read()
-            curl_post = CurlPost(file.path, content)
+            curl_post = CurlPost(filename, content)
             result = curl_post.perform_request()
-            print(f"Successfully uploaded: {file.path}")
+            print(f"Successfully uploaded {filename}")
             print(f"Response: {result}")
-        except IOError as e:
-            raise IOError(f"Error reading file {file.path}: {e}")
         except Exception as e:
-            raise Exception(f"Error uploading file {file.path}: {e}")
+            raise Exception(f"Error uploading {filename}: {e}")
+
+    def upload_file(self, file: LocalFile) -> None:
+        filename = file.path
+        try:
+            with open(filename, "r") as f:
+                content = f.read()
+            self.upload_content(filename, content)
+        except IOError as e:
+            raise IOError(f"Error reading file {filename}: {e}")
+
+    def upload_manifest(self) -> None:
+        manifest_content = json.dumps(self.state.manifest.__dict__, indent=2)
+        self.upload_content("manifest.json", manifest_content)
 
     def delete_file(self, file: RemoteFile) -> None:
         try:
