@@ -34,12 +34,6 @@ class PartialMatch:
 
 
 @dataclass
-class Manifest:
-    files: list[dict[str, str]]
-    additional_local_directories: list[str]
-
-
-@dataclass
 class SyncState:
     local_files: list[LocalFile] = field(default_factory=list)
     remote_files: list[RemoteFile] = field(default_factory=list)
@@ -68,12 +62,23 @@ class SyncState:
                     remote_file.status = "partial_match"
                     break
 
-    def build_manifest(self) -> Manifest:
-        files = [
-            {"path": f.path, "status": f.status}
-            for f in self.local_files + self.remote_files
-        ]
-        return Manifest(files, self.additional_local_directories)
+        # Identify directory-level similarities
+        local_dirs = set(os.path.dirname(f.path) for f in only_local)
+        remote_dirs = set(os.path.dirname(f.path) for f in only_remote)
+
+        for local_dir in local_dirs:
+            for remote_dir in remote_dirs:
+                if local_dir.endswith(remote_dir) or remote_dir.endswith(local_dir):
+                    # Map files within these directories
+                    for local_file in only_local:
+                        if local_file.path.startswith(local_dir):
+                            relative_path = os.path.relpath(local_file.path, local_dir)
+                            corresponding_remote = os.path.join(remote_dir, relative_path)
+                            if corresponding_remote in (f.path for f in only_remote):
+                                self.partial_matches.append(PartialMatch(local_file, RemoteFile(corresponding_remote, "")))
+                                local_file.status = "partial_match"
+                                remote_file = next(rf for rf in only_remote if rf.path == corresponding_remote)
+                                remote_file.status = "partial_match"
 
 
 class SyncManager:
