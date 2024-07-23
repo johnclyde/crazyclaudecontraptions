@@ -80,7 +80,10 @@ class SyncManager:
     def save_manifest(self) -> None:
         manifest = self.state.manifest
         manifest.files = [
-            {"path": f.path, "status": "local" if isinstance(f, LocalFile) else "remote"}
+            {
+                "path": f.path,
+                "status": "local" if isinstance(f, LocalFile) else "remote",
+            }
             for f in self.state.local_files + self.state.remote_files
         ]
         manifest.save_to_file()
