@@ -1,15 +1,34 @@
-from menu import (
-    MenuChoice,
-    display_menu,
-    list_all_files,
-    show_files,
-    show_manifest,
-    show_path_mismatches,
-)
-from sync_state import SyncManager
+from enum import Enum, auto
+
+from sync_manager import SyncManager
 
 
-def main() -> None:
+class MenuChoice(Enum):
+    FETCH = auto()
+    SHOW_UNSYNCED = auto()
+    SYNC = auto()
+    UPDATE_MANIFEST = auto()
+    EXIT = auto()
+
+
+def display_menu(fetched: bool):
+    print("\nSync Menu:")
+    print(f"{MenuChoice.FETCH.value}. Fetch remote files")
+    if fetched:
+        print(f"{MenuChoice.SHOW_UNSYNCED.value}. Show unsynced files")
+        print(f"{MenuChoice.SYNC.value}. Sync files")
+    print(f"{MenuChoice.UPDATE_MANIFEST.value}. Update manifest")
+    print(f"{MenuChoice.EXIT.value}. Exit")
+
+    while True:
+        try:
+            choice = int(input("Enter your choice: "))
+            return MenuChoice(choice)
+        except ValueError:
+            print("Invalid choice. Please try again.")
+
+
+def main():
     sync_manager = SyncManager()
 
     while True:
@@ -18,44 +37,20 @@ def main() -> None:
         if choice == MenuChoice.EXIT:
             print("Exiting...")
             break
-        elif choice == MenuChoice.FETCH_REMOTE:
+        elif choice == MenuChoice.FETCH:
             print("Fetching remote files...")
             try:
-                sync_manager.fetch_and_compare()
+                local_files = sync_manager.get_local_files(".")
+                sync_manager.fetch_remote_files(local_files)
                 print("Remote files fetched successfully.")
             except Exception as e:
                 print(f"Error fetching remote files: {e}")
-        elif sync_manager.state.fetched:
-            if choice == MenuChoice.UPLOAD_FILES:
-                sync_manager.process_files(
-                    "upload", sync_manager.state.get_only_local()
-                )
-            elif choice == MenuChoice.DELETE_REMOTE:
-                sync_manager.process_files(
-                    "delete", sync_manager.state.get_only_remote()
-                )
-            elif choice == MenuChoice.SHOW_DOWNLOADS:
-                show_files("Files to download", sync_manager.state.get_only_remote())
-            elif choice == MenuChoice.SHOW_MISMATCHES:
-                show_path_mismatches(sync_manager.state.partial_matches)
-            elif choice == MenuChoice.LIST_ALL_FILES:
-                list_all_files(sync_manager.state)
-            elif choice == MenuChoice.SHOW_MANIFEST:
-                show_manifest(sync_manager.state)
-            elif choice == MenuChoice.SHOW_ADDITIONAL_DIRS:
-                print("\nAdditional local directories:")
-                for dir in sync_manager.state.additional_local_directories:
-                    print(f"- {dir}")
-                input("Press Enter to continue...")
-            elif choice == MenuChoice.SAVE_MANIFEST:
-                sync_manager.save_manifest()
-
-    if sync_manager.state.fetched and not (
-        sync_manager.state.get_only_local()
-        or sync_manager.state.get_only_remote()
-        or sync_manager.state.partial_matches
-    ):
-        print("\nAll files are in sync!")
+        elif choice == MenuChoice.SHOW_UNSYNCED and sync_manager.state.fetched:
+            sync_manager.show_unsynced_files()
+        elif choice == MenuChoice.SYNC and sync_manager.state.fetched:
+            sync_manager.sync_files()
+        elif choice == MenuChoice.UPDATE_MANIFEST:
+            sync_manager.update_manifest()
 
 
 if __name__ == "__main__":
