@@ -13,11 +13,10 @@ interface UserMenuProps {
   isLoggedIn: boolean;
   login: LoginFunction;
   logout: () => void;
-  bypassLogin: () => void;
 }
 
 const UserMenu = forwardRef<HTMLDivElement, UserMenuProps>(
-  ({ user, isLoggedIn, login, logout, bypassLogin }, ref) => {
+  ({ user, isLoggedIn, login, logout }, ref) => {
     const [showMenu, setShowMenu] = useState(false);
     const [showLoginDialog, setShowLoginDialog] = useState(false);
 
@@ -108,12 +107,6 @@ const UserMenu = forwardRef<HTMLDivElement, UserMenuProps>(
                   className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                 >
                   Login
-                </button>
-                <button
-                  onClick={bypassLogin}
-                  className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                >
-                  Bypass Login
                 </button>
               </>
             )}
