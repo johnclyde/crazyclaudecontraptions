@@ -4,6 +4,7 @@ from abc import ABC
 from dataclasses import dataclass, field
 
 from curl_helper import CurlDelete, CurlGet, CurlPost
+from manifest import Manifest
 
 
 @dataclass
@@ -34,19 +35,36 @@ class PartialMatch:
 
 
 @dataclass
-class Manifest:
-    files: list[dict[str, str]]
-    additional_local_directories: list[str]
-
-
-@dataclass
 class SyncState:
     local_files: list[LocalFile] = field(default_factory=list)
     remote_files: list[RemoteFile] = field(default_factory=list)
-    partial_matches: list[PartialMatch] = field(default_factory=list)
-    uuid_map: dict[str, str] = field(default_factory=dict)
     fetched: bool = False
-    additional_local_directories: list[str] = field(default_factory=list)
+    uuid_map: dict[str, str] = field(default_factory=dict)
+    manifest: Manifest = field(default_factory=lambda: Manifest.load_from_file())
+
+    def apply_directory_match_rules(self):
+        for rule in self.manifest.rules:
+            if rule["type"] == "directory_match":
+                source = rule["source"]
+                target = rule["target"]
+                source_files = [
+                    f
+                    for f in self.local_files + self.remote_files
+                    if f.path.startswith(f"{source}/")
+                ]
+                for file in source_files:
+                    corresponding_path = file.path.replace(
+                        f"{source}/", f"{target}/", 1
+                    )
+                    if any(
+                        f.path == corresponding_path
+                        for f in self.local_files + self.remote_files
+                    ):
+                        # If the corresponding file exists, remove the original file
+                        if file in self.local_files:
+                            self.local_files.remove(file)
+                        elif file in self.remote_files:
+                            self.remote_files.remove(file)
 
     def get_only_local(self) -> list[LocalFile]:
         return [f for f in self.local_files if f.status == "local_only"]
@@ -68,13 +86,6 @@ class SyncState:
                     remote_file.status = "partial_match"
                     break
 
-    def build_manifest(self) -> Manifest:
-        files = [
-            {"path": f.path, "status": f.status}
-            for f in self.local_files + self.remote_files
-        ]
-        return Manifest(files, self.additional_local_directories)
-
 
 class SyncManager:
     def __init__(self):
@@ -84,9 +95,20 @@ class SyncManager:
     def fetch_and_compare(self) -> None:
         local_files = get_local_files(".")
         self.fetch_remote_files(local_files)
-        self.state.find_partial_matches()
-        self.update_additional_directories()
+        self.state.apply_directory_match_rules()
         self.state.fetched = True
+
+    def save_manifest(self) -> None:
+        manifest = self.state.manifest
+        manifest.files = [
+            {
+                "path": f.path,
+                "status": "local" if isinstance(f, LocalFile) else "remote",
+            }
+            for f in self.state.local_files + self.state.remote_files
+        ]
+        manifest.save_to_file()
+        print("Manifest saved to manifest.json")
 
     def fetch_remote_files(self, local_files: set[str]) -> None:
         try:
@@ -119,23 +141,27 @@ class SyncManager:
         except KeyError as e:
             raise ValueError(f"Unexpected response format: {e}")
 
-    def update_additional_directories(self) -> None:
-        local_dirs = set(os.path.dirname(f.path) for f in self.state.local_files)
-        remote_dirs = set(os.path.dirname(f.path) for f in self.state.remote_files)
-        self.state.additional_local_directories = sorted(local_dirs - remote_dirs)
+    def upload_content(self, filename: str, content: str) -> None:
+        try:
+            curl_post = CurlPost(filename, content)
+            result = curl_post.perform_request()
+            print(f"Successfully uploaded {filename}")
+            print(f"Response: {result}")
+        except Exception as e:
+            raise Exception(f"Error uploading {filename}: {e}")
 
     def upload_file(self, file: LocalFile) -> None:
+        filename = file.path
         try:
-            with open(file.path, "r") as f:
+            with open(filename, "r") as f:
                 content = f.read()
-            curl_post = CurlPost(file.path, content)
-            result = curl_post.perform_request()
-            print(f"Successfully uploaded: {file.path}")
-            print(f"Response: {result}")
+            self.upload_content(filename, content)
         except IOError as e:
-            raise IOError(f"Error reading file {file.path}: {e}")
-        except Exception as e:
-            raise Exception(f"Error uploading file {file.path}: {e}")
+            raise IOError(f"Error reading file {filename}: {e}")
+
+    def upload_manifest(self) -> None:
+        manifest_content = json.dumps(self.state.manifest.__dict__, indent=2)
+        self.upload_content("manifest.json", manifest_content)
 
     def delete_file(self, file: RemoteFile) -> None:
         try:
@@ -145,12 +171,6 @@ class SyncManager:
             print(f"Response: {result}")
         except Exception as e:
             raise Exception(f"Error deleting file {file.path}: {e}")
-
-    def save_manifest(self) -> None:
-        manifest = self.state.build_manifest()
-        with open("manifest.json", "w") as f:
-            json.dump(manifest.__dict__, f, indent=2)
-        print("Manifest saved to manifest.json")
 
 
 def get_local_files(directory: str) -> set[str]:

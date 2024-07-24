@@ -18,10 +18,9 @@ class MainMenu(Menu):
             self.add_option(UploadFilesOption(self.sync_manager))
             self.add_option(DeleteMenu(self.sync_manager))
             self.add_option(ShowDownloadsOption(self.sync_manager))
-            self.add_option(ShowMismatchesOption(self.sync_manager))
             self.add_option(ListAllFilesOption(self.sync_manager))
             self.add_option(ShowManifestOption(self.sync_manager))
-            self.add_option(ShowAdditionalDirsOption(self.sync_manager))
+            self.add_option(UploadManifestOption(self.sync_manager))
             self.add_option(SaveManifestOption(self.sync_manager))
 
 
@@ -59,18 +58,6 @@ class ShowDownloadsOption(MenuOption):
             print(f"- {file.path}")
 
 
-class ShowMismatchesOption(MenuOption):
-    def __init__(self, sync_manager: SyncManager) -> None:
-        super().__init__("Show potential path mismatches")
-        self.sync_manager = sync_manager
-
-    def run(self) -> None:
-        partial_matches = self.sync_manager.state.partial_matches
-        print("\nFiles with potential path mismatches:")
-        for match in sorted(partial_matches, key=lambda m: m.local_file.path):
-            print(f"? {match.local_file.path} <-> {match.remote_file.path}")
-
-
 class ListAllFilesOption(MenuOption):
     def __init__(self, sync_manager: SyncManager) -> None:
         super().__init__("List all files")
@@ -84,8 +71,14 @@ class ListAllFilesOption(MenuOption):
         all_files = set(f.path for f in state.local_files + state.remote_files)
 
         for file_path in sorted(all_files):
-            local_status = next((f.status for f in state.local_files if f.path == file_path), "Not present")
-            remote_status = next((f.status for f in state.remote_files if f.path == file_path), "Not present")
+            local_status = next(
+                (f.status for f in state.local_files if f.path == file_path),
+                "Not present",
+            )
+            remote_status = next(
+                (f.status for f in state.remote_files if f.path == file_path),
+                "Not present",
+            )
             print(f"{file_path:<51} | {local_status:<15} | {remote_status:<15}")
 
 
@@ -96,25 +89,21 @@ class ShowManifestOption(MenuOption):
 
     def run(self) -> None:
         state = self.sync_manager.state
-        manifest = state.build_manifest()
+        manifest = state.manifest
         print("\nManifest:")
         for file in sorted(manifest.files, key=lambda f: f["path"]):
             print(f"{file['status']}: {file['path']}")
-        print("\nAdditional local directories:")
-        for dir in manifest.additional_local_directories:
-            print(f"- {dir}")
+        for rule in manifest.rules:
+            print(f"Rule: {rule}")
 
 
-class ShowAdditionalDirsOption(MenuOption):
+class UploadManifestOption(MenuOption):
     def __init__(self, sync_manager: SyncManager) -> None:
-        super().__init__("Show additional local directories")
+        super().__init__("Upload manifest")
         self.sync_manager = sync_manager
 
     def run(self) -> None:
-        print("\nAdditional local directories:")
-        for dir in self.sync_manager.state.additional_local_directories:
-            print(f"- {dir}")
-        input("Press Enter to continue...")
+        self.sync_manager.upload_manifest()
 
 
 class SaveManifestOption(MenuOption):
