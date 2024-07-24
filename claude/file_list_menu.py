@@ -2,6 +2,7 @@ from dataclasses import dataclass
 
 from menu import Menu
 from sync_state import SyncManager
+from upload_file_menu import UploadFileMenu
 
 
 @dataclass
@@ -22,6 +23,7 @@ class FileListMenu(Menu):
         self.add_option(ToggleSyncedFiles(self.config))
         self.add_option(ToggleLocalOnlyFiles(self.config))
         self.add_option(ToggleRemoteOnlyFiles(self.config))
+        self.add_option(UploadFileMenu(self.sync_manager))
 
     def display(self) -> None:
         state = self.sync_manager.state
