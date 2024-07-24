@@ -1,5 +1,5 @@
 from menu import Menu, MenuOption
-from sync_state import RemoteFile, SyncManager
+from sync_state import File, SyncManager
 
 
 class DeleteMenu(Menu):
@@ -14,13 +14,15 @@ class DeleteMenu(Menu):
 
 
 class DeleteFileOption(MenuOption):
-    def __init__(self, sync_manager: SyncManager, file: RemoteFile) -> None:
+    def __init__(self, sync_manager: SyncManager, file: File) -> None:
         super().__init__(f"Delete {file.path}")
         self.sync_manager = sync_manager
         self.file = file
 
     def run(self) -> None:
-        confirm = input(f"Are you sure you want to delete {self.file.path}? (y/n): ")
+        confirm = input(
+            f"Are you sure you want to delete {self.file.remote_path}? (y/n): "
+        )
         if confirm.lower() == "y":
             self.sync_manager.delete_file(self.file)
         else:

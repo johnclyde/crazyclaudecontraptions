@@ -63,27 +63,18 @@ class ListAllFilesOption(MenuOption):
 
     def run(self) -> None:
         state = self.sync_manager.state
-        print(f"{'File Path':<55} | {'Local':<8} | Remote")
-        print("-" * 75)
+        print(f"{'Remote Path':<45} | {'UUID':<40} | Local Match | Full Path")
+        print("-" * 10)
 
-        all_files = set(f.path for f in state.local_files + state.remote_files)
+        for file in sorted(
+            self.sync_manager.state.files.values(), key=lambda f: f.local_path
+        ):
+            local_status = "✅" if file.local_present else "❌"
+            remote_uuid = file.remote_uuid if file.remote_present else ""
 
-        for file_path in sorted(all_files):
-            local_file = next(
-                (f for f in state.local_files if f.path == file_path), None
+            print(
+                f"{file.remote_path:<45} | {remote_uuid:<40}| {local_status:<12}| {file.local_path}"
             )
-            remote_file = next(
-                (f for f in state.remote_files if f.path == file_path), None
-            )
-
-            local_status = (
-                "✅" if local_file and local_file.status != "local_only" else "❌"
-            )
-            remote_status = (
-                "✅" if remote_file and remote_file.status != "remote_only" else "❌"
-            )
-
-            print(f"{file_path:<55} | {local_status:<8}| {remote_status}")
 
 
 class ShowManifestOption(MenuOption):
