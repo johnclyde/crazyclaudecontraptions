@@ -61,10 +61,6 @@ const Header: React.FC<HeaderProps> = ({
     };
   }, []);
 
-  const bypassLogin = () => {
-    setIsLoggedIn(true);
-  };
-
   return (
     <header className="bg-gray-800 text-white p-4 sticky top-0 z-50">
       <div className="container mx-auto flex justify-between items-center">
@@ -93,7 +89,6 @@ const Header: React.FC<HeaderProps> = ({
             isLoggedIn={isLoggedIn}
             login={login}
             logout={logout}
-            bypassLogin={bypassLogin}
           />
         </div>
       </div>
