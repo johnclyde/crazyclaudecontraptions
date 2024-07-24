@@ -5,7 +5,15 @@ import useNotifications from "./hooks/useNotifications";
 import useUserData from "./hooks/useUserData";
 
 const GrindOlympiadsLayout: React.FC = () => {
-  const { user, isLoggedIn, setIsLoggedIn, login, logout, isAdminMode, toggleAdminMode } = useUserData();
+  const {
+    user,
+    isLoggedIn,
+    setIsLoggedIn,
+    login,
+    logout,
+    isAdminMode,
+    toggleAdminMode,
+  } = useUserData();
   const { notifications, notificationsError, markNotificationAsRead } =
     useNotifications(isLoggedIn);
 

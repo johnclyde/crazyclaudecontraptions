@@ -69,7 +69,9 @@ const Header: React.FC<HeaderProps> = ({
   const headerBackgroundColor = isAdminMode ? "bg-red-900" : "bg-gray-800";
 
   return (
-    <header className={`${headerBackgroundColor} text-white p-4 sticky top-0 z-50`}>
+    <header
+      className={`${headerBackgroundColor} text-white p-4 sticky top-0 z-50`}
+    >
       <div className="container mx-auto flex justify-between items-center">
         <Link to="/" className="text-xl font-bold">
           GrindOlympiads
