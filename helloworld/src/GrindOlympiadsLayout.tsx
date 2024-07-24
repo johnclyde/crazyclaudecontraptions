@@ -5,7 +5,7 @@ import useNotifications from "./hooks/useNotifications";
 import useUserData from "./hooks/useUserData";
 
 const GrindOlympiadsLayout: React.FC = () => {
-  const { user, isLoggedIn, setIsLoggedIn, login, logout } = useUserData();
+  const { user, isLoggedIn, setIsLoggedIn, login, logout, isAdminMode, toggleAdminMode } = useUserData();
   const { notifications, notificationsError, markNotificationAsRead } =
     useNotifications(isLoggedIn);
 
@@ -20,6 +20,8 @@ const GrindOlympiadsLayout: React.FC = () => {
         markNotificationAsRead={markNotificationAsRead}
         login={login}
         logout={logout}
+        isAdminMode={isAdminMode}
+        toggleAdminMode={toggleAdminMode}
       />
       <main className="flex-grow">
         <Outlet />

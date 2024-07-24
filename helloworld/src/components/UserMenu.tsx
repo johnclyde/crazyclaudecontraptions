@@ -6,6 +6,7 @@ import { Link } from "react-router-dom";
 interface User {
   name: string;
   avatar: string;
+  isAdmin: boolean;
 }
 
 interface UserMenuProps {
@@ -13,10 +14,12 @@ interface UserMenuProps {
   isLoggedIn: boolean;
   login: LoginFunction;
   logout: () => void;
+  isAdminMode: boolean;
+  toggleAdminMode: () => void;
 }
 
 const UserMenu = forwardRef<HTMLDivElement, UserMenuProps>(
-  ({ user, isLoggedIn, login, logout }, ref) => {
+  ({ user, isLoggedIn, login, logout, isAdminMode, toggleAdminMode }, ref) => {
     const [showMenu, setShowMenu] = useState(false);
     const [showLoginDialog, setShowLoginDialog] = useState(false);
 
@@ -93,6 +96,17 @@ const UserMenu = forwardRef<HTMLDivElement, UserMenuProps>(
                 >
                   Users
                 </Link>
+                {user?.isAdmin && (
+                  <button
+                    onClick={() => {
+                      toggleAdminMode();
+                      setShowMenu(false);
+                    }}
+                    className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  >
+                    {isAdminMode ? "Disable Admin Mode" : "Enable Admin Mode"}
+                  </button>
+                )}
                 <button
                   onClick={handleLogout}
                   className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"

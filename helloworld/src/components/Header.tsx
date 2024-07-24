@@ -9,6 +9,7 @@ interface User {
   name: string;
   email: string;
   avatar: string;
+  isAdmin: boolean;
 }
 
 interface Notification {
@@ -26,7 +27,9 @@ interface HeaderProps {
   markNotificationAsRead: (id: string) => void;
   login: LoginFunction;
   logout: () => void;
-  setIsLoggedIn: React.Dispatch<React.SetStateAction<boolean>>; // New prop for setting login state
+  setIsLoggedIn: React.Dispatch<React.SetStateAction<boolean>>;
+  isAdminMode: boolean;
+  toggleAdminMode: () => void;
 }
 
 const Header: React.FC<HeaderProps> = ({
@@ -38,6 +41,8 @@ const Header: React.FC<HeaderProps> = ({
   login,
   logout,
   setIsLoggedIn,
+  isAdminMode,
+  toggleAdminMode,
 }) => {
   const [showNotifications, setShowNotifications] = useState(false);
   const notificationRef = useRef<HTMLDivElement>(null);
@@ -61,8 +66,10 @@ const Header: React.FC<HeaderProps> = ({
     };
   }, []);
 
+  const headerBackgroundColor = isAdminMode ? "bg-red-900" : "bg-gray-800";
+
   return (
-    <header className="bg-gray-800 text-white p-4 sticky top-0 z-50">
+    <header className={`${headerBackgroundColor} text-white p-4 sticky top-0 z-50`}>
       <div className="container mx-auto flex justify-between items-center">
         <Link to="/" className="text-xl font-bold">
           GrindOlympiads
@@ -89,6 +96,8 @@ const Header: React.FC<HeaderProps> = ({
             isLoggedIn={isLoggedIn}
             login={login}
             logout={logout}
+            isAdminMode={isAdminMode}
+            toggleAdminMode={toggleAdminMode}
           />
         </div>
       </div>
