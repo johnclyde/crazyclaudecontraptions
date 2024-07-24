@@ -27,15 +27,18 @@ const Users: React.FC<UsersProps> = ({ isAdminMode }) => {
   const fetchUsers = async () => {
     try {
       setLoading(true);
-      const idToken = await getIdToken();
-      const response = await fetch(
-        "https://us-central1-olympiads.cloudfunctions.net/admin_users",
-        {
-          headers: {
-            Authorization: `Bearer ${idToken}`,
-          },
+      let idToken = "";
+      try {
+        idToken = await getIdToken();
+      } catch (error) {
+        console.error("Error getting ID token:", error);
+      }
+
+      const response = await fetch("api/admin_users", {
+        headers: {
+          Authorization: `Bearer ${idToken}`,
         },
-      );
+      });
       if (!response.ok) {
         throw new Error("Failed to fetch users");
       }
