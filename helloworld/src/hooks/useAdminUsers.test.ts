@@ -1,5 +1,6 @@
 import { act, renderHook } from "@testing-library/react";
 import useAdminUsers from "./useAdminUsers";
+import * as firebase from "../firebase";
 
 // Mock fetch globally
 global.fetch = jest.fn();
@@ -7,6 +8,10 @@ global.fetch = jest.fn();
 // Mock console.error to catch and assert on error messages.
 const originalConsoleError = console.error;
 console.error = jest.fn();
+
+jest.mock("../firebase", () => ({
+  getIdToken: jest.fn(),
+}));
 
 describe("useAdminUsers", () => {
   beforeEach(() => {
@@ -19,10 +24,16 @@ describe("useAdminUsers", () => {
 
   it("should fetch users and update state", async () => {
     const mockUsers = [
-      { id: "1", name: "John Doe", email: "john@example.com" },
-      { id: "2", name: "Jane Smith", email: "jane@example.com" },
+      { id: "1", name: "John Doe", email: "john@example.com", status: "user" },
+      {
+        id: "2",
+        name: "Jane Smith",
+        email: "jane@example.com",
+        status: "admin",
+      },
     ];
 
+    (firebase.getIdToken as jest.Mock).mockResolvedValue("mock-token");
     (global.fetch as jest.Mock).mockResolvedValueOnce({
       ok: true,
       json: async () => ({ users: mockUsers }),
@@ -45,6 +56,7 @@ describe("useAdminUsers", () => {
 
   it("should handle fetch error", async () => {
     const fetchError = new Error("Fetch failed");
+    (firebase.getIdToken as jest.Mock).mockResolvedValue("mock-token");
     (global.fetch as jest.Mock).mockRejectedValueOnce(fetchError);
 
     const { result } = renderHook(() => useAdminUsers());
@@ -68,6 +80,7 @@ describe("useAdminUsers", () => {
   });
 
   it("should handle API error response", async () => {
+    (firebase.getIdToken as jest.Mock).mockResolvedValue("mock-token");
     (global.fetch as jest.Mock).mockResolvedValueOnce({
       ok: false,
       status: 500,
@@ -91,7 +104,8 @@ describe("useAdminUsers", () => {
     );
   });
 
-  it("should call the correct GCF endpoint", async () => {
+  it("should call the correct API endpoint", async () => {
+    (firebase.getIdToken as jest.Mock).mockResolvedValue("mock-token");
     (global.fetch as jest.Mock).mockResolvedValueOnce({
       ok: true,
       json: async () => ({ users: [] }),
@@ -103,10 +117,15 @@ describe("useAdminUsers", () => {
       await result.current.fetchUsers();
     });
 
-    expect(global.fetch).toHaveBeenCalledWith("/api/admin/users");
+    expect(global.fetch).toHaveBeenCalledWith("/api/admin/users", {
+      headers: {
+        Authorization: "Bearer mock-token",
+      },
+    });
   });
 
   it("should handle empty response from API", async () => {
+    (firebase.getIdToken as jest.Mock).mockResolvedValue("mock-token");
     (global.fetch as jest.Mock).mockResolvedValueOnce({
       ok: true,
       json: async () => ({ users: [] }),
@@ -125,12 +144,18 @@ describe("useAdminUsers", () => {
 
   it("should allow manual refetch", async () => {
     const mockUsers1 = [
-      { id: "1", name: "John Doe", email: "john@example.com" },
+      { id: "1", name: "John Doe", email: "john@example.com", status: "user" },
     ];
     const mockUsers2 = [
-      { id: "2", name: "Jane Smith", email: "jane@example.com" },
+      {
+        id: "2",
+        name: "Jane Smith",
+        email: "jane@example.com",
+        status: "admin",
+      },
     ];
 
+    (firebase.getIdToken as jest.Mock).mockResolvedValue("mock-token");
     (global.fetch as jest.Mock)
       .mockResolvedValueOnce({
         ok: true,
