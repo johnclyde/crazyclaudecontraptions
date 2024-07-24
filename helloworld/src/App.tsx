@@ -36,7 +36,7 @@ const App: React.FC = () => {
               path="competition/:competition/:year/:exam"
               element={<ExamComponent />}
             />
-            <Route path="users" element={<Users />} />
+            <Route path="users" element={<Users isAdminMode={false} />} />
             <Route path="labs/*" element={<LabsLayout />} />
           </Route>
         </Routes>
