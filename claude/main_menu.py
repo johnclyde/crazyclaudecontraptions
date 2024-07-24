@@ -1,4 +1,3 @@
-
 from delete_menu import DeleteMenu
 from menu import Menu, MenuOption
 from sync_state import SyncManager
@@ -64,21 +63,25 @@ class ListAllFilesOption(MenuOption):
 
     def run(self) -> None:
         state = self.sync_manager.state
-        print(f"{'File Path':<51} | {'Local Status':<15} | Remote Status")
-        print("-" * 85)
+        print(f"{'File Path':<55} | {'Local':<8} | Remote")
+        print("-" * 75)
 
         all_files = set(f.path for f in state.local_files + state.remote_files)
 
         for file_path in sorted(all_files):
-            local_status = next(
-                (f.status for f in state.local_files if f.path == file_path),
-                "Not present",
+            local_file = next(
+                (f for f in state.local_files if f.path == file_path), None
             )
-            remote_status = next(
-                (f.status for f in state.remote_files if f.path == file_path),
-                "Not present",
+            remote_file = next(
+                (f for f in state.remote_files if f.path == file_path), None
             )
-            print(f"{file_path:<51} | {local_status:<15} | {remote_status:<15}")
+
+            local_status = "✅" if local_file else "❌"
+            remote_status = "✅" if remote_file else "❌"
+
+            print(
+                f"{file_path:<55} | {local_status:<8}| {remote_status}"
+            )
 
 
 class ShowManifestOption(MenuOption):

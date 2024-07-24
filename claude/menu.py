@@ -1,7 +1,6 @@
 from abc import abstractmethod
 
 
-
 class MenuOption:
     def __init__(self, label: str) -> None:
         self.label = label
