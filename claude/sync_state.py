@@ -42,47 +42,6 @@ class SyncManager:
         self.state = SyncState()
         self.curl_get = CurlGet()
 
-    def apply_manifest_rules(self) -> None:
-        for rule in self.state.manifest.rules:
-            if rule["type"] == "directory_match":
-                self.apply_directory_match_rule(rule["source"], rule["target"])
-
-    def apply_directory_match_rule(self, source: str, target: str) -> None:
-        source_files = [
-            f for f in self.state.local_files if f.path.startswith(f"{source}/")
-        ]
-        for file in source_files:
-            corresponding_path = file.path.replace(f"{source}/", f"{target}/", 1)
-            corresponding_remote = next(
-                (rf for rf in self.state.remote_files if rf.path == corresponding_path),
-                None,
-            )
-            if corresponding_remote:
-                file.status = "matched"
-                corresponding_remote.status = "matched"
-                self.state.remote_files = [
-                    rf
-                    for rf in self.state.remote_files
-                    if rf.path != corresponding_path
-                ]
-
-    def update_file_statuses(self) -> None:
-        remote_paths = set(rf.path for rf in self.state.remote_files)
-
-        for local_file in self.state.local_files:
-            if local_file.status != "matched":
-                if local_file.path in remote_paths:
-                    local_file.status = "synced"
-                else:
-                    local_file.status = "local_only"
-
-        for remote_file in self.state.remote_files:
-            if remote_file.status != "matched":
-                if any(lf.path == remote_file.path for lf in self.state.local_files):
-                    remote_file.status = "synced"
-                else:
-                    remote_file.status = "remote_only"
-
     def fetch_and_compare(self) -> None:
         remote_files = self.fetch_remote_files()
         self.process_remote_files(remote_files)
