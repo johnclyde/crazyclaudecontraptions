@@ -25,7 +25,6 @@ export type LoginFunction = () => void;
 const useUserData = () => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  // eslint-disable-next-line
   const [userProgress, setUserProgress] = useState<UserProgress[]>([]);
 
   useEffect(() => {
@@ -58,7 +57,39 @@ const useUserData = () => {
     if (auth) {
       const provider = new GoogleAuthProvider();
       try {
-        await signInWithPopup(auth, provider);
+        const result = await signInWithPopup(auth, provider);
+        const firebaseUser = result.user;
+
+        // Call your login API
+        const idToken = await firebaseUser.getIdToken();
+        console.log("Calling login GCF...");
+        const response = await fetch(
+          "https://us-central1-olympiads.cloudfunctions.net/login",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${idToken}`,
+            },
+          },
+        );
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || "Login function call failed");
+        }
+
+        const data = await response.json();
+        console.log("Login function response:", data);
+        
+        // Update user data with API response if needed
+        // For example, if the API returns additional user info:
+        // setUser(prevUser => ({...prevUser, ...data.user}));
+        
+        // If the API returns user progress, update it
+        if (data.userProgress) {
+          setUserProgress(data.userProgress);
+        }
       } catch (error) {
         console.error("Error signing in with Google", error);
       }
@@ -73,7 +104,7 @@ const useUserData = () => {
         await signOut(auth);
 
         // Call your custom logout API
-        const response = await fetch("/api/logout", {
+        const response = await fetch("https://us-central1-olympiads.cloudfunctions.net/logout", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -87,6 +118,7 @@ const useUserData = () => {
         // Clear user data and update state
         setUser(null);
         setIsLoggedIn(false);
+        setUserProgress([]);
       } catch (error) {
         console.error("Error during logout:", error);
       }
