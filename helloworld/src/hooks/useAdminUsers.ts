@@ -1,9 +1,11 @@
 import { useState, useEffect, useCallback } from "react";
+import { getIdToken } from "../firebase";
 
 interface User {
   id: string;
   name: string;
   email: string;
+  status: "admin" | "user" | "disabled";
 }
 
 const useAdminUsers = () => {
@@ -14,7 +16,12 @@ const useAdminUsers = () => {
   const fetchUsers = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await fetch("/api/admin/users");
+      const idToken = await getIdToken();
+      const response = await fetch("/api/admin/users", {
+        headers: {
+          Authorization: `Bearer ${idToken}`,
+        },
+      });
       if (!response.ok) {
         throw new Error("Failed to fetch users");
       }

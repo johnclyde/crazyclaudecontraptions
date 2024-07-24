@@ -1,64 +1,16 @@
-import React, { useState, useEffect } from "react";
-import { getIdToken } from "../firebase"; // Assume this function exists to get the current user's ID token
-
-interface User {
-  id: string;
-  name: string;
-  email: string;
-  status: "admin" | "user" | "disabled";
-}
+import React, { useState } from "react";
+import useAdminUsers from "../hooks/useAdminUsers";
+import { getIdToken } from "../firebase";
 
 interface UsersProps {
   isAdminMode: boolean;
 }
 
 const Users: React.FC<UsersProps> = ({ isAdminMode }) => {
-  const [users, setUsers] = useState<User[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { users, loading, error, fetchUsers } = useAdminUsers();
   const [selectedStatus, setSelectedStatus] = useState<{
     [key: string]: "admin" | "user" | "disabled";
   }>({});
-
-  useEffect(() => {
-    fetchUsers();
-  }, []);
-
-  const fetchUsers = async () => {
-    try {
-      setLoading(true);
-      let idToken = "";
-      try {
-        idToken = await getIdToken();
-      } catch (error) {
-        console.error("Error getting ID token:", error);
-      }
-
-      const response = await fetch("api/admin_users", {
-        headers: {
-          Authorization: `Bearer ${idToken}`,
-        },
-      });
-      if (!response.ok) {
-        throw new Error("Failed to fetch users");
-      }
-      const data = await response.json();
-      setUsers(data.users);
-      const initialSelectedStatus = data.users.reduce(
-        (acc: { [key: string]: string }, user: User) => {
-          acc[user.id] = user.status;
-          return acc;
-        },
-        {},
-      );
-      setSelectedStatus(initialSelectedStatus);
-    } catch (err) {
-      console.error("Error fetching users:", err);
-      setError("Failed to load users. Please try again later.");
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -83,7 +35,7 @@ const Users: React.FC<UsersProps> = ({ isAdminMode }) => {
   const handleSubmitChange = async (userId: string) => {
     try {
       const idToken = await getIdToken();
-      const response = await fetch("api/update_user_status", {
+      const response = await fetch("/api/admin/user", {
         method: "POST",
         headers: {
           Authorization: `Bearer ${idToken}`,
@@ -97,7 +49,7 @@ const Users: React.FC<UsersProps> = ({ isAdminMode }) => {
       await fetchUsers();
     } catch (err) {
       console.error("Error updating user status:", err);
-      setError("Failed to update user status. Please try again.");
+      // You might want to set an error state here to display to the user
     }
   };
 
@@ -161,7 +113,7 @@ const Users: React.FC<UsersProps> = ({ isAdminMode }) => {
                 {isAdminMode && (
                   <td className="px-6 py-4 whitespace-nowrap">
                     <select
-                      value={selectedStatus[user.id]}
+                      value={selectedStatus[user.id] || user.status}
                       onChange={(e) =>
                         handleStatusChange(
                           user.id,
@@ -179,7 +131,7 @@ const Users: React.FC<UsersProps> = ({ isAdminMode }) => {
                       onClick={() => handleSubmitChange(user.id)}
                       disabled={
                         user.status === "admin" ||
-                        user.status === selectedStatus[user.id]
+                        user.status === (selectedStatus[user.id] || user.status)
                       }
                       className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded disabled:opacity-50"
                     >
