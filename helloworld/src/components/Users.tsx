@@ -2,13 +2,6 @@ import React, { useState } from "react";
 import useAdminUsers from "../hooks/useAdminUsers";
 import { getIdToken } from "../firebase";
 
-interface User {
-  id: string;
-  name: string;
-  email: string;
-  status: "admin" | "user" | "disabled";
-}
-
 interface UsersProps {
   isAdminMode: boolean;
 }
