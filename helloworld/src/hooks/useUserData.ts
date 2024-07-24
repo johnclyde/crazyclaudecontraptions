@@ -12,6 +12,7 @@ interface User {
   name: string;
   email: string;
   avatar: string;
+  isAdmin: boolean;
 }
 
 interface UserProgress {
@@ -26,23 +27,19 @@ const useUserData = () => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userProgress, setUserProgress] = useState<UserProgress[]>([]);
+  const [isAdminMode, setIsAdminMode] = useState(false);
 
   useEffect(() => {
     if (auth && typeof auth.onAuthStateChanged === "function") {
       const unsubscribe = auth.onAuthStateChanged(
         (firebaseUser: FirebaseUser | null) => {
           if (firebaseUser) {
-            const userData: User = {
-              id: firebaseUser.uid,
-              name: firebaseUser.displayName || "Anonymous",
-              email: firebaseUser.email || "",
-              avatar: firebaseUser.photoURL || "",
-            };
-            setUser(userData);
+            // We'll update the user data after the API call
             setIsLoggedIn(true);
           } else {
             setUser(null);
             setIsLoggedIn(false);
+            setIsAdminMode(false);
           }
         },
       );
@@ -79,9 +76,15 @@ const useUserData = () => {
         const data = await response.json();
         console.log("Login function response:", data);
 
-        // Update user data with API response if needed
-        // For example, if the API returns additional user info:
-        // setUser(prevUser => ({...prevUser, ...data.user}));
+        // Update user data with API response
+        const userData: User = {
+          id: firebaseUser.uid,
+          name: firebaseUser.displayName || "Anonymous",
+          email: firebaseUser.email || "",
+          avatar: firebaseUser.photoURL || "",
+          isAdmin: data.user.isAdmin || false,
+        };
+        setUser(userData);
 
         // If the API returns user progress, update it
         if (data.userProgress) {
@@ -116,6 +119,7 @@ const useUserData = () => {
         setUser(null);
         setIsLoggedIn(false);
         setUserProgress([]);
+        setIsAdminMode(false);
       } catch (error) {
         console.error("Error during logout:", error);
       }
@@ -124,7 +128,22 @@ const useUserData = () => {
     }
   };
 
-  return { user, isLoggedIn, setIsLoggedIn, login, logout, userProgress };
+  const toggleAdminMode = () => {
+    if (user?.isAdmin) {
+      setIsAdminMode(!isAdminMode);
+    }
+  };
+
+  return {
+    user,
+    isLoggedIn,
+    setIsLoggedIn,
+    login,
+    logout,
+    userProgress,
+    isAdminMode,
+    toggleAdminMode,
+  };
 };
 
 export default useUserData;

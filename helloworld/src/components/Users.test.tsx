@@ -1,74 +1,87 @@
 import React from "react";
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import Users from "./Users";
-import * as useAdminUsersModule from "../hooks/useAdminUsers";
+import * as firebase from "../firebase";
+
+// Mock the firebase module
+jest.mock("../firebase", () => ({
+  getIdToken: jest.fn(),
+}));
+
+// Mock fetch
+global.fetch = jest.fn();
 
 describe("Users component", () => {
-  let mockUseAdminUsers: jest.SpyInstance;
-
   beforeEach(() => {
-    mockUseAdminUsers = jest.spyOn(useAdminUsersModule, "default");
+    jest.resetAllMocks();
   });
 
-  afterEach(() => {
-    mockUseAdminUsers.mockRestore();
-  });
+  it("should render loading state initially", async () => {
+    (firebase.getIdToken as jest.Mock).mockResolvedValue("mock-token");
+    (global.fetch as jest.Mock).mockImplementation(() => new Promise(() => {}));
 
-  it("should render loading state initially", () => {
-    mockUseAdminUsers.mockReturnValue({
-      users: [],
-      loading: true,
-      error: null,
-      fetchUsers: jest.fn(),
-    });
-
-    render(<Users />);
+    render(<Users isAdminMode={false} />);
     expect(screen.getByText("Loading...")).toBeInTheDocument();
   });
 
-  it("should fetch and display users", () => {
-    const mockUsers = [
-      { id: "1", name: "John Doe", email: "john@example.com" },
-      { id: "2", name: "Jane Smith", email: "jane@example.com" },
-    ];
-    mockUseAdminUsers.mockReturnValue({
-      users: mockUsers,
-      loading: false,
-      error: null,
-      fetchUsers: jest.fn(),
+  it("should fetch and display users", async () => {
+    (firebase.getIdToken as jest.Mock).mockResolvedValue("mock-token");
+    (global.fetch as jest.Mock).mockResolvedValue({
+      ok: true,
+      json: () =>
+        Promise.resolve({
+          users: [
+            {
+              id: "1",
+              name: "John Doe",
+              email: "john@example.com",
+              status: "user",
+            },
+            {
+              id: "2",
+              name: "Jane Doe",
+              email: "jane@example.com",
+              status: "admin",
+            },
+          ],
+        }),
     });
 
-    render(<Users />);
-    expect(screen.getByText("John Doe")).toBeInTheDocument();
-    expect(screen.getByText("jane@example.com")).toBeInTheDocument();
-    expect(screen.queryByText("Loading...")).not.toBeInTheDocument();
+    render(<Users isAdminMode={false} />);
+
+    await waitFor(() => {
+      expect(screen.getByText("John Doe")).toBeInTheDocument();
+      expect(screen.getByText("jane@example.com")).toBeInTheDocument();
+      expect(screen.queryByText("Loading...")).not.toBeInTheDocument();
+    });
   });
 
-  it("should display error message on fetch failure", () => {
-    mockUseAdminUsers.mockReturnValue({
-      users: [],
-      loading: false,
-      error: "Failed to load users. Please try again later.",
-      fetchUsers: jest.fn(),
+  it("should handle empty response from API", async () => {
+    (firebase.getIdToken as jest.Mock).mockResolvedValue("mock-token");
+    (global.fetch as jest.Mock).mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve({ users: [] }),
     });
 
-    render(<Users />);
-    expect(
-      screen.getByText("Failed to load users. Please try again later."),
-    ).toBeInTheDocument();
-    expect(screen.queryByText("Loading...")).not.toBeInTheDocument();
+    render(<Users isAdminMode={false} />);
+
+    await waitFor(() => {
+      expect(screen.getByText("Users")).toBeInTheDocument();
+      expect(screen.queryByText("Loading...")).not.toBeInTheDocument();
+    });
   });
 
-  it("should handle empty response from API", () => {
-    mockUseAdminUsers.mockReturnValue({
-      users: [],
-      loading: false,
-      error: null,
-      fetchUsers: jest.fn(),
-    });
+  it("should handle error when fetching users", async () => {
+    (firebase.getIdToken as jest.Mock).mockResolvedValue("mock-token");
+    (global.fetch as jest.Mock).mockRejectedValue(new Error("API error"));
 
-    render(<Users />);
-    expect(screen.getByText("No users found.")).toBeInTheDocument();
-    expect(screen.queryByText("Loading...")).not.toBeInTheDocument();
+    render(<Users isAdminMode={false} />);
+
+    await waitFor(() => {
+      expect(
+        screen.getByText("Failed to load users. Please try again later."),
+      ).toBeInTheDocument();
+      expect(screen.queryByText("Loading...")).not.toBeInTheDocument();
+    });
   });
 });
