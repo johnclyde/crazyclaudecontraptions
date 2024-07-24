@@ -23,11 +23,7 @@ class FileListMenu(Menu):
         self.add_option(ToggleLocalOnlyFiles(self.config))
         self.add_option(ToggleRemoteOnlyFiles(self.config))
 
-    def run(self) -> None:
-        self.display_files()
-        super().run()
-
-    def display_files(self) -> None:
+    def display(self) -> None:
         state = self.sync_manager.state
         print(f"{'Remote Path':<45} | {'UUID':<40} | Local Match | Full Path")
         print("-" * 10)
@@ -49,6 +45,8 @@ class FileListMenu(Menu):
                 print(
                     f"{file.remote_path:<45} | {remote_uuid:<40} | {local_status:<11} | {file.local_path}"
                 )
+
+        super().display()
 
 
 class ToggleSyncedFiles(Menu):
