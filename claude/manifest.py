@@ -1,8 +1,6 @@
 import json
 from dataclasses import dataclass
 
-MANIFEST_FILE = "sync_manifest.json"
-
 
 @dataclass
 class Manifest:
