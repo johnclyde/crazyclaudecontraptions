@@ -76,12 +76,14 @@ class ListAllFilesOption(MenuOption):
                 (f for f in state.remote_files if f.path == file_path), None
             )
 
-            local_status = "✅" if local_file else "❌"
-            remote_status = "✅" if remote_file else "❌"
-
-            print(
-                f"{file_path:<55} | {local_status:<8}| {remote_status}"
+            local_status = (
+                "✅" if local_file and local_file.status != "local_only" else "❌"
             )
+            remote_status = (
+                "✅" if remote_file and remote_file.status != "remote_only" else "❌"
+            )
+
+            print(f"{file_path:<55} | {local_status:<8}| {remote_status}")
 
 
 class ShowManifestOption(MenuOption):
