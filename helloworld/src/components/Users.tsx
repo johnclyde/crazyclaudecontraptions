@@ -42,7 +42,7 @@ const Users: React.FC<UsersProps> = ({ isAdminMode }) => {
   const handleSubmitChange = async (userId: string) => {
     try {
       const idToken = await getIdToken();
-      const response = await fetch("api/update_user_status", {
+      const response = await fetch("/api/admin/user", {
         method: "POST",
         headers: {
           Authorization: `Bearer ${idToken}`,
