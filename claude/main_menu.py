@@ -16,7 +16,7 @@ class MainMenu(Menu):
             self.add_option(UploadFilesOption(self.sync_manager))
             self.add_option(DeleteMenu(self.sync_manager))
             self.add_option(ShowDownloadsOption(self.sync_manager))
-            self.add_option(ListAllFilesOption(self.sync_manager))
+            self.add_option(FileListMenu(self.sync_manager))
             self.add_option(ShowManifestOption(self.sync_manager))
             self.add_option(UploadManifestOption(self.sync_manager))
             self.add_option(SaveManifestOption(self.sync_manager))
@@ -54,27 +54,6 @@ class ShowDownloadsOption(MenuOption):
         print("\nFiles to download:")
         for file in sorted(files, key=lambda f: f.path):
             print(f"- {file.path}")
-
-
-class ListAllFilesOption(MenuOption):
-    def __init__(self, sync_manager: SyncManager) -> None:
-        super().__init__("List all files")
-        self.sync_manager = sync_manager
-
-    def run(self) -> None:
-        state = self.sync_manager.state
-        print(f"{'Remote Path':<45} | {'UUID':<40} | Local Match | Full Path")
-        print("-" * 10)
-
-        for file in sorted(
-            self.sync_manager.state.files.values(), key=lambda f: f.local_path
-        ):
-            local_status = "✅" if file.local_present else "❌"
-            remote_uuid = file.remote_uuid if file.remote_present else ""
-
-            print(
-                f"{file.remote_path:<45} | {remote_uuid:<40}| {local_status:<12}| {file.local_path}"
-            )
 
 
 class ShowManifestOption(MenuOption):
