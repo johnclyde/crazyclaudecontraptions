@@ -25,7 +25,9 @@ const ExamComponent: React.FC = () => {
     const fetchExamData = async () => {
       setLoading(true);
       try {
-        const response = await fetch(`/api/exam?competition=${competition}&year=${year}&exam=${exam}`);
+        const response = await fetch(
+          `/api/exam?competition=${competition}&year=${year}&exam=${exam}`,
+        );
         if (!response.ok) {
           throw new Error("Failed to fetch exam data");
         }

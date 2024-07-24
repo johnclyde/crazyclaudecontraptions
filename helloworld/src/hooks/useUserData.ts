@@ -71,8 +71,24 @@ const useUserData = () => {
     if (auth) {
       try {
         await signOut(auth);
+
+        // Call your custom logout API
+        const response = await fetch("/api/logout", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error("Logout API call failed");
+        }
+
+        // Clear user data and update state
+        setUser(null);
+        setIsLoggedIn(false);
       } catch (error) {
-        console.error("Error signing out", error);
+        console.error("Error during logout:", error);
       }
     } else {
       console.error("Firebase auth is not initialized");
