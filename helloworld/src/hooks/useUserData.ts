@@ -63,16 +63,13 @@ const useUserData = () => {
         // Call your login API
         const idToken = await firebaseUser.getIdToken();
         console.log("Calling login GCF...");
-        const response = await fetch(
-          "https://us-central1-olympiads.cloudfunctions.net/login",
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${idToken}`,
-            },
+        const response = await fetch("api/login", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${idToken}`,
           },
-        );
+        });
 
         if (!response.ok) {
           const errorData = await response.json();
@@ -81,11 +78,11 @@ const useUserData = () => {
 
         const data = await response.json();
         console.log("Login function response:", data);
-        
+
         // Update user data with API response if needed
         // For example, if the API returns additional user info:
         // setUser(prevUser => ({...prevUser, ...data.user}));
-        
+
         // If the API returns user progress, update it
         if (data.userProgress) {
           setUserProgress(data.userProgress);
@@ -104,7 +101,7 @@ const useUserData = () => {
         await signOut(auth);
 
         // Call your custom logout API
-        const response = await fetch("https://us-central1-olympiads.cloudfunctions.net/logout", {
+        const response = await fetch("/api/logout", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
