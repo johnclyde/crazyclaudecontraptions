@@ -12,3 +12,11 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
+
+export const getIdToken = async () => {
+  const user = auth.currentUser;
+  if (user) {
+    return user.getIdToken();
+  }
+  throw new Error("No user is currently signed in");
+};
