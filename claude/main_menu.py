@@ -1,8 +1,6 @@
-from abc import ABC, abstractmethod
-
 from delete_menu import DeleteMenu
 from menu import Menu, MenuOption
-from sync_state import PartialMatch, SyncManager, SyncState
+from sync_state import SyncManager
 
 
 class MainMenu(Menu):
@@ -53,7 +51,7 @@ class ShowDownloadsOption(MenuOption):
 
     def run(self) -> None:
         files = self.sync_manager.state.get_only_remote()
-        print(f"\nFiles to download:")
+        print("\nFiles to download:")
         for file in sorted(files, key=lambda f: f.path):
             print(f"- {file.path}")
 
@@ -65,21 +63,18 @@ class ListAllFilesOption(MenuOption):
 
     def run(self) -> None:
         state = self.sync_manager.state
-        print(f"{'File Path':<51} | {'Local Status':<15} | Remote Status")
-        print("-" * 85)
+        print(f"{'Remote Path':<45} | {'UUID':<40} | Local Match | Full Path")
+        print("-" * 10)
 
-        all_files = set(f.path for f in state.local_files + state.remote_files)
+        for file in sorted(
+            self.sync_manager.state.files.values(), key=lambda f: f.local_path
+        ):
+            local_status = "✅" if file.local_present else "❌"
+            remote_uuid = file.remote_uuid if file.remote_present else ""
 
-        for file_path in sorted(all_files):
-            local_status = next(
-                (f.status for f in state.local_files if f.path == file_path),
-                "Not present",
+            print(
+                f"{file.remote_path:<45} | {remote_uuid:<40}| {local_status:<12}| {file.local_path}"
             )
-            remote_status = next(
-                (f.status for f in state.remote_files if f.path == file_path),
-                "Not present",
-            )
-            print(f"{file_path:<51} | {local_status:<15} | {remote_status:<15}")
 
 
 class ShowManifestOption(MenuOption):
