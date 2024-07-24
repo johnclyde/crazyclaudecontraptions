@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 from menu import Menu
-from sync_state import File, SyncManager
+from sync_state import SyncManager
 
 
 @dataclass

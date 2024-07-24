@@ -78,15 +78,7 @@ class SyncManager:
         return remote_path
 
     def save_manifest(self) -> None:
-        manifest = self.state.manifest
-        manifest.files = [
-            {
-                "path": f.path,
-                "status": "local" if isinstance(f, LocalFile) else "remote",
-            }
-            for f in self.state.local_files + self.state.remote_files
-        ]
-        manifest.save_to_file()
+        self.state.manifest.save_to_file()
         print("Manifest saved to manifest.json")
 
     def fetch_remote_files(self) -> list[dict[str, str]]:
