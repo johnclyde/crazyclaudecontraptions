@@ -1,12 +1,14 @@
 import React, { createContext, useContext, ReactNode } from "react";
-import useUserData from "../hooks/useUserData";
-import { User } from "../types";
+import useUserData, { LoginFunction } from "../hooks/useUserData";
+import { User, UserProgress } from "../types";
 
 interface UserDataContextType {
   user: User | null;
   isLoggedIn: boolean;
-  login: () => Promise<void>;
+  setIsLoggedIn: React.Dispatch<React.SetStateAction<boolean>>;
+  login: LoginFunction;
   logout: () => Promise<void>;
+  userProgress: UserProgress[];
   isAdminMode: boolean;
   toggleAdminMode: () => void;
 }
