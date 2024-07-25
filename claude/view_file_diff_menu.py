@@ -1,6 +1,6 @@
 import difflib
 
-from menu import Menu, MenuOption, MenuResult
+from menu import Menu, MenuAction, MenuOption, TaskMenu
 from sync_state import File, SyncManager
 
 
@@ -19,8 +19,21 @@ class ViewFileDiffMenu(Menu):
         for file in unsynced_files:
             self.add_option(ViewFileDiffOption(file, self.sync_manager))
 
+    def run(self) -> MenuAction:
+        while True:
+            result = super().run()
+            if result == MenuAction.BACK:
+                return MenuAction.BACK
+            elif result == MenuAction.EXIT:
+                return MenuAction.EXIT
+            # If we get here, it means a task was completed, so we should refresh the options
+            self.update_options()
+            if not self.options:
+                print("No more unsynced files. Returning to previous menu.")
+                return MenuAction.BACK
 
-class ViewFileDiffOption(Menu):
+
+class ViewFileDiffOption(TaskMenu):
     def __init__(self, file: File, sync_manager: SyncManager) -> None:
         super().__init__(file.local_path)
         self.file = file
@@ -37,7 +50,7 @@ class DisplayDiff(Menu):
         super().__init__("Display Diff")
         self.file = file
 
-    def run(self) -> MenuResult:
+    def run(self) -> MenuAction:
         if not self.file.local_present:
             print(f"\nFile only exists remotely: {self.file.remote_path}")
             return
@@ -59,7 +72,7 @@ class DisplayDiff(Menu):
 
         print("\nFile diff:")
         print("".join(diff))
-        return MenuResult.CONTINUE
+        return MenuAction.CONTINUE
 
 
 class OverwriteRemote(MenuOption):
@@ -68,21 +81,19 @@ class OverwriteRemote(MenuOption):
         self.file = file
         self.sync_manager = sync_manager
 
-    def run(self) -> MenuResult:
+    def run(self) -> MenuAction:
         confirm = input(
             f"Are you sure you want to overwrite the remote file '{self.file.remote_path}'? (y/n): "
         )
         if confirm.lower() == "y":
             try:
-                # Delete the remote file first
                 self.sync_manager.delete_file(self.file)
                 print(f"Removed file '{self.file.remote_path}' from remotes.")
-                # Then upload the local file
                 self.sync_manager.upload_file(self.file)
                 print(f"Uploaded new version of file '{self.file.remote_path}'.")
+                return MenuAction.TASK_COMPLETE
             except Exception as e:
                 print(f"Error overwriting remote file: {e}")
         else:
             print("Overwrite cancelled.")
-
-        return MenuResult.TASK_COMPLETE
+        return MenuAction.CONTINUE

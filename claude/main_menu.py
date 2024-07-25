@@ -1,6 +1,6 @@
 from delete_menu import DeleteMenu
 from file_list_menu import FileListMenu
-from menu import Menu, MenuOption, MenuResult
+from menu import Menu, MenuAction, MenuOption
 from sync_state import SyncManager
 
 
@@ -27,11 +27,11 @@ class FetchRemoteOption(MenuOption):
         super().__init__("Fetch remote files")
         self.sync_manager = sync_manager
 
-    def run(self) -> MenuResult:
+    def run(self) -> MenuAction:
         print("Fetching remote files...")
         self.sync_manager.fetch_and_compare()
         print("Remote files fetched successfully.")
-        return MenuResult.CONTINUE
+        return MenuAction.CONTINUE
 
 
 class UploadFilesOption(MenuOption):
@@ -39,11 +39,11 @@ class UploadFilesOption(MenuOption):
         super().__init__("Upload files")
         self.sync_manager = sync_manager
 
-    def run(self) -> MenuResult:
+    def run(self) -> MenuAction:
         self.sync_manager.process_files(
             "upload", self.sync_manager.state.get_only_local()
         )
-        return MenuResult.CONTINUE
+        return MenuAction.CONTINUE
 
 
 class ShowManifestOption(MenuOption):
@@ -51,7 +51,7 @@ class ShowManifestOption(MenuOption):
         super().__init__("Show manifest")
         self.sync_manager = sync_manager
 
-    def run(self) -> MenuResult:
+    def run(self) -> MenuAction:
         state = self.sync_manager.state
         manifest = state.manifest
         print("\nManifest:")
@@ -59,7 +59,7 @@ class ShowManifestOption(MenuOption):
             print(f"{file['status']}: {file['path']}")
         for rule in manifest.rules:
             print(f"Rule: {rule}")
-        return MenuResult.CONTINUE
+        return MenuAction.CONTINUE
 
 
 class UploadManifestOption(MenuOption):
@@ -67,9 +67,9 @@ class UploadManifestOption(MenuOption):
         super().__init__("Upload manifest")
         self.sync_manager = sync_manager
 
-    def run(self) -> MenuResult:
+    def run(self) -> MenuAction:
         self.sync_manager.upload_manifest()
-        return MenuResult.CONTINUE
+        return MenuAction.CONTINUE
 
 
 class SaveManifestOption(MenuOption):
@@ -77,6 +77,6 @@ class SaveManifestOption(MenuOption):
         super().__init__("Save manifest")
         self.sync_manager = sync_manager
 
-    def run(self) -> MenuResult:
+    def run(self) -> MenuAction:
         self.sync_manager.save_manifest()
-        return MenuResult.CONTINUE
+        return MenuAction.CONTINUE

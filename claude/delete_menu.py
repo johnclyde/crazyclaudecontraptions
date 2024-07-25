@@ -1,4 +1,4 @@
-from menu import Menu, MenuOption, MenuResult
+from menu import Menu, MenuAction, MenuOption
 from sync_state import File, SyncManager
 
 
@@ -20,7 +20,7 @@ class DeleteFileOption(MenuOption):
         self.sync_manager = sync_manager
         self.file = file
 
-    def run(self) -> MenuResult:
+    def run(self) -> MenuAction:
         confirm = input(
             f"Are you sure you want to delete {self.file.remote_path}? (y/n): "
         )
@@ -29,4 +29,4 @@ class DeleteFileOption(MenuOption):
         else:
             print("Deletion cancelled.")
 
-        return MenuResult.TASK_COMPLETE
+        return MenuAction.TASK_COMPLETE
