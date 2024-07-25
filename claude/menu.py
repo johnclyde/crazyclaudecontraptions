@@ -1,4 +1,11 @@
 from abc import abstractmethod
+from enum import Enum, auto
+
+
+class MenuResult(Enum):
+    CONTINUE = auto()
+    EXIT = auto()
+    TASK_COMPLETE = auto()
 
 
 class MenuOption:
@@ -6,13 +13,13 @@ class MenuOption:
         self.label = label
 
     @abstractmethod
-    def run(self):
+    def run(self) -> MenuResult:
         pass
 
 
 class Menu(MenuOption):
     def __init__(self, label: str) -> None:
-        self.label = label
+        super().__init__(label)
         self.options: list[MenuOption] = []
 
     def add_option(self, option: MenuOption) -> None:
@@ -24,17 +31,20 @@ class Menu(MenuOption):
             print(f"{index}. {option.label}")
         print("0. Exit")
 
-    def run(self) -> None:
-        while True:
+    def run(self) -> MenuResult:
+        result = MenuResult.CONTINUE
+        while result == MenuResult.CONTINUE:
             self.update_options()
             self.display()
             choice = int(input("Enter your choice: ")) - 1
             if choice == -1:
-                return
+                return MenuResult.EXIT
             if 0 <= choice < len(self.options):
-                self.options[choice].run()
+                result = self.options[choice].run()
             else:
                 print("Invalid choice. Please try again.")
+
+        return result
 
     @abstractmethod
     def update_options(self) -> None:

@@ -1,6 +1,6 @@
 import difflib
 
-from menu import Menu, MenuOption
+from menu import Menu, MenuOption, MenuResult
 from sync_state import File, SyncManager
 
 
@@ -37,7 +37,7 @@ class DisplayDiff(Menu):
         super().__init__("Display Diff")
         self.file = file
 
-    def run(self) -> None:
+    def run(self) -> MenuResult:
         if not self.file.local_present:
             print(f"\nFile only exists remotely: {self.file.remote_path}")
             return
@@ -59,6 +59,7 @@ class DisplayDiff(Menu):
 
         print("\nFile diff:")
         print("".join(diff))
+        return MenuResult.CONTINUE
 
 
 class OverwriteRemote(MenuOption):
@@ -67,7 +68,7 @@ class OverwriteRemote(MenuOption):
         self.file = file
         self.sync_manager = sync_manager
 
-    def run(self) -> None:
+    def run(self) -> MenuResult:
         confirm = input(
             f"Are you sure you want to overwrite the remote file '{self.file.remote_path}'? (y/n): "
         )
@@ -83,3 +84,4 @@ class OverwriteRemote(MenuOption):
                 print(f"Error overwriting remote file: {e}")
         else:
             print("Overwrite cancelled.")
+        return MenuResult.CONTINUE
