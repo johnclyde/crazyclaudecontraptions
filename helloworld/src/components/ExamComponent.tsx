@@ -146,6 +146,7 @@ const ExamComponent: React.FC = () => {
         </>
       ) : (
         <p className="text-xl">No problems available for this exam.</p>
+      )}
     </div>
   );
 };
