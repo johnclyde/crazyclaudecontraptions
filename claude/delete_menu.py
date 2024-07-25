@@ -24,7 +24,7 @@ class DeleteFileOption(MenuOption):
         confirm = input(
             f"Are you sure you want to delete {self.file.remote_path}? (y/n): "
         )
-        if confirm.lower() != "y":
+        if confirm.lower() == "y":
             self.sync_manager.delete_file(self.file)
         else:
             print("Deletion cancelled.")
