@@ -29,6 +29,7 @@ class TestTaskMenu(TaskMenu):
 def sync_manager(mocker: MockFixture) -> SyncManager:
     # Mock the manifest file
     mocker.patch("builtins.open", mocker.mock_open(read_data='{"files":[],"rules":[]}'))
+    mocker.patch("manifest.Manifest.load_from_file")
     return mocker.MagicMock(spec=SyncManager)
 
 
@@ -78,14 +79,16 @@ def test_view_file_diff_option(sync_manager: SyncManager, mocker: MockFixture) -
     mocker.patch("builtins.input", side_effect=["2", "y"])
     result = view_diff_option.run()
 
-    assert result == MenuAction.TASK_COMPLETE
+    assert result == MenuAction.BACK
 
 
 def test_view_file_diff_menu(sync_manager: SyncManager, mocker: MockFixture) -> None:
     file1 = mocker.MagicMock(spec=File)
     file1.is_fully_synced = False
+    file1.local_path = "file1.txt"
     file2 = mocker.MagicMock(spec=File)
     file2.is_fully_synced = False
+    file2.local_path = "file2.txt"
 
     sync_manager.state = mocker.MagicMock()
     sync_manager.state.files.values.return_value = [file1, file2]
