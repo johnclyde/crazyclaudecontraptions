@@ -117,6 +117,6 @@ def test_invalid_input_handling(mocker: MockFixture) -> None:
     with mocker.patch("builtins.print") as mock_print:
         result = menu.run()
 
-    assert result == MenuAction.BACK
-    mock_print.assert_any_call("Invalid input. Please enter a number.")
-    mock_print.assert_any_call("Invalid choice. Please try again.")
+        assert result == MenuAction.BACK
+        mock_print.assert_any_call("Invalid input. Please enter a number.")
+        mock_print.assert_any_call("Invalid choice. Please try again.")
