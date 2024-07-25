@@ -1,6 +1,5 @@
-from pytest_mock import MockFixture
-
 from menu import Menu, MenuAction, MenuOption, TaskMenu
+from pytest_mock import MockFixture
 from sync_state import File, SyncManager
 from view_file_diff_menu import OverwriteRemote, ViewFileDiffMenu, ViewFileDiffOption
 
