@@ -29,7 +29,7 @@ class FileListMenu(Menu):
 
     def display(self) -> None:
         state = self.sync_manager.state
-        print(f"{'Remote Path':<45} | {'UUID':<40} | Local Match | Full Path")
+        print(f"{'Remote Path':<50} | {'UUID':<40} | Local Match | Full Path")
         print("-" * 10)
 
         for file in sorted(state.files.values(), key=lambda f: f.local_path):
@@ -47,7 +47,7 @@ class FileListMenu(Menu):
 
             if visibility:
                 print(
-                    f"{file.remote_path:<45} | {remote_uuid:<40} | {local_status:<11} | {file.local_path}"
+                    f"{file.remote_path:<50} | {remote_uuid:<40} | {local_status:<11} | {file.local_path}"
                 )
 
         super().display()
