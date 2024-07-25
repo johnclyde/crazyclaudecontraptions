@@ -54,7 +54,51 @@ const useUserData = () => {
   }, [navigate]);
 
   const login: LoginFunction = async () => {
-    // ... (login logic remains the same)
+    if (auth) {
+      const provider = new GoogleAuthProvider();
+      try {
+        const result = await signInWithPopup(auth, provider);
+        const firebaseUser = result.user;
+
+        // Call your login API
+        const idToken = await firebaseUser.getIdToken();
+        console.log("Calling login GCF...");
+        const response = await fetch("api/login", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${idToken}`,
+          },
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || "Login function call failed");
+        }
+
+        const data = await response.json();
+        console.log("Login function response:", data);
+
+        // Update user data with API response
+        const userData: User = {
+          id: firebaseUser.uid,
+          name: firebaseUser.displayName || "Anonymous",
+          email: firebaseUser.email || "",
+          avatar: firebaseUser.photoURL || "",
+          isAdmin: data.user.isAdmin || false,
+        };
+        setUser(userData);
+
+        // If the API returns user progress, update it
+        if (data.userProgress) {
+          setUserProgress(data.userProgress);
+        }
+      } catch (error) {
+        console.error("Error signing in with Google", error);
+      }
+    } else {
+      console.error("Firebase auth is not initialized");
+    }
   };
 
   const logout = async () => {
