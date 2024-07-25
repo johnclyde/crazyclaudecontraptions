@@ -36,7 +36,7 @@ class FileListMenu(Menu):
 
             # Determine visibility of line based on toggle settings.
             visibility = False
-            if file.local_present and file.remote_present:
+            if file.is_fully_synced:
                 visibility = self.config.show_synced
             elif file.local_present and not file.remote_present:
                 visibility = self.config.show_local_only
