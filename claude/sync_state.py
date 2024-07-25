@@ -91,7 +91,16 @@ class SyncManager:
                     self.state.files[local_path].local_contents = contents
                     continue
 
-                self.add_file(local_path, contents, "", "", None)
+                remote_path = self.infer_remote_path(local_path)
+                self.add_file(local_path, contents, remote_path, "", None)
+
+    def infer_remote_path(self, local_path: str) -> str:
+        for rule in self.state.manifest.rules:
+            if rule["type"] == "directory_match" and local_path.startswith(
+                rule["source"]
+            ):
+                return local_path.replace(rule["source"], rule["target"], 1)
+        return local_path
 
     def infer_local_path(self, remote_path: str) -> str:
         for rule in self.state.manifest.rules:
@@ -124,13 +133,12 @@ class SyncManager:
             raise Exception(f"Error uploading {filename}: {e}")
 
     def upload_file(self, file: File) -> None:
-        filename = file.local_path
         try:
-            with open(filename, "r") as f:
+            with open(file.local_path, "r") as f:
                 content = f.read()
-            self.upload_content(filename, content)
+            self.upload_content(file.remote_path, content)
         except IOError as e:
-            raise IOError(f"Error reading file {filename}: {e}")
+            raise IOError(f"Error reading file {file.local_path}: {e}")
 
     def upload_manifest(self) -> None:
         manifest_content = json.dumps(self.state.manifest.__dict__, indent=2)
