@@ -7,22 +7,9 @@ import {
   User as FirebaseUser,
 } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
+import { User, UserProgress } from "../types";
 
-interface User {
-  id: string;
-  name: string;
-  email: string;
-  avatar: string;
-  isAdmin: boolean;
-}
-
-interface UserProgress {
-  testId: string;
-  score: number;
-  completedAt: string;
-}
-
-export type LoginFunction = () => void;
+export type LoginFunction = () => Promise<void>;
 
 const useUserData = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -88,6 +75,7 @@ const useUserData = () => {
           isAdmin: data.user.isAdmin || false,
         };
         setUser(userData);
+        setIsLoggedIn(true);
 
         // If the API returns user progress, update it
         if (data.userProgress) {
@@ -141,7 +129,6 @@ const useUserData = () => {
   return {
     user,
     isLoggedIn,
-    setIsLoggedIn,
     login,
     logout,
     userProgress,

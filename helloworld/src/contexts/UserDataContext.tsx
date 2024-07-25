@@ -1,5 +1,6 @@
 import React, { createContext, useContext, ReactNode } from "react";
 import useUserData from "../hooks/useUserData";
+import { User } from "../types";
 
 interface UserDataContextType {
   user: User | null;
