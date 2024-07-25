@@ -9,6 +9,8 @@ import GrindOlympiadsLayout from "./GrindOlympiadsLayout";
 import InteractiveCounter from "./components/InteractiveCounter";
 import ExamComponent from "./components/ExamComponent";
 import Users from "./components/Users";
+import ProtectedRoute from "./components/ProtectedRoute";
+import { UserDataProvider } from "./contexts/UserDataContext";
 
 const LabsLayout: React.FC = () => {
   return (
@@ -29,17 +31,27 @@ const App: React.FC = () => {
   return (
     <GoogleOAuthProvider clientId={process.env.REACT_APP_GOOGLE_CLIENT_ID!}>
       <Router>
-        <Routes>
-          <Route path="/" element={<GrindOlympiadsLayout />}>
-            <Route index element={<GrindOlympiadsIndex />} />
-            <Route
-              path="competition/:competition/:year/:exam"
-              element={<ExamComponent />}
-            />
-            <Route path="users" element={<Users isAdminMode={false} />} />
-            <Route path="labs/*" element={<LabsLayout />} />
-          </Route>
-        </Routes>
+        <UserDataProvider>
+          <Routes>
+            <Route path="/" element={<GrindOlympiadsLayout />}>
+              <Route index element={<GrindOlympiadsIndex />} />
+              <Route element={<ProtectedRoute />}>
+                <Route
+                  path="competition/:competition/:year/:exam"
+                  element={<ExamComponent />}
+                />
+                <Route path="users" element={<Users isAdminMode={false} />} />
+              </Route>
+              <Route element={<ProtectedRoute adminOnly={true} />}>
+                <Route
+                  path="admin/users"
+                  element={<Users isAdminMode={true} />}
+                />
+              </Route>
+              <Route path="labs/*" element={<LabsLayout />} />
+            </Route>
+          </Routes>
+        </UserDataProvider>
       </Router>
     </GoogleOAuthProvider>
   );

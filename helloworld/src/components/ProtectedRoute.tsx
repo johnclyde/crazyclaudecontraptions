@@ -6,7 +6,9 @@ interface ProtectedRouteProps {
   adminOnly?: boolean;
 }
 
-const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ adminOnly = false }) => {
+const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
+  adminOnly = false,
+}) => {
   const { isLoggedIn, user } = useUserDataContext();
 
   if (!isLoggedIn) {
