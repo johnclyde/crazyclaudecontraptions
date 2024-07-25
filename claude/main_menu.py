@@ -14,7 +14,6 @@ class MainMenu(Menu):
         self.add_option(FetchRemoteOption(self.sync_manager))
 
         if self.sync_manager.state.fetched:
-            self.add_option(UploadFilesOption(self.sync_manager))
             self.add_option(DeleteMenu(self.sync_manager))
             self.add_option(FileListMenu(self.sync_manager))
             self.add_option(ShowManifestOption(self.sync_manager))
@@ -31,18 +30,6 @@ class FetchRemoteOption(MenuOption):
         print("Fetching remote files...")
         self.sync_manager.fetch_and_compare()
         print("Remote files fetched successfully.")
-        return MenuAction.CONTINUE
-
-
-class UploadFilesOption(MenuOption):
-    def __init__(self, sync_manager: SyncManager) -> None:
-        super().__init__("Upload files")
-        self.sync_manager = sync_manager
-
-    def run(self) -> MenuAction:
-        self.sync_manager.process_files(
-            "upload", self.sync_manager.state.get_only_local()
-        )
         return MenuAction.CONTINUE
 
 
