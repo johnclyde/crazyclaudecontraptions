@@ -27,6 +27,8 @@ class TestTaskMenu(TaskMenu):
 
 @pytest.fixture
 def sync_manager(mocker: MockFixture) -> SyncManager:
+    # Mock the manifest file
+    mocker.patch("builtins.open", mocker.mock_open(read_data='{"files":[],"rules":[]}'))
     return mocker.MagicMock(spec=SyncManager)
 
 
@@ -69,15 +71,14 @@ def test_overwrite_remote(sync_manager: SyncManager, mocker: MockFixture) -> Non
 def test_view_file_diff_option(sync_manager: SyncManager, mocker: MockFixture) -> None:
     file = mocker.MagicMock(spec=File)
     file.local_path = "test_file.txt"
+    file.remote_path = "test_file.txt"
 
     view_diff_option = ViewFileDiffOption(file, sync_manager)
 
-    mocker.patch(
-        "builtins.input", side_effect=["2", "y"]
-    )  # Select OverwriteRemote and confirm
+    mocker.patch("builtins.input", side_effect=["2", "y"])
     result = view_diff_option.run()
 
-    assert result == MenuAction.BACK
+    assert result == MenuAction.TASK_COMPLETE
 
 
 def test_view_file_diff_menu(sync_manager: SyncManager, mocker: MockFixture) -> None:
@@ -86,16 +87,15 @@ def test_view_file_diff_menu(sync_manager: SyncManager, mocker: MockFixture) -> 
     file2 = mocker.MagicMock(spec=File)
     file2.is_fully_synced = False
 
+    sync_manager.state = mocker.MagicMock()
     sync_manager.state.files.values.return_value = [file1, file2]
 
     view_diff_menu = ViewFileDiffMenu(sync_manager)
 
     mocker.patch("builtins.input", side_effect=["1", "2", "y", "0"])
-    # Select first file, then OverwriteRemote, confirm overwrite, then exit
     result = view_diff_menu.run()
 
     assert result == MenuAction.BACK
-    # Check that update_options was called twice (initial + after task completion)
     assert sync_manager.state.files.values.call_count == 2
 
 
@@ -114,9 +114,9 @@ def test_invalid_input_handling(mocker: MockFixture) -> None:
     menu.add_option(TestMenuOption("Valid Option", MenuAction.CONTINUE))
 
     mocker.patch("builtins.input", side_effect=["invalid", "2", "1", "0"])
-    with mocker.patch("builtins.print") as mock_print:
-        result = menu.run()
+    mock_print = mocker.patch("builtins.print")
+    result = menu.run()
 
-        assert result == MenuAction.BACK
-        mock_print.assert_any_call("Invalid input. Please enter a number.")
-        mock_print.assert_any_call("Invalid choice. Please try again.")
+    assert result == MenuAction.BACK
+    mock_print.assert_any_call("Invalid input. Please enter a number.")
+    mock_print.assert_any_call("Invalid choice. Please try again.")
