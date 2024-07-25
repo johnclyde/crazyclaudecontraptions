@@ -1,12 +1,11 @@
-
-import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
-import LatexRenderer from './LatexRenderer';
+import React, { useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
+import LatexRenderer from "./LatexRenderer";
 
 const OptionButton = ({ option, selected, onClick, latex }) => (
   <button
     onClick={onClick}
-    className={`p-2 m-1 border rounded ${selected ? 'bg-green-200' : 'bg-white'}`}
+    className={`p-2 m-1 border rounded ${selected ? "bg-green-200" : "bg-white"}`}
   >
     {option}. <LatexRenderer latex={latex} />
   </button>
@@ -20,7 +19,7 @@ const MultipleChoiceProblem = ({ problem, onAnswer }) => {
     onAnswer(problem.id, option);
   };
 
-  const options = ['A', 'B', 'C', 'D', 'E'];
+  const options = ["A", "B", "C", "D", "E"];
 
   return (
     <div className="mb-4">
@@ -54,10 +53,10 @@ const UserResponseComponent = () => {
           const data = await response.json();
           setExam(data);
         } else {
-          console.error('Failed to fetch exam');
+          console.error("Failed to fetch exam");
         }
       } catch (error) {
-        console.error('Error fetching exam:', error);
+        console.error("Error fetching exam:", error);
       }
     };
 
@@ -65,21 +64,21 @@ const UserResponseComponent = () => {
   }, [examId]);
 
   const handleAnswer = async (problemId, answer) => {
-    setResponses(prev => ({...prev, [problemId]: answer}));
+    setResponses((prev) => ({ ...prev, [problemId]: answer }));
 
     try {
-      const response = await fetch('/api/submit-answer', {
-        method: 'POST',
+      const response = await fetch("/api/submit-answer", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({ examId, problemId, answer }),
       });
       if (!response.ok) {
-        console.error('Failed to submit answer');
+        console.error("Failed to submit answer");
       }
     } catch (error) {
-      console.error('Error submitting answer:', error);
+      console.error("Error submitting answer:", error);
     }
   };
 
@@ -91,7 +90,7 @@ const UserResponseComponent = () => {
     <div className="p-4">
       <h2 className="text-2xl font-bold mb-4">{exam.title}</h2>
       {exam.isMultipleChoice ? (
-        exam.problems.map(problem => (
+        exam.problems.map((problem) => (
           <MultipleChoiceProblem
             key={problem.id}
             problem={problem}
