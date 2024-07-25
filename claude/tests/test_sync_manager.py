@@ -1,6 +1,5 @@
-from pytest_mock import MockFixture
-
 from manifest import Manifest
+from pytest_mock import MockFixture
 from sync_state import File, SyncManager, SyncState
 
 

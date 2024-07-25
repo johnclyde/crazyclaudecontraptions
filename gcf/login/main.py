@@ -68,5 +68,5 @@ def login(request: Request) -> Response:
         return jsonify({"error": "Revoked ID token"}), 401, headers
     except auth.UserNotFoundError:
         return jsonify({"error": "User not found"}), 404, headers
-    except Exception as e:
+    except Exception:
         return jsonify({"error": "An unexpected error occurred"}), 500, headers
