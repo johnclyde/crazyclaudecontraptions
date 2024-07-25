@@ -16,7 +16,6 @@ class MainMenu(Menu):
         if self.sync_manager.state.fetched:
             self.add_option(UploadFilesOption(self.sync_manager))
             self.add_option(DeleteMenu(self.sync_manager))
-            self.add_option(ShowDownloadsOption(self.sync_manager))
             self.add_option(FileListMenu(self.sync_manager))
             self.add_option(ShowManifestOption(self.sync_manager))
             self.add_option(UploadManifestOption(self.sync_manager))
@@ -43,18 +42,6 @@ class UploadFilesOption(MenuOption):
         self.sync_manager.process_files(
             "upload", self.sync_manager.state.get_only_local()
         )
-
-
-class ShowDownloadsOption(MenuOption):
-    def __init__(self, sync_manager: SyncManager) -> None:
-        super().__init__("Show files to download")
-        self.sync_manager = sync_manager
-
-    def run(self) -> None:
-        files = self.sync_manager.state.get_only_remote()
-        print("\nFiles to download:")
-        for file in sorted(files, key=lambda f: f.path):
-            print(f"- {file.path}")
 
 
 class ShowManifestOption(MenuOption):

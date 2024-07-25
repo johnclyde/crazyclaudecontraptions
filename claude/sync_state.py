@@ -77,7 +77,7 @@ class SyncManager:
                 continue
             for file in files:
                 if (
-                    not file.endswith((".js", ".ts", ".tsx", ".py"))
+                    not file.endswith((".js", ".ts", ".tsx", ".py", ".yml"))
                     and file != "manifest.json"
                 ):
                     continue
@@ -141,7 +141,11 @@ class SyncManager:
         try:
             curl_delete = CurlDelete(file.remote_uuid)
             result = curl_delete.perform_request()
-            print(f"Successfully deleted: {file.path}")
+            print(f"Successfully deleted: {file.remote_path} ({file.remote_uuid})")
             print(f"Response: {result}")
         except Exception as e:
-            raise Exception(f"Error deleting file {file.path}: {e}")
+            raise Exception(f"Error deleting file {file.remote_path}: {e}")
+
+        self.state.files.pop(file.local_path, None)
+        if file.local_present:
+            self.add_file(file.local_path, file.local_contents, "", "", None)
