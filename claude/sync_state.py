@@ -38,36 +38,49 @@ class SyncManager:
     def fetch_and_compare(self) -> None:
         remote_files = self.fetch_remote_files()
         self.process_remote_files(remote_files)
-        self.process_local_files()
+        self.get_local_files()
         self.state.fetched = True
+
+    def add_file(
+        self,
+        local_path: str,
+        local_contents: str,
+        remote_path: str,
+        remote_uuid: str | None,
+    ) -> None:
+        self.state.files[local_path] = File(
+            local_path=local_path,
+            local_contents=local_contents,
+            remote_path=remote_path,
+            remote_uuid=remote_uuid,
+        )
 
     def process_remote_files(self, remote_files: list[dict[str, str]]) -> None:
         for remote_file in remote_files:
             remote_path = remote_file["file_name"]
-            remote_uuid = remote_file["uuid"]
             local_path = self.infer_local_path(remote_path)
-            self.state.files[local_path] = File(
-                local_path=local_path,
-                local_contents="",
-                remote_path=remote_path,
-                remote_uuid=remote_uuid,
-            )
+            self.add_file(local_path, "", remote_path, remote_file["uuid"])
 
-    def process_local_files(self) -> None:
-        local_files = get_local_files(".")
-        for local_path, contents in local_files.items():
-            if local_path in self.state.files:
-                # Update existing file object
-                self.state.files[local_path].local_contents = contents
-            else:
-                # Create new file object for local-only files
-                file = File(
-                    local_path=local_path,
-                    local_contents=contents,
-                    remote_path="",
-                    remote_uuid=None,
-                )
-                self.state.files[local_path] = file
+    def get_local_files(self) -> dict[str, str]:
+        directory = "."
+        for root, _, files in os.walk(directory):
+            if "node_modules" in root or "build" in root:
+                continue
+            for file in files:
+                if (
+                    not file.endswith((".js", ".ts", ".tsx", ".py"))
+                    and file != "manifest.json"
+                ):
+                    continue
+                local_path = os.path.relpath(os.path.join(root, file), directory)
+                with open(os.path.join(root, file), "r") as f:
+                    contents = f.read()
+
+                if local_path in self.state.files:
+                    self.state.files[local_path].local_contents = contents
+                    continue
+
+                self.add_file(local_path, contents, "", None)
 
     def infer_local_path(self, remote_path: str) -> str:
         for rule in self.state.manifest.rules:
@@ -100,14 +113,13 @@ class SyncManager:
             raise Exception(f"Error uploading {filename}: {e}")
 
     def upload_file(self, file: File) -> None:
-        """Fix this implementation later.
-        filename = file.path
+        filename = file.local_path
         try:
             with open(filename, "r") as f:
                 content = f.read()
             self.upload_content(filename, content)
         except IOError as e:
-            raise IOError(f"Error reading file {filename}: {e}")"""
+            raise IOError(f"Error reading file {filename}: {e}")
 
     def upload_manifest(self) -> None:
         manifest_content = json.dumps(self.state.manifest.__dict__, indent=2)
@@ -124,17 +136,3 @@ class SyncManager:
             print(f"Response: {result}")
         except Exception as e:
             raise Exception(f"Error deleting file {file.path}: {e}")
-
-
-def get_local_files(directory: str) -> dict[str, str]:
-    local_files: dict[str, str] = {}
-    for root, _, files in os.walk(directory):
-        if "node_modules" in root or "build" in root:
-            continue
-        for file in files:
-            if file.endswith((".js", ".ts", ".tsx", ".py")) or file == "manifest.json":
-                file_path = os.path.relpath(os.path.join(root, file), directory)
-                with open(os.path.join(root, file), "r") as f:
-                    contents = f.read()
-                local_files[file_path] = contents
-    return local_files
