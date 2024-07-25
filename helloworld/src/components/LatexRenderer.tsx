@@ -5,31 +5,28 @@ interface LatexRendererProps {
   latex: string;
 }
 
-const config = {
-  loader: { load: ["input/tex", "output/svg"] },
-  tex: {
-    inlineMath: [
-      ["$", "$"],
-      ["\\(", "\\)"],
-    ],
-    displayMath: [
-      ["$$", "$$"],
-      ["\\[", "\\]"],
-    ],
-    processEscapes: true,
-    processEnvironments: true,
-  },
-  svg: {
-    fontCache: "global",
-  },
-};
-
 const LatexRenderer: React.FC<LatexRendererProps> = ({ latex }) => {
+  const preprocessLatex = (input: string) => {
+    // Replace single $ with \( and \)
+    let processed = input.replace(/\$(.+?)\$/g, '\\($1\\)');
+    
+    // Parse options if present
+    const optionRegex = /option ([A-E]): (.*?)(?=option [A-E]:|$)/gs;
+    let match;
+    while ((match = optionRegex.exec(processed)) !== null) {
+      const [fullMatch, option, content] = match;
+      processed = processed.replace(fullMatch, `<strong>Option ${option}:</strong> ${content}`);
+    }
+
+    return processed;
+  };
+
   return (
-    <MathJaxContext config={config}>
-      <MathJax>{latex}</MathJax>
+    <MathJaxContext>
+      <MathJax>{preprocessLatex(latex)}</MathJax>
     </MathJaxContext>
   );
 };
 
 export default LatexRenderer;
+

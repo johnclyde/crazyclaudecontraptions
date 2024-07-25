@@ -8,6 +8,7 @@ import GrindOlympiadsIndex from "./GrindOlympiadsIndex";
 import GrindOlympiadsLayout from "./GrindOlympiadsLayout";
 import InteractiveCounter from "./components/InteractiveCounter";
 import ExamComponent from "./components/ExamComponent";
+import UserResponseComponent from "./components/UserResponseComponent"; // New import
 import Users from "./components/Users";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { UserDataProvider } from "./contexts/UserDataContext";
@@ -40,6 +41,10 @@ const App: React.FC = () => {
                   path="competition/:competition/:year/:exam"
                   element={<ExamComponent />}
                 />
+                <Route
+                  path="exam/:examId/respond"
+                  element={<UserResponseComponent />}
+                />
                 <Route path="users" element={<Users isAdminMode={false} />} />
               </Route>
               <Route element={<ProtectedRoute adminOnly={true} />}>
@@ -58,3 +63,4 @@ const App: React.FC = () => {
 };
 
 export default App;
+
