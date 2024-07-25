@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from menu import Menu
 from sync_state import SyncManager
 from upload_file_menu import UploadFileMenu
+from view_file_diff_menu import ViewFileDiffMenu
 
 
 @dataclass
@@ -24,6 +25,7 @@ class FileListMenu(Menu):
         self.add_option(ToggleLocalOnlyFiles(self.config))
         self.add_option(ToggleRemoteOnlyFiles(self.config))
         self.add_option(UploadFileMenu(self.sync_manager))
+        self.add_option(ViewFileDiffMenu(self.sync_manager))
 
     def display(self) -> None:
         state = self.sync_manager.state
@@ -35,7 +37,7 @@ class FileListMenu(Menu):
             remote_uuid = file.remote_uuid if file.remote_present else ""
 
             # Determine visibility of line based on toggle settings.
-            visibility = False
+            visibility = True
             if file.is_fully_synced:
                 visibility = self.config.show_synced
             elif file.local_present and not file.remote_present:

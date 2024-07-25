@@ -68,7 +68,9 @@ class SyncManager:
         for remote_file in remote_files:
             remote_path = remote_file["file_name"]
             local_path = self.infer_local_path(remote_path)
-            self.add_file(local_path, "", remote_path, remote_file["content"], remote_file["uuid"])
+            self.add_file(
+                local_path, "", remote_path, remote_file["content"], remote_file["uuid"]
+            )
 
     def get_local_files(self) -> dict[str, str]:
         directory = "."
