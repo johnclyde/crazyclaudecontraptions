@@ -11,11 +11,8 @@ const OptionButton = ({ option, selected, onClick, latex }) => (
   </button>
 );
 
-const MultipleChoiceProblem = ({ problem, onAnswer }) => {
-  const [selectedOption, setSelectedOption] = useState(null);
-
+const MultipleChoiceProblem = ({ problem, onAnswer, userResponse }) => {
   const handleOptionClick = (option) => {
-    setSelectedOption(option);
     onAnswer(problem.id, option);
   };
 
@@ -30,7 +27,7 @@ const MultipleChoiceProblem = ({ problem, onAnswer }) => {
           <OptionButton
             key={option}
             option={option}
-            selected={selectedOption === option}
+            selected={userResponse === option}
             onClick={() => handleOptionClick(option)}
             latex={problem.options[option]}
           />
@@ -52,6 +49,12 @@ const UserResponseComponent = () => {
         if (response.ok) {
           const data = await response.json();
           setExam(data);
+          // Initialize responses with null values for each problem
+          const initialResponses = data.problems.reduce((acc, problem) => {
+            acc[problem.id] = null;
+            return acc;
+          }, {});
+          setResponses(initialResponses);
         } else {
           console.error("Failed to fetch exam");
         }
@@ -95,12 +98,24 @@ const UserResponseComponent = () => {
             key={problem.id}
             problem={problem}
             onAnswer={handleAnswer}
+            userResponse={responses[problem.id]}
           />
         ))
       ) : (
         // Render non-multiple choice problems here
         <div>Non-multiple choice problems not implemented yet</div>
       )}
+      <div className="mt-8">
+        <h3 className="text-xl font-bold mb-2">Your Responses</h3>
+        <ul>
+          {Object.entries(responses).map(([problemId, answer]) => (
+            <li key={problemId}>
+              Problem {exam.problems.find((p) => p.id === problemId)?.number}:{" "}
+              {answer || "Not answered"}
+            </li>
+          ))}
+        </ul>
+      </div>
     </div>
   );
 };
