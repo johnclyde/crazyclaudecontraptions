@@ -12,6 +12,7 @@ class File(ABC):
     local_path: str
     local_contents: str
     remote_path: str
+    remote_contents: str
     remote_uuid: str | None
 
     @property
@@ -21,6 +22,12 @@ class File(ABC):
     @property
     def remote_present(self) -> bool:
         return self.remote_uuid is not None
+
+    @property
+    def is_fully_synced(self) -> bool:
+        if not self.local_present:
+            return False
+        return self.local_contents == self.remote_contents
 
 
 @dataclass
@@ -46,12 +53,14 @@ class SyncManager:
         local_path: str,
         local_contents: str,
         remote_path: str,
+        remote_contents: str,
         remote_uuid: str | None,
     ) -> None:
         self.state.files[local_path] = File(
             local_path=local_path,
             local_contents=local_contents,
             remote_path=remote_path,
+            remote_contents=remote_contents,
             remote_uuid=remote_uuid,
         )
 
@@ -59,7 +68,7 @@ class SyncManager:
         for remote_file in remote_files:
             remote_path = remote_file["file_name"]
             local_path = self.infer_local_path(remote_path)
-            self.add_file(local_path, "", remote_path, remote_file["uuid"])
+            self.add_file(local_path, "", remote_path, remote_file["content"], remote_file["uuid"])
 
     def get_local_files(self) -> dict[str, str]:
         directory = "."
@@ -68,7 +77,7 @@ class SyncManager:
                 continue
             for file in files:
                 if (
-                    not file.endswith((".js", ".ts", ".tsx", ".py"))
+                    not file.endswith((".js", ".ts", ".tsx", ".py", ".yml"))
                     and file != "manifest.json"
                 ):
                     continue
@@ -80,7 +89,7 @@ class SyncManager:
                     self.state.files[local_path].local_contents = contents
                     continue
 
-                self.add_file(local_path, contents, "", None)
+                self.add_file(local_path, contents, "", "", None)
 
     def infer_local_path(self, remote_path: str) -> str:
         for rule in self.state.manifest.rules:
@@ -132,7 +141,11 @@ class SyncManager:
         try:
             curl_delete = CurlDelete(file.remote_uuid)
             result = curl_delete.perform_request()
-            print(f"Successfully deleted: {file.path}")
+            print(f"Successfully deleted: {file.remote_path} ({file.remote_uuid})")
             print(f"Response: {result}")
         except Exception as e:
-            raise Exception(f"Error deleting file {file.path}: {e}")
+            raise Exception(f"Error deleting file {file.remote_path}: {e}")
+
+        self.state.files.pop(file.local_path, None)
+        if file.local_present:
+            self.add_file(file.local_path, file.local_contents, "", "", None)
