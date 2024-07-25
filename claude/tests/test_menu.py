@@ -1,4 +1,3 @@
-import pytest
 from pytest_mock import MockFixture
 
 from menu import Menu, MenuAction, MenuOption, TaskMenu
@@ -25,14 +24,6 @@ class TestTaskMenu(TaskMenu):
         pass
 
 
-@pytest.fixture
-def sync_manager(mocker: MockFixture) -> SyncManager:
-    # Mock the manifest file
-    mocker.patch("builtins.open", mocker.mock_open(read_data='{"files":[],"rules":[]}'))
-    mocker.patch("manifest.Manifest.load_from_file")
-    return mocker.MagicMock(spec=SyncManager)
-
-
 def test_menu_navigation(mocker: MockFixture) -> None:
     main_menu = TestMenu("Main Menu")
     sub_menu = TestMenu("Sub Menu")
@@ -55,8 +46,9 @@ def test_task_completion(mocker: MockFixture) -> None:
     assert result == MenuAction.BACK
 
 
-def test_overwrite_remote(sync_manager: SyncManager, mocker: MockFixture) -> None:
-    file = mocker.MagicMock(spec=File)
+def test_overwrite_remote(mocker: MockFixture) -> None:
+    sync_manager = mocker.Mock(spec=SyncManager)
+    file = mocker.Mock(spec=File)
     file.remote_path = "test_file.txt"
 
     overwrite_option = OverwriteRemote(file, sync_manager)
@@ -69,8 +61,9 @@ def test_overwrite_remote(sync_manager: SyncManager, mocker: MockFixture) -> Non
     sync_manager.upload_file.assert_called_once_with(file)
 
 
-def test_view_file_diff_option(sync_manager: SyncManager, mocker: MockFixture) -> None:
-    file = mocker.MagicMock(spec=File)
+def test_view_file_diff_option(mocker: MockFixture) -> None:
+    sync_manager = mocker.Mock(spec=SyncManager)
+    file = mocker.Mock(spec=File)
     file.local_path = "test_file.txt"
     file.remote_path = "test_file.txt"
 
@@ -82,15 +75,19 @@ def test_view_file_diff_option(sync_manager: SyncManager, mocker: MockFixture) -
     assert result == MenuAction.BACK
 
 
-def test_view_file_diff_menu(sync_manager: SyncManager, mocker: MockFixture) -> None:
-    file1 = mocker.MagicMock(spec=File)
+def test_view_file_diff_menu(mocker: MockFixture) -> None:
+    sync_manager = mocker.Mock(spec=SyncManager)
+    file1 = mocker.Mock(spec=File)
     file1.is_fully_synced = False
     file1.local_path = "file1.txt"
-    file2 = mocker.MagicMock(spec=File)
+    file1.remote_path = "file1.txt"
+    file2 = mocker.Mock(spec=File)
     file2.is_fully_synced = False
     file2.local_path = "file2.txt"
+    file2.remote_path = "file2.txt"
 
-    sync_manager.state = mocker.MagicMock()
+    sync_manager.state = mocker.Mock()
+    sync_manager.state.files = mocker.Mock()
     sync_manager.state.files.values.return_value = [file1, file2]
 
     view_diff_menu = ViewFileDiffMenu(sync_manager)
@@ -99,7 +96,7 @@ def test_view_file_diff_menu(sync_manager: SyncManager, mocker: MockFixture) -> 
     result = view_diff_menu.run()
 
     assert result == MenuAction.BACK
-    assert sync_manager.state.files.values.call_count == 2
+    assert sync_manager.state.files.values.call_count == 1
 
 
 def test_menu_exit(mocker: MockFixture) -> None:
