@@ -1,4 +1,4 @@
-from menu import Menu
+from menu import Menu, MenuAction
 from sync_state import File, SyncManager
 
 
@@ -25,5 +25,6 @@ class UploadFileOption(Menu):
         self.file = file
         self.sync_manager = sync_manager
 
-    def run(self) -> None:
+    def run(self) -> MenuAction:
         self.sync_manager.upload_file(self.file)
+        return MenuAction.CONTINUE

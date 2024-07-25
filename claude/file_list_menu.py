@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from menu import Menu
+from menu import Menu, MenuAction
 from sync_state import SyncManager
 from upload_file_menu import UploadFileMenu
 from view_file_diff_menu import ViewFileDiffMenu
@@ -61,12 +61,13 @@ class ToggleSyncedFiles(Menu):
     def get_menu_title(self) -> str:
         return "Hide synced files" if self.config.show_synced else "Show synced files"
 
-    def run(self) -> None:
+    def run(self) -> MenuAction:
         self.config.show_synced = not self.config.show_synced
         print(
             f"Synced files are now {'hidden' if not self.config.show_synced else 'visible'}"
         )
         self.name = self.get_menu_title()
+        return MenuAction.CONTINUE
 
 
 class ToggleLocalOnlyFiles(Menu):
@@ -81,12 +82,13 @@ class ToggleLocalOnlyFiles(Menu):
             else "Show local-only files"
         )
 
-    def run(self) -> None:
+    def run(self) -> MenuAction:
         self.config.show_local_only = not self.config.show_local_only
         print(
             f"Local-only files are now {'hidden' if not self.config.show_local_only else 'visible'}"
         )
         self.name = self.get_menu_title()
+        return MenuAction.CONTINUE
 
 
 class ToggleRemoteOnlyFiles(Menu):
@@ -101,9 +103,10 @@ class ToggleRemoteOnlyFiles(Menu):
             else "Show remote-only files"
         )
 
-    def run(self) -> None:
+    def run(self) -> MenuAction:
         self.config.show_remote_only = not self.config.show_remote_only
         print(
             f"Remote-only files are now {'hidden' if not self.config.show_remote_only else 'visible'}"
         )
         self.name = self.get_menu_title()
+        return MenuAction.CONTINUE
