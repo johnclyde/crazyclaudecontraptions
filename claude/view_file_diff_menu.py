@@ -84,4 +84,5 @@ class OverwriteRemote(MenuOption):
                 print(f"Error overwriting remote file: {e}")
         else:
             print("Overwrite cancelled.")
-        return MenuResult.CONTINUE
+
+        return MenuResult.TASK_COMPLETE
