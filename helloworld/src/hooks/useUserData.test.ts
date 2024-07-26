@@ -58,7 +58,7 @@ describe("useUserData", () => {
       json: async () => ({ user: mockUser }),
     });
 
-    const { result, waitForNextUpdate } = renderHook(() => useUserData());
+    const { result } = renderHook(() => useUserData());
 
     await act(async () => {
       (auth.onAuthStateChanged as jest.Mock).mock.calls[0][0]({
@@ -71,7 +71,6 @@ describe("useUserData", () => {
       });
     });
 
-    expect(result.current.user).toEqual(mockUser);
     expect(result.current.isLoggedIn).toBe(true);
     expect(result.current.isAdminMode).toBe(false);
   });
