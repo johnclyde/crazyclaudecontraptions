@@ -40,9 +40,16 @@
         "function": "user"
       },
       {
+        "source": "/api/user/profile",
+        "function": "user-profile",
+      },
+      {
         "source": "**",
         "destination": "/index.html"
       }
     ]
+  },
+  "database": {
+    "rules": "database.rules.json"
   }
 }
