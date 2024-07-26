@@ -127,6 +127,7 @@ const useUserData = () => {
       email: "math1434@example.com",
       avatar: "",
       isAdmin: false,
+      isStaff: false,
       progress: [],
     };
     setUser(bypassUser);
