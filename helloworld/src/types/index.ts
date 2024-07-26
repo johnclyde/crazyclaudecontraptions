@@ -4,7 +4,7 @@ export interface User {
   email: string;
   avatar: string;
   isAdmin: boolean;
-  progress: UserProgress[]; 
+  progress: UserProgress[];
 }
 
 export interface UserProgress {
