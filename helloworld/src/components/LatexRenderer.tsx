@@ -36,7 +36,7 @@ const LatexRenderer: React.FC<LatexRendererProps> = ({
 
     // Process the parts to create a map of options
     const options = {};
-    let latexPart = "";
+    const latexParts = [];
 
     parts.forEach((part, index) => {
       if (part.startsWith("__OPTION_") && part.endsWith("__")) {
@@ -45,25 +45,27 @@ const LatexRenderer: React.FC<LatexRendererProps> = ({
         !parts[index - 1] ||
         !parts[index - 1].startsWith("__OPTION_")
       ) {
-        latexPart += part;
+        latexParts.push(part);
       }
     });
 
     return (
       <div>
-        {/* Render the LaTeX part above the options */}
-        <div>{latexPart}</div>
-        <div style={{ display: "inline-block" }}>
-          {Object.keys(options).map((optionKey) => {
+        {/* Render the LaTeX parts above the options */}
+        {latexParts.map((part, index) => (
+          <MathJax key={`latex-part-${index}`}>{part}</MathJax>
+        ))}
+        <div className="flex flex-wrap mt-2">
+          {Object.entries(options).map(([optionKey, optionValue]) => {
             const optionLabel = optionKey.match(/__OPTION_([A-E])__/)[1];
             return (
-              <span
+              <div
                 key={`option-${optionKey}`}
-                style={{ display: "inline-block", margin: "0 8px" }}
+                className="flex items-center mr-4 mb-2"
               >
                 <button
                   onClick={() => onOptionClick(optionKey)}
-                  className={`px-2 py-1 mr-2 mb-2 border rounded focus:outline-none focus:ring ${
+                  className={`px-2 py-1 mr-2 border rounded focus:outline-none focus:ring ${
                     selectedOption === optionKey
                       ? "bg-green-200 border-green-500"
                       : "hover:bg-gray-100 focus:border-blue-300"
@@ -71,8 +73,8 @@ const LatexRenderer: React.FC<LatexRendererProps> = ({
                 >
                   ({optionLabel})
                 </button>
-                {options[optionKey]}
-              </span>
+                <MathJax>{optionValue}</MathJax>
+              </div>
             );
           })}
         </div>
