@@ -55,10 +55,10 @@ describe("useUserData", () => {
 
     (global.fetch as jest.Mock).mockResolvedValueOnce({
       ok: true,
-      json: async () => ({ user: mockUser }),
+      json: () => Promise.resolve(mockUser),
     });
 
-    const { result } = renderHook(() => useUserData());
+    const { result, waitForNextUpdate } = renderHook(() => useUserData());
 
     await act(async () => {
       (auth.onAuthStateChanged as jest.Mock).mock.calls[0][0]({
@@ -70,7 +70,7 @@ describe("useUserData", () => {
         expect(result.current.user).toEqual(mockUser);
       });
     });
-
+    expect(result.current.user).toEqual(mockUser);
     expect(result.current.isLoggedIn).toBe(true);
     expect(result.current.isAdminMode).toBe(false);
   });

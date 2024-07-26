@@ -31,7 +31,7 @@ const renderUserMenu = (props = {}) => {
   return render(
     <BrowserRouter>
       <UserMenu {...defaultProps} {...props} />
-    </BrowserRouter>,
+    </BrowserRouter>
   );
 };
 
