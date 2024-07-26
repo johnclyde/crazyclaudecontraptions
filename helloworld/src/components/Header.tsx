@@ -3,14 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 import NotificationBell from "./NotificationBell";
 import UserMenu from "./UserMenu";
 import { LoginFunction } from "../hooks/useUserData";
-
-interface User {
-  id: string;
-  name: string;
-  email: string;
-  avatar: string;
-  isAdmin: boolean;
-}
+import { User } from "../types";
 
 interface Notification {
   id: string;
@@ -30,6 +23,7 @@ interface HeaderProps {
   setIsLoggedIn: React.Dispatch<React.SetStateAction<boolean>>;
   isAdminMode: boolean;
   toggleAdminMode: () => void;
+  stagingLogin?: () => void;
 }
 
 const Header: React.FC<HeaderProps> = ({
@@ -43,6 +37,7 @@ const Header: React.FC<HeaderProps> = ({
   setIsLoggedIn,
   isAdminMode,
   toggleAdminMode,
+  stagingLogin,
 }) => {
   const [showNotifications, setShowNotifications] = useState(false);
   const notificationRef = useRef<HTMLDivElement>(null);
@@ -100,6 +95,7 @@ const Header: React.FC<HeaderProps> = ({
             logout={logout}
             isAdminMode={isAdminMode}
             toggleAdminMode={toggleAdminMode}
+            stagingLogin={stagingLogin}
           />
         </div>
       </div>
