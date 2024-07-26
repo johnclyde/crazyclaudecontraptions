@@ -35,8 +35,8 @@ const LatexRenderer: React.FC<LatexRendererProps> = ({
     const parts = latex.split(/(__OPTION_[A-E]__)/);
 
     // Process the parts to create a map of options
-    const options = {};
-    const latexParts = [];
+    const options: Record<string, string> = {};
+    const latexParts: string[] = [];
 
     parts.forEach((part, index) => {
       if (part.startsWith("__OPTION_") && part.endsWith("__")) {
@@ -51,20 +51,20 @@ const LatexRenderer: React.FC<LatexRendererProps> = ({
 
     return (
       <div>
-        {/* Render the LaTeX parts above the options */}
         {latexParts.map((part, index) => (
           <MathJax key={`latex-part-${index}`}>{part}</MathJax>
         ))}
         <div className="flex flex-wrap mt-2">
           {Object.entries(options).map(([optionKey, optionValue]) => {
-            const optionLabel = optionKey.match(/__OPTION_([A-E])__/)[1];
+            const optionLabel =
+              optionKey.match(/__OPTION_([A-E])__/)?.[1] || "";
             return (
               <div
                 key={`option-${optionKey}`}
                 className="flex items-center mr-4 mb-2"
               >
                 <button
-                  onClick={() => onOptionClick(optionKey)}
+                  onClick={() => onOptionClick && onOptionClick(optionLabel)}
                   className={`px-2 py-1 mr-2 border rounded focus:outline-none focus:ring ${
                     selectedOption === optionKey
                       ? "bg-green-200 border-green-500"
@@ -73,7 +73,7 @@ const LatexRenderer: React.FC<LatexRendererProps> = ({
                 >
                   ({optionLabel})
                 </button>
-                <MathJax>{optionValue}</MathJax>
+                <MathJax>{optionValue as string}</MathJax>
               </div>
             );
           })}
