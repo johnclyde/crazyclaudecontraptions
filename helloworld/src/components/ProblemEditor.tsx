@@ -22,9 +22,14 @@ const ProblemEditor: React.FC<ProblemEditorProps> = ({
   readOnly = false,
 }) => {
   const [editedProblem, setEditedProblem] = useState(problem.problem);
+  const [selectedOption, setSelectedOption] = useState<string | null>(null);
 
   const handleSave = () => {
     onSave({ ...problem, problem: editedProblem });
+  };
+
+  const handleOptionClick = (option: string) => {
+    setSelectedOption(option);
   };
 
   return (
@@ -34,28 +39,38 @@ const ProblemEditor: React.FC<ProblemEditorProps> = ({
           ? `Problem ${problem.number}`
           : `Edit Problem ${problem.number}`}
       </h2>
-      <div className="mb-4">
-        <label
-          htmlFor="problemLatex"
-          className="block text-sm font-medium text-gray-700"
-        >
-          Problem LaTeX
-        </label>
-        <textarea
-          id="problemLatex"
-          rows={10}
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-          value={editedProblem}
-          onChange={(e) => setEditedProblem(e.target.value)}
-          readOnly={readOnly}
-        />
-      </div>
+      {!readOnly && (
+        <div className="mb-4">
+          <label
+            htmlFor="problemLatex"
+            className="block text-sm font-medium text-gray-700"
+          >
+            Problem LaTeX
+          </label>
+          <textarea
+            id="problemLatex"
+            rows={10}
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+            value={editedProblem}
+            onChange={(e) => setEditedProblem(e.target.value)}
+          />
+        </div>
+      )}
       <div className="mb-4">
         <h3 className="text-lg font-medium mb-2">Preview:</h3>
         <div className="p-4 border rounded">
-          <LatexRenderer latex={editedProblem} />
+          <LatexRenderer
+            latex={readOnly ? problem.problem : editedProblem}
+            onOptionClick={handleOptionClick}
+            selectedOption={selectedOption}
+          />
         </div>
       </div>
+      {selectedOption && (
+        <div className="mb-4">
+          <p>Selected option: {selectedOption}</p>
+        </div>
+      )}
       {!readOnly && (
         <div className="flex justify-end space-x-2">
           <button

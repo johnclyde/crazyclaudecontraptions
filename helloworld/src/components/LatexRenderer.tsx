@@ -3,6 +3,8 @@ import { MathJax, MathJaxContext } from "better-react-mathjax";
 
 interface LatexRendererProps {
   latex: string;
+  onOptionClick?: (option: string) => void;
+  selectedOption?: string | null;
 }
 
 const mathJaxConfig = {
@@ -27,26 +29,41 @@ const mathJaxConfig = {
   },
 };
 
-const LatexRenderer: React.FC<LatexRendererProps> = ({ latex }) => {
-  const preprocessLatex = (input: string) => {
-    // Parse options if present
-    const optionRegex = /option ([A-E]): (.*?)(?=option [A-E]:|$)/gs;
-    let match;
-    let processed = input;
-    while ((match = optionRegex.exec(processed)) !== null) {
-      const [fullMatch, option, content] = match;
-      processed = processed.replace(
-        fullMatch,
-        `<strong>Option ${option}:</strong> ${content}`,
-      );
-    }
+const LatexRenderer: React.FC<LatexRendererProps> = ({
+  latex,
+  onOptionClick,
+  selectedOption,
+}) => {
+  const renderContent = () => {
+    const parts = latex.split(/__OPTION_([A-E])__/);
 
-    return processed;
+    return parts.map((part, index) => {
+      if (index % 2 === 1) {
+        // This is an option identifier
+        const isSelected = selectedOption === part;
+        return (
+          <button
+            key={index}
+            onClick={() => onOptionClick && onOptionClick(part)}
+            className={`px-2 py-1 mr-2 border rounded focus:outline-none focus:ring ${
+              isSelected
+                ? "bg-green-200 border-green-500"
+                : "hover:bg-gray-100 focus:border-blue-300"
+            }`}
+          >
+            Option {part}
+          </button>
+        );
+      } else {
+        // This is regular LaTeX content
+        return <MathJax key={index}>{part}</MathJax>;
+      }
+    });
   };
 
   return (
     <MathJaxContext config={mathJaxConfig}>
-      <MathJax dynamic>{preprocessLatex(latex)}</MathJax>
+      <div>{renderContent()}</div>
     </MathJaxContext>
   );
 };

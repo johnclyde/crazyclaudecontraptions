@@ -10,11 +10,17 @@ const initialProblem: Problem = {
 
 \\text{What is the value of } x\\text{?}
 
-option A: $x = -2$
-option B: $x = 2$
-option C: $x = \\pm 2$
-option D: $x = -2 \\pm 2i$
-option E: \\text{The equation has no solution}`,
+__OPTION_A__$x = -2$
+__OPTION_B__$x = 2$
+__OPTION_C__$x = \\pm 2$
+__OPTION_D__$x = -2 \\pm 2i$
+__OPTION_E__\\text{The equation has no solution}
+
+\\text{Explain your reasoning using the quadratic formula:}
+
+\\[x = \\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a}\\]
+
+\\text{where } a = 1, b = 4, \\text{ and } c = 4.`,
 };
 
 const ProblemEditorDemo: React.FC = () => {
