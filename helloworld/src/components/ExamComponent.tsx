@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import LatexRenderer from "./LatexRenderer";
 import ProblemEditor, { Problem } from "./ProblemEditor";
+import { getIdToken } from "../firebase";
 import { useUserDataContext } from "../contexts/UserDataContext";
 
 const ExamComponent: React.FC = () => {
@@ -69,7 +70,7 @@ const ExamComponent: React.FC = () => {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${await user?.getIdToken()}`,
+          Authorization: `Bearer ${await getIdToken()}`,
         },
         body: JSON.stringify(updatedProblem),
       });
