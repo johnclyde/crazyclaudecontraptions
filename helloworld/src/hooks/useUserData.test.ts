@@ -58,17 +58,15 @@ describe("useUserData", () => {
       json: async () => ({ user: mockUser }),
     });
 
-    (auth.onAuthStateChanged as jest.Mock).mockImplementation((callback) => {
-      callback({
+    const { result, waitForNextUpdate } = renderHook(() => useUserData());
+
+    await act(async () => {
+      (auth.onAuthStateChanged as jest.Mock).mock.calls[0][0]({
         uid: "admin123",
         getIdToken: () => Promise.resolve("fake-token"),
       });
-      return jest.fn();
+      await waitForNextUpdate();
     });
-
-    const { result, waitForNextUpdate } = renderHook(() => useUserData());
-
-    await waitForNextUpdate();
 
     expect(result.current.user).toEqual(mockUser);
     expect(result.current.isLoggedIn).toBe(true);
@@ -78,24 +76,24 @@ describe("useUserData", () => {
   it("should toggle admin mode only for admin users", async () => {
     const { result } = renderHook(() => useUserData());
 
-    await act(async () => {
+    expect(result.current.isAdminMode).toBe(false);
+    act(() => {
       result.current.toggleAdminMode();
     });
-
     expect(result.current.isAdminMode).toBe(false);
 
-    await act(async () => {
+    act(() => {
       result.current.setIsLoggedIn(true);
       result.current.user = { ...result.current.user, isAdmin: true } as User;
     });
 
-    await act(async () => {
+    expect(result.current.isAdminMode).toBe(false);
+    act(() => {
       result.current.toggleAdminMode();
     });
-
     expect(result.current.isAdminMode).toBe(true);
 
-    await act(async () => {
+    act(() => {
       result.current.toggleAdminMode();
     });
 
