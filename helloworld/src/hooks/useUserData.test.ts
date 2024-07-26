@@ -58,8 +58,10 @@ describe("useUserData", () => {
       json: async () => ({ user: mockUser }),
     });
 
-    (auth.onAuthStateChanged as jest.Mock).mockImplementation((callback) => {
-      callback({
+    const { result, waitForNextUpdate } = renderHook(() => useUserData());
+
+    await act(async () => {
+      (auth.onAuthStateChanged as jest.Mock).mock.calls[0][0]({
         uid: "admin123",
         getIdToken: () => Promise.resolve("fake-token"),
       });
@@ -68,10 +70,6 @@ describe("useUserData", () => {
         expect(result.current.user).toEqual(mockUser);
       });
     });
-
-    const { result, waitForNextUpdate } = renderHook(() => useUserData());
-
-    await waitForNextUpdate();
 
     expect(result.current.user).toEqual(mockUser);
     expect(result.current.isLoggedIn).toBe(true);
