@@ -27,7 +27,7 @@ const UserProfile: React.FC = () => {
 
       try {
         const idToken = await getIdToken();
-        const response = await fetch("/api/user-profile", {
+        const response = await fetch("/api/user/profile", {
           headers: {
             Authorization: `Bearer ${idToken}`,
           },
