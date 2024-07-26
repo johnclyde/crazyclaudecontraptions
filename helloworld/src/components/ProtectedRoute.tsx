@@ -9,9 +9,9 @@ interface ProtectedRouteProps {
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   adminOnly = false,
 }) => {
-  const { isLoggedIn, user } = useUserData();
+  const { isLoggedIn, user, isBypassLogin } = useUserData();
 
-  if (!isLoggedIn) {
+  if (!isLoggedIn && !isBypassLogin) {
     return <Navigate to="/" replace />;
   }
 

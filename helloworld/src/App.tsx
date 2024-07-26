@@ -29,7 +29,6 @@ const LabsLayout: React.FC = () => {
 };
 
 const App: React.FC = () => {
-  // Use an environment variable to determine if we're in staging
   const isStaging = process.env.REACT_APP_ENVIRONMENT === "staging";
 
   return (

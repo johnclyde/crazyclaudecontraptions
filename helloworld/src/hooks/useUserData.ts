@@ -1,6 +1,11 @@
 import { useState, useEffect } from "react";
 import { auth } from "../firebase";
-import { GoogleAuthProvider, signInWithPopup, signOut } from "firebase/auth";
+import {
+  GoogleAuthProvider,
+  signInWithPopup,
+  signOut,
+  User as FirebaseUser,
+} from "firebase/auth";
 import { useNavigate } from "react-router-dom";
 import { User, UserProgress } from "../types";
 
@@ -11,6 +16,7 @@ const useUserData = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userProgress, setUserProgress] = useState<UserProgress[]>([]);
   const [isAdminMode, setIsAdminMode] = useState(false);
+  const [isBypassLogin, setIsBypassLogin] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -23,7 +29,8 @@ const useUserData = () => {
           setUser(userData);
           setIsLoggedIn(true);
           setUserProgress(userData.progress || []);
-        } else {
+          setIsBypassLogin(false);
+        } else if (!isBypassLogin) {
           setUser(null);
           setIsLoggedIn(false);
           setIsAdminMode(false);
@@ -37,7 +44,7 @@ const useUserData = () => {
         unsubscribe();
       }
     };
-  }, []);
+  }, [isBypassLogin]);
 
   const fetchUserData = async (token: string): Promise<User> => {
     const response = await fetch("/api/user", {
@@ -61,6 +68,7 @@ const useUserData = () => {
         setUser(userData);
         setIsLoggedIn(true);
         setUserProgress(userData.progress || []);
+        setIsBypassLogin(false);
       } catch (error) {
         console.error("Error signing in with Google", error);
       }
@@ -70,7 +78,7 @@ const useUserData = () => {
   };
 
   const logout = async () => {
-    if (auth) {
+    if (auth && !isBypassLogin) {
       try {
         const token = await auth.currentUser?.getIdToken();
         const response = await fetch("/api/logout", {
@@ -85,17 +93,17 @@ const useUserData = () => {
         }
 
         await signOut(auth);
-        setUser(null);
-        setIsLoggedIn(false);
-        setIsAdminMode(false);
-        setUserProgress([]);
-        navigate("/");
       } catch (error) {
         console.error("Error during logout:", error);
       }
-    } else {
-      console.error("Firebase auth is not initialized");
     }
+
+    setUser(null);
+    setIsLoggedIn(false);
+    setIsAdminMode(false);
+    setUserProgress([]);
+    setIsBypassLogin(false);
+    navigate("/");
   };
 
   const bypassLogin = () => {
@@ -110,6 +118,7 @@ const useUserData = () => {
     setUser(bypassUser);
     setIsLoggedIn(true);
     setUserProgress([]);
+    setIsBypassLogin(true);
   };
 
   const toggleAdminMode = () => {
@@ -128,6 +137,7 @@ const useUserData = () => {
     userProgress,
     isAdminMode,
     toggleAdminMode,
+    isBypassLogin,
   };
 };
 
