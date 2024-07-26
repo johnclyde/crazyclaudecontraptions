@@ -24,7 +24,7 @@ jobs:
         working-directory: ./helloworld
 
       - name: Build the project
-        run: yarn build
+        run: REACT_APP_ENVIRONMENT=staging yarn build
         env:
           REACT_APP_GOOGLE_API_KEY: ${{ secrets.REACT_APP_GOOGLE_API_KEY }}
           REACT_APP_GOOGLE_CLIENT_ID: ${{ secrets.REACT_APP_GOOGLE_CLIENT_ID }}

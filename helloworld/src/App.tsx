@@ -29,15 +29,16 @@ const LabsLayout: React.FC = () => {
 };
 
 const App: React.FC = () => {
-  const stagingLogin =
-    process.env.NODE_ENV !== "production"
-      ? () => {
-          // Implement your staging login logic here
-          console.log("Staging login as math1434@example.com");
-          // You might want to call your login function here with the dummy user data
-          // For example: login({ id: 'math1434', email: 'math1434@example.com', name: 'Math User', avatar: '', isAdmin: false });
-        }
-      : undefined;
+  // Use an environment variable to determine if we're in staging
+  const isStaging = process.env.REACT_APP_ENVIRONMENT === "staging";
+
+  const stagingLogin = isStaging
+    ? () => {
+        console.log("Staging login as math1434@example.com");
+        // Implement your staging login logic here
+        // For example: login({ id: 'math1434', email: 'math1434@example.com', name: 'Math User', avatar: '', isAdmin: false });
+      }
+    : undefined;
 
   return (
     <GoogleOAuthProvider clientId={process.env.REACT_APP_GOOGLE_CLIENT_ID!}>
