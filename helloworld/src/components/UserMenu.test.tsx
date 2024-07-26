@@ -1,6 +1,5 @@
-
 import React from "react";
-import { render, screen, fireEvent } from "@testing-library/react";
+import { render, screen, fireEvent, act } from "@testing-library/react";
 import "@testing-library/jest-dom/extend-expect";
 import UserMenu from "./UserMenu";
 import { BrowserRouter } from "react-router-dom";
@@ -32,33 +31,39 @@ const renderUserMenu = (props = {}) => {
   return render(
     <BrowserRouter>
       <UserMenu {...defaultProps} {...props} />
-    </BrowserRouter>
+    </BrowserRouter>,
   );
 };
 
 describe("UserMenu", () => {
-  it("renders login button when not logged in", () => {
+  it("renders login button when not logged in", async () => {
     renderUserMenu();
-    fireEvent.click(screen.getByRole("button"));
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button"));
+    });
     expect(screen.getByText("Login")).toBeInTheDocument();
   });
 
-  it("renders user menu when logged in", () => {
+  it("renders user menu when logged in", async () => {
     renderUserMenu({ isLoggedIn: true, user: mockUser });
-    fireEvent.click(screen.getByRole("button"));
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button"));
+    });
     expect(screen.getByText("Profile")).toBeInTheDocument();
     expect(screen.getByText("Settings")).toBeInTheDocument();
     expect(screen.getByText("Users")).toBeInTheDocument();
     expect(screen.getByText("Logout")).toBeInTheDocument();
   });
 
-  it("renders admin mode toggle for admin users", () => {
+  it("renders admin mode toggle for admin users", async () => {
     renderUserMenu({ isLoggedIn: true, user: mockUser });
-    fireEvent.click(screen.getByRole("button"));
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button"));
+    });
     expect(screen.getByText("Enable Admin Mode")).toBeInTheDocument();
   });
 
-  it("toggles admin mode when clicking the toggle button", () => {
+  it("toggles admin mode when clicking the toggle button", async () => {
     const toggleAdminMode = jest.fn();
     renderUserMenu({
       isLoggedIn: true,
@@ -66,25 +71,37 @@ describe("UserMenu", () => {
       toggleAdminMode,
       isAdminMode: false,
     });
-    fireEvent.click(screen.getByRole("button"));
-    fireEvent.click(screen.getByText("Enable Admin Mode"));
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button"));
+    });
+    await act(async () => {
+      fireEvent.click(screen.getByText("Enable Admin Mode"));
+    });
     expect(toggleAdminMode).toHaveBeenCalled();
   });
 
-  it("calls logout function when clicking logout", () => {
+  it("calls logout function when clicking logout", async () => {
     const logout = jest.fn();
     renderUserMenu({ isLoggedIn: true, user: mockUser, logout });
-    fireEvent.click(screen.getByRole("button"));
-    fireEvent.click(screen.getByText("Logout"));
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button"));
+    });
+    await act(async () => {
+      fireEvent.click(screen.getByText("Logout"));
+    });
     expect(logout).toHaveBeenCalled();
   });
 
-  it("renders staging login button when provided", () => {
+  it("renders staging login button when provided", async () => {
     const stagingLogin = jest.fn();
     renderUserMenu({ stagingLogin });
-    fireEvent.click(screen.getByRole("button"));
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button"));
+    });
     expect(screen.getByText("Log in as math1434")).toBeInTheDocument();
-    fireEvent.click(screen.getByText("Log in as math1434"));
+    await act(async () => {
+      fireEvent.click(screen.getByText("Log in as math1434"));
+    });
     expect(stagingLogin).toHaveBeenCalled();
   });
 });
