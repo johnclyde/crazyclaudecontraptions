@@ -30,11 +30,6 @@ const UserMenu = forwardRef<HTMLDivElement, UserMenuProps>(
     const [showMenu, setShowMenu] = useState(false);
     const [showLoginDialog, setShowLoginDialog] = useState(false);
 
-    const handleProfileClick = () => {
-      console.log("Navigate to profile");
-      setShowMenu(false);
-    };
-
     const handleSettingsClick = () => {
       console.log("Navigate to settings");
       setShowMenu(false);
@@ -83,12 +78,13 @@ const UserMenu = forwardRef<HTMLDivElement, UserMenuProps>(
           <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1">
             {isLoggedIn ? (
               <>
-                <button
-                  onClick={handleProfileClick}
+                <Link
+                  to="/profile"
                   className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  onClick={() => setShowMenu(false)}
                 >
                   Profile
-                </button>
+                </Link>
                 <button
                   onClick={handleSettingsClick}
                   className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
