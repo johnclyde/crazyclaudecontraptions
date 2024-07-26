@@ -5,11 +5,11 @@ import useNotifications from "./hooks/useNotifications";
 import useUserData from "./hooks/useUserData";
 
 interface GrindOlympiadsLayoutProps {
-  stagingLogin?: () => void;
+  isStaging: boolean;
 }
 
 const GrindOlympiadsLayout: React.FC<GrindOlympiadsLayoutProps> = ({
-  stagingLogin,
+  isStaging,
 }) => {
   const {
     user,
@@ -19,9 +19,12 @@ const GrindOlympiadsLayout: React.FC<GrindOlympiadsLayoutProps> = ({
     logout,
     isAdminMode,
     toggleAdminMode,
+    bypassLogin,
   } = useUserData();
   const { notifications, notificationsError, markNotificationAsRead } =
     useNotifications(isLoggedIn);
+
+  const stagingLogin = isStaging ? bypassLogin : undefined;
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-100">

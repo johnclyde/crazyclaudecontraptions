@@ -32,22 +32,12 @@ const App: React.FC = () => {
   // Use an environment variable to determine if we're in staging
   const isStaging = process.env.REACT_APP_ENVIRONMENT === "staging";
 
-  const stagingLogin = isStaging
-    ? () => {
-        console.log("Staging login as math1434@example.com");
-        // Implement your staging login logic here
-        // For example: login({ id: 'math1434', email: 'math1434@example.com', name: 'Math User', avatar: '', isAdmin: false });
-      }
-    : undefined;
-
   return (
     <GoogleOAuthProvider clientId={process.env.REACT_APP_GOOGLE_CLIENT_ID!}>
       <Router>
         <UserDataProvider>
           <Routes>
-            <Route
-              element={<GrindOlympiadsLayout stagingLogin={stagingLogin} />}
-            >
+            <Route element={<GrindOlympiadsLayout isStaging={isStaging} />}>
               <Route index element={<GrindOlympiadsIndex />} />
               <Route element={<ProtectedRoute />}>
                 <Route
