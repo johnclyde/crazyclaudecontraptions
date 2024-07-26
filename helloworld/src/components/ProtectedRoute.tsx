@@ -1,6 +1,6 @@
 import React from "react";
 import { Navigate, Outlet } from "react-router-dom";
-import { useUserDataContext } from "../contexts/UserDataContext";
+import useUserData from "../hooks/useUserData";
 
 interface ProtectedRouteProps {
   adminOnly?: boolean;
@@ -9,9 +9,9 @@ interface ProtectedRouteProps {
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   adminOnly = false,
 }) => {
-  const { isLoggedIn, user } = useUserDataContext();
+  const { isLoggedIn, user, isBypassLogin } = useUserData();
 
-  if (!isLoggedIn) {
+  if (!isLoggedIn && !isBypassLogin) {
     return <Navigate to="/" replace />;
   }
 

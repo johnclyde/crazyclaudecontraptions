@@ -1,11 +1,6 @@
 import { useState, useEffect } from "react";
 import { auth } from "../firebase";
-import {
-  GoogleAuthProvider,
-  signInWithPopup,
-  signOut,
-  User as FirebaseUser,
-} from "firebase/auth";
+import { GoogleAuthProvider, signInWithPopup, signOut } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
 import { User, UserProgress } from "../types";
 
@@ -16,71 +11,59 @@ const useUserData = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userProgress, setUserProgress] = useState<UserProgress[]>([]);
   const [isAdminMode, setIsAdminMode] = useState(false);
+  const [isBypassLogin, setIsBypassLogin] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
+    let unsubscribe: () => void;
     if (auth && typeof auth.onAuthStateChanged === "function") {
-      const unsubscribe = auth.onAuthStateChanged(
-        (firebaseUser: FirebaseUser | null) => {
-          if (firebaseUser) {
-            // We'll update the user data after the API call
-            setIsLoggedIn(true);
-          } else {
-            setUser(null);
-            setIsLoggedIn(false);
-            setIsAdminMode(false);
-            navigate("/");
-          }
-        },
-      );
-
-      return () => unsubscribe();
-    } else {
-      console.error("Firebase auth is not initialized correctly");
+      unsubscribe = auth.onAuthStateChanged(async (firebaseUser) => {
+        if (firebaseUser) {
+          const token = await firebaseUser.getIdToken();
+          const userData = await fetchUserData(token);
+          setUser(userData);
+          setIsLoggedIn(true);
+          setUserProgress(userData.progress || []);
+          setIsBypassLogin(false);
+        } else if (!isBypassLogin) {
+          setUser(null);
+          setIsLoggedIn(false);
+          setIsAdminMode(false);
+          setUserProgress([]);
+        }
+      });
     }
-  }, [navigate]);
+
+    return () => {
+      if (unsubscribe) {
+        unsubscribe();
+      }
+    };
+  }, [isBypassLogin]);
+
+  const fetchUserData = async (token: string): Promise<User> => {
+    const response = await fetch("/api/user", {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    if (!response.ok) {
+      throw new Error("Failed to fetch user data");
+    }
+    return await response.json();
+  };
 
   const login: LoginFunction = async () => {
     if (auth) {
-      const provider = new GoogleAuthProvider();
       try {
+        const provider = new GoogleAuthProvider();
         const result = await signInWithPopup(auth, provider);
-        const firebaseUser = result.user;
-
-        // Call your login API
-        const idToken = await firebaseUser.getIdToken();
-        console.log("Calling login GCF...");
-        const response = await fetch("api/login", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${idToken}`,
-          },
-        });
-
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.error || "Login function call failed");
-        }
-
-        const data = await response.json();
-        console.log("Login function response:", data);
-
-        // Update user data with API response
-        const userData: User = {
-          id: firebaseUser.uid,
-          name: firebaseUser.displayName || "Anonymous",
-          email: firebaseUser.email || "",
-          avatar: firebaseUser.photoURL || "",
-          isAdmin: data.user.isAdmin || false,
-        };
+        const token = await result.user.getIdToken();
+        const userData = await fetchUserData(token);
         setUser(userData);
         setIsLoggedIn(true);
-
-        // If the API returns user progress, update it
-        if (data.userProgress) {
-          setUserProgress(data.userProgress);
-        }
+        setUserProgress(userData.progress || []);
+        setIsBypassLogin(false);
       } catch (error) {
         console.error("Error signing in with Google", error);
       }
@@ -90,34 +73,47 @@ const useUserData = () => {
   };
 
   const logout = async () => {
-    if (auth) {
+    if (auth && !isBypassLogin) {
       try {
-        await signOut(auth);
-
-        // Call your custom logout API
+        const token = await auth.currentUser?.getIdToken();
         const response = await fetch("/api/logout", {
           method: "POST",
           headers: {
-            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
           },
         });
 
         if (!response.ok) {
-          throw new Error("Logout API call failed");
+          throw new Error("Failed to logout on server");
         }
 
-        // Clear user data and update state
-        setUser(null);
-        setIsLoggedIn(false);
-        setUserProgress([]);
-        setIsAdminMode(false);
-        navigate("/");
+        await signOut(auth);
       } catch (error) {
         console.error("Error during logout:", error);
       }
-    } else {
-      console.error("Firebase auth is not initialized");
     }
+
+    setUser(null);
+    setIsLoggedIn(false);
+    setIsAdminMode(false);
+    setUserProgress([]);
+    setIsBypassLogin(false);
+    navigate("/");
+  };
+
+  const bypassLogin = () => {
+    const bypassUser: User = {
+      id: "math1434",
+      name: "Math User",
+      email: "math1434@example.com",
+      avatar: "",
+      isAdmin: false,
+      progress: [],
+    };
+    setUser(bypassUser);
+    setIsLoggedIn(true);
+    setUserProgress([]);
+    setIsBypassLogin(true);
   };
 
   const toggleAdminMode = () => {
@@ -132,9 +128,11 @@ const useUserData = () => {
     setIsLoggedIn,
     login,
     logout,
+    bypassLogin,
     userProgress,
     isAdminMode,
     toggleAdminMode,
+    isBypassLogin,
   };
 };
 

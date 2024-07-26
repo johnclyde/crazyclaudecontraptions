@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import LatexRenderer from "./LatexRenderer";
 
 interface Problem {
@@ -20,6 +20,7 @@ const ExamComponent: React.FC = () => {
   const [showAllProblems, setShowAllProblems] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [examId, setExamId] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchExamData = async () => {
@@ -34,6 +35,7 @@ const ExamComponent: React.FC = () => {
         const data = await response.json();
         setProblems(data.problems || []);
         setComment(data.comment || "");
+        setExamId(data.examId || null);
         setError(null);
       } catch (err) {
         console.error("Error fetching exam data:", err);
@@ -94,6 +96,15 @@ const ExamComponent: React.FC = () => {
     <div className="p-6">
       <h1 className="text-3xl font-bold mb-4">{`${competition} - ${year} - ${exam}`}</h1>
       <p className="mb-4">{comment}</p>
+
+      {examId && (
+        <Link
+          to={`/exam/${examId}/respond`}
+          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors mb-4 inline-block"
+        >
+          Start Exam
+        </Link>
+      )}
 
       {problems.length > 0 ? (
         <>
