@@ -8,13 +8,7 @@ interface LatexRendererProps {
 }
 
 const mathJaxConfig = {
-  loader: { load: ["input/asciimath", "output/chtml", "[tex]/ams"] },
-  asciimath: {
-    delimiters: [
-      ["$", "$"],
-      ["`", "`"],
-    ],
-  },
+  loader: { load: ["input/tex", "output/svg", "[tex]/ams"] },
   tex: {
     inlineMath: [
       ["$", "$"],
@@ -27,6 +21,9 @@ const mathJaxConfig = {
     processEscapes: true,
     packages: { "[+]": ["ams"] },
   },
+  svg: {
+    fontCache: "global",
+  },
 };
 
 const LatexRenderer: React.FC<LatexRendererProps> = ({
@@ -35,28 +32,28 @@ const LatexRenderer: React.FC<LatexRendererProps> = ({
   selectedOption,
 }) => {
   const renderContent = () => {
-    const parts = latex.split(/__OPTION_([A-E])__/);
+    const parts = latex.split(/(__OPTION_[A-E]__)/);
 
     return parts.map((part, index) => {
-      if (index % 2 === 1) {
+      if (part.startsWith("__OPTION_") && part.endsWith("__")) {
         // This is an option identifier
-        const isSelected = selectedOption === part;
+        const option = part.replace(/__OPTION_([A-E])__/, "$1");
+        const isSelected = selectedOption === option;
         return (
           <button
             key={index}
-            onClick={() => onOptionClick && onOptionClick(part)}
+            onClick={() => onOptionClick && onOptionClick(option)}
             className={`px-2 py-1 mr-2 border rounded focus:outline-none focus:ring ${
               isSelected
                 ? "bg-green-200 border-green-500"
                 : "hover:bg-gray-100 focus:border-blue-300"
             }`}
           >
-            Option {part}
+            ({option})
           </button>
         );
       } else {
-        // This is regular LaTeX content
-        return <MathJax key={index}>{part}</MathJax>;
+        return <MathJax key={index} inline={false}>{`${part}`}</MathJax>;
       }
     });
   };
