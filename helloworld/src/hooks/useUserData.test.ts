@@ -1,4 +1,4 @@
-import { renderHook, act } from "@testing-library/react";
+import { waitFor, renderHook, act } from "@testing-library/react";
 import { useNavigate } from "react-router-dom";
 import useUserData from "./useUserData";
 import { auth } from "../firebase";
@@ -58,17 +58,19 @@ describe("useUserData", () => {
       json: async () => ({ user: mockUser }),
     });
 
-    const { result, waitForNextUpdate } = renderHook(() => useUserData());
+    const { result } = renderHook(() => useUserData());
 
     await act(async () => {
       (auth.onAuthStateChanged as jest.Mock).mock.calls[0][0]({
         uid: "admin123",
         getIdToken: () => Promise.resolve("fake-token"),
       });
-      await waitForNextUpdate();
+
+      await waitFor(() => {
+        expect(result.current.user).toEqual(mockUser);
+      });
     });
 
-    expect(result.current.user).toEqual(mockUser);
     expect(result.current.isLoggedIn).toBe(true);
     expect(result.current.isAdminMode).toBe(false);
   });
