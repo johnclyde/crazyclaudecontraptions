@@ -4,23 +4,25 @@ import ProblemEditor, { Problem } from "./ProblemEditor";
 const initialProblem: Problem = {
   id: "demo-problem",
   number: 1,
-  problem: `\\text{Solve the equation:}
+  problem: `Solve the equation:
 
 \\[x^2 + 4x + 4 = 0\\]
 
-\\text{What is the value of } x\\text{?}
+What is the value of $x$?
+
+\\[ \\]
+
+Explain your reasoning using the quadratic formula:
+
+\\[x = \\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a}\\]
+
+where $ a = 1, b = 4, \\text{ and } c = 4 $.
 
 __OPTION_A__$x = -2$
 __OPTION_B__$x = 2$
 __OPTION_C__$x = \\pm 2$
 __OPTION_D__$x = -2 \\pm 2i$
-__OPTION_E__\\text{The equation has no solution}
-
-\\text{Explain your reasoning using the quadratic formula:}
-
-\\[x = \\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a}\\]
-
-\\text{where } a = 1, b = 4, \\text{ and } c = 4.`,
+__OPTION_E__The equation has no solution`,
 };
 
 const ProblemEditorDemo: React.FC = () => {

@@ -34,34 +34,56 @@ const LatexRenderer: React.FC<LatexRendererProps> = ({
   const renderContent = () => {
     const parts = latex.split(/(__OPTION_[A-E]__)/);
 
-    return parts.map((part, index) => {
+    // Process the parts to create a map of options
+    const options: Record<string, string> = {};
+    const latexParts: string[] = [];
+
+    parts.forEach((part, index) => {
       if (part.startsWith("__OPTION_") && part.endsWith("__")) {
-        // This is an option identifier
-        const option = part.replace(/__OPTION_([A-E])__/, "$1");
-        const isSelected = selectedOption === option;
-        return (
-          <button
-            key={index}
-            onClick={() => onOptionClick && onOptionClick(option)}
-            className={`px-2 py-1 mr-2 border rounded focus:outline-none focus:ring ${
-              isSelected
-                ? "bg-green-200 border-green-500"
-                : "hover:bg-gray-100 focus:border-blue-300"
-            }`}
-          >
-            ({option})
-          </button>
-        );
-      } else {
-        return <MathJax key={index} inline={false}>{`${part}`}</MathJax>;
+        options[part] = parts[index + 1].trim();
+      } else if (
+        !parts[index - 1] ||
+        !parts[index - 1].startsWith("__OPTION_")
+      ) {
+        latexParts.push(part);
       }
     });
+
+    return (
+      <div>
+        {latexParts.map((part, index) => (
+          <MathJax key={`latex-part-${index}`}>{part}</MathJax>
+        ))}
+        <div className="flex flex-wrap mt-2">
+          {Object.entries(options).map(([optionKey, optionValue]) => {
+            const optionLabel =
+              optionKey.match(/__OPTION_([A-E])__/)?.[1] || "";
+            return (
+              <div
+                key={`option-${optionKey}`}
+                className="flex items-center mr-4 mb-2"
+              >
+                <button
+                  onClick={() => onOptionClick && onOptionClick(optionLabel)}
+                  className={`px-2 py-1 mr-2 border rounded focus:outline-none focus:ring ${
+                    selectedOption === optionKey
+                      ? "bg-green-200 border-green-500"
+                      : "hover:bg-gray-100 focus:border-blue-300"
+                  }`}
+                >
+                  ({optionLabel})
+                </button>
+                <MathJax>{optionValue as string}</MathJax>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    );
   };
 
   return (
-    <MathJaxContext config={mathJaxConfig}>
-      <div>{renderContent()}</div>
-    </MathJaxContext>
+    <MathJaxContext config={mathJaxConfig}>{renderContent()}</MathJaxContext>
   );
 };
 
