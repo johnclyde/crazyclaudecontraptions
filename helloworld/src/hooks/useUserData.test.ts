@@ -17,8 +17,15 @@ jest.mock("../firebase", () => ({
 }));
 
 describe("useUserData", () => {
+  const mockNavigate = jest.fn();
+
   beforeEach(() => {
     jest.clearAllMocks();
+    (useNavigate as jest.Mock).mockReturnValue(mockNavigate);
+    (auth.onAuthStateChanged as jest.Mock).mockImplementation((callback) => {
+      callback(null);
+      return jest.fn(); // This is the unsubscribe function
+    });
     global.fetch = jest.fn();
   });
 
@@ -48,19 +55,20 @@ describe("useUserData", () => {
 
     (global.fetch as jest.Mock).mockResolvedValueOnce({
       ok: true,
-      json: async () => mockUser,
+      json: async () => ({ user: mockUser }),
     });
 
-    const { result } = renderHook(() => useUserData());
-
-    await act(async () => {
-      const authStateChangedCallback = (auth.onAuthStateChanged as jest.Mock)
-        .mock.calls[0][0];
-      await authStateChangedCallback({
+    (auth.onAuthStateChanged as jest.Mock).mockImplementation((callback) => {
+      callback({
         uid: "admin123",
         getIdToken: () => Promise.resolve("fake-token"),
       });
+      return jest.fn();
     });
+
+    const { result, waitForNextUpdate } = renderHook(() => useUserData());
+
+    await waitForNextUpdate();
 
     expect(result.current.user).toEqual(mockUser);
     expect(result.current.isLoggedIn).toBe(true);
@@ -128,6 +136,6 @@ describe("useUserData", () => {
     expect(result.current.isLoggedIn).toBe(false);
     expect(result.current.userProgress).toEqual([]);
     expect(result.current.isAdminMode).toBe(false);
-    expect(useNavigate).toHaveBeenCalledWith("/");
+    expect(mockNavigate).toHaveBeenCalledWith("/");
   });
 });
