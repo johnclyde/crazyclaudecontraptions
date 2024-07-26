@@ -10,6 +10,7 @@ import InteractiveCounter from "./components/InteractiveCounter";
 import ExamComponent from "./components/ExamComponent";
 import UserResponseComponent from "./components/UserResponseComponent";
 import Users from "./components/Users";
+import UserProfile from "./components/UserProfile";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { UserDataProvider } from "./contexts/UserDataContext";
 
@@ -48,6 +49,7 @@ const App: React.FC = () => {
               />
               <Route element={<ProtectedRoute />}>
                 <Route path="users" element={<Users isAdminMode={false} />} />
+                <Route path="profile" element={<UserProfile />} />
               </Route>
               <Route element={<ProtectedRoute adminOnly={true} />}>
                 <Route
