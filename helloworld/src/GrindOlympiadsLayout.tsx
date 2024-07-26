@@ -4,7 +4,13 @@ import Header from "./components/Header";
 import useNotifications from "./hooks/useNotifications";
 import useUserData from "./hooks/useUserData";
 
-const GrindOlympiadsLayout: React.FC = () => {
+interface GrindOlympiadsLayoutProps {
+  stagingLogin?: () => void;
+}
+
+const GrindOlympiadsLayout: React.FC<GrindOlympiadsLayoutProps> = ({
+  stagingLogin,
+}) => {
   const {
     user,
     isLoggedIn,
@@ -30,6 +36,7 @@ const GrindOlympiadsLayout: React.FC = () => {
         logout={logout}
         isAdminMode={isAdminMode}
         toggleAdminMode={toggleAdminMode}
+        stagingLogin={stagingLogin}
       />
       <main className="flex-grow">
         <Outlet />

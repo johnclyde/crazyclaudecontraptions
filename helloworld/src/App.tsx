@@ -8,6 +8,7 @@ import GrindOlympiadsIndex from "./GrindOlympiadsIndex";
 import GrindOlympiadsLayout from "./GrindOlympiadsLayout";
 import InteractiveCounter from "./components/InteractiveCounter";
 import ExamComponent from "./components/ExamComponent";
+import UserResponseComponent from "./components/UserResponseComponent";
 import Users from "./components/Users";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { UserDataProvider } from "./contexts/UserDataContext";
@@ -28,17 +29,33 @@ const LabsLayout: React.FC = () => {
 };
 
 const App: React.FC = () => {
+  const stagingLogin =
+    process.env.NODE_ENV !== "production"
+      ? () => {
+          // Implement your staging login logic here
+          console.log("Staging login as math1434@example.com");
+          // You might want to call your login function here with the dummy user data
+          // For example: login({ id: 'math1434', email: 'math1434@example.com', name: 'Math User', avatar: '', isAdmin: false });
+        }
+      : undefined;
+
   return (
     <GoogleOAuthProvider clientId={process.env.REACT_APP_GOOGLE_CLIENT_ID!}>
       <Router>
         <UserDataProvider>
           <Routes>
-            <Route path="/" element={<GrindOlympiadsLayout />}>
+            <Route
+              element={<GrindOlympiadsLayout stagingLogin={stagingLogin} />}
+            >
               <Route index element={<GrindOlympiadsIndex />} />
               <Route element={<ProtectedRoute />}>
                 <Route
                   path="competition/:competition/:year/:exam"
                   element={<ExamComponent />}
+                />
+                <Route
+                  path="exam/:examId/respond"
+                  element={<UserResponseComponent />}
                 />
                 <Route path="users" element={<Users isAdminMode={false} />} />
               </Route>
