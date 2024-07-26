@@ -9,7 +9,6 @@ import GrindOlympiadsLayout from "./GrindOlympiadsLayout";
 import InteractiveCounter from "./components/InteractiveCounter";
 import ExamComponent from "./components/ExamComponent";
 import UserResponseComponent from "./components/UserResponseComponent";
-import Users from "./components/Users";
 import { UserDataProvider } from "./contexts/UserDataContext";
 
 const LabsLayout: React.FC = () => {
