@@ -120,6 +120,20 @@ const useUserData = () => {
     }
   };
 
+  const bypassLogin = () => {
+    const bypassUser: User = {
+      id: "math1434",
+      name: "Math User",
+      email: "math1434@example.com",
+      avatar: "",
+      isAdmin: false,
+      progress: [],
+    };
+    setUser(bypassUser);
+    setIsLoggedIn(true);
+    setUserProgress([]);
+  };
+
   const toggleAdminMode = () => {
     if (user?.isAdmin) {
       setIsAdminMode(!isAdminMode);
@@ -132,6 +146,7 @@ const useUserData = () => {
     setIsLoggedIn,
     login,
     logout,
+    bypassLogin,
     userProgress,
     isAdminMode,
     toggleAdminMode,
