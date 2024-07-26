@@ -55,15 +55,11 @@ describe("useUserData", () => {
 
     (global.fetch as jest.Mock).mockResolvedValueOnce({
       ok: true,
-      json: async () => mockUser,
+      json: async () => ({ user: mockUser }),
     });
 
-    const { result } = renderHook(() => useUserData());
-
-    await act(async () => {
-      const authStateChangedCallback = (auth.onAuthStateChanged as jest.Mock)
-        .mock.calls[0][0];
-      await authStateChangedCallback({
+    (auth.onAuthStateChanged as jest.Mock).mockImplementation((callback) => {
+      callback({
         uid: "admin123",
         getIdToken: () => Promise.resolve("fake-token"),
       });
@@ -72,6 +68,10 @@ describe("useUserData", () => {
         expect(result.current.user).toEqual(mockUser);
       });
     });
+
+    const { result, waitForNextUpdate } = renderHook(() => useUserData());
+
+    await waitForNextUpdate();
 
     expect(result.current.user).toEqual(mockUser);
     expect(result.current.isLoggedIn).toBe(true);
