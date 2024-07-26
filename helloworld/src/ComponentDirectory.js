@@ -19,6 +19,11 @@ const ComponentDirectory = () => {
       description: "An interactive color picker with real-time preview",
     },
     {
+      name: "Problem Editor Demo",
+      path: "/labs/problem-editor-demo",
+      description: "Demonstration of the Problem Editor component",
+    },
+    {
       name: "GrindOlympiads Index",
       path: "/",
       description: "Index page for GrindOlympiads math platform",

@@ -1,12 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import LatexRenderer from "./LatexRenderer";
-
-interface Problem {
-  number: number;
-  problem: string;
-  image_url?: string;
-}
+import ProblemEditor, { Problem } from "./ProblemEditor";
+import { getIdToken } from "../firebase";
+import { useUserDataContext } from "../contexts/UserDataContext";
 
 const ExamComponent: React.FC = () => {
   const { competition, year, exam } = useParams<{
@@ -21,6 +18,9 @@ const ExamComponent: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [examId, setExamId] = useState<string | null>(null);
+  const [editingProblem, setEditingProblem] = useState<Problem | null>(null);
+
+  const { user, isAdminMode } = useUserDataContext();
 
   useEffect(() => {
     const fetchExamData = async () => {
@@ -60,18 +60,55 @@ const ExamComponent: React.FC = () => {
     setShowAllProblems((prev) => !prev);
   };
 
+  const handleEditProblem = (problem: Problem) => {
+    setEditingProblem(problem);
+  };
+
+  const handleSaveProblem = async (updatedProblem: Problem) => {
+    try {
+      const response = await fetch(`/api/problem/${updatedProblem.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${await getIdToken()}`,
+        },
+        body: JSON.stringify(updatedProblem),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to update problem");
+      }
+
+      setProblems(
+        problems.map((p) => (p.id === updatedProblem.id ? updatedProblem : p)),
+      );
+      setEditingProblem(null);
+    } catch (err) {
+      console.error("Error updating problem:", err);
+      setError("Failed to update problem. Please try again.");
+    }
+  };
+
   const renderProblem = (problem: Problem) => (
-    <li key={problem.number} className="bg-white p-4 rounded shadow">
+    <li key={problem.id} className="bg-white p-4 rounded shadow">
       <strong className="text-lg">Problem {problem.number}:</strong>
       <div className="mt-2">
         <LatexRenderer latex={problem.problem} />
       </div>
       {problem.image_url && (
         <img
-          src={`/images/{problem.image_url}`}
+          src={`/images/${problem.image_url}`}
           alt="Problem illustration"
           className="mt-2 max-w-full h-auto"
         />
+      )}
+      {isAdminMode && user?.isAdmin && (
+        <button
+          onClick={() => handleEditProblem(problem)}
+          className="mt-2 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors"
+        >
+          Edit Problem
+        </button>
       )}
     </li>
   );
@@ -89,6 +126,16 @@ const ExamComponent: React.FC = () => {
       <div className="p-6 bg-gray-100 min-h-screen flex items-center justify-center">
         <p className="text-xl text-red-500">{error}</p>
       </div>
+    );
+  }
+
+  if (editingProblem) {
+    return (
+      <ProblemEditor
+        problem={editingProblem}
+        onSave={handleSaveProblem}
+        onCancel={() => setEditingProblem(null)}
+      />
     );
   }
 
@@ -137,7 +184,7 @@ const ExamComponent: React.FC = () => {
 
           <ul className="space-y-4">
             {problems.map((problem, index) => (
-              <React.Fragment key={problem.number}>
+              <React.Fragment key={problem.id}>
                 {(showAllProblems || index === currentProblemIndex) &&
                   renderProblem(problem)}
               </React.Fragment>

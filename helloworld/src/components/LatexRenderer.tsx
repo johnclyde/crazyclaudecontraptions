@@ -3,30 +3,64 @@ import { MathJax, MathJaxContext } from "better-react-mathjax";
 
 interface LatexRendererProps {
   latex: string;
+  onOptionClick?: (option: string) => void;
+  selectedOption?: string | null;
 }
 
-const LatexRenderer: React.FC<LatexRendererProps> = ({ latex }) => {
-  const preprocessLatex = (input: string) => {
-    // Replace single $ with \( and \)
-    let processed = input.replace(/\$(.+?)\$/g, "\\($1\\)");
+const mathJaxConfig = {
+  loader: { load: ["input/tex", "output/svg", "[tex]/ams"] },
+  tex: {
+    inlineMath: [
+      ["$", "$"],
+      ["\\(", "\\)"],
+    ],
+    displayMath: [
+      ["$$", "$$"],
+      ["\\[", "\\]"],
+    ],
+    processEscapes: true,
+    packages: { "[+]": ["ams"] },
+  },
+  svg: {
+    fontCache: "global",
+  },
+};
 
-    // Parse options if present
-    const optionRegex = /option ([A-E]): (.*?)(?=option [A-E]:|$)/gs;
-    let match;
-    while ((match = optionRegex.exec(processed)) !== null) {
-      const [fullMatch, option, content] = match;
-      processed = processed.replace(
-        fullMatch,
-        `<strong>Option ${option}:</strong> ${content}`,
-      );
-    }
+const LatexRenderer: React.FC<LatexRendererProps> = ({
+  latex,
+  onOptionClick,
+  selectedOption,
+}) => {
+  const renderContent = () => {
+    const parts = latex.split(/(__OPTION_[A-E]__)/);
 
-    return processed;
+    return parts.map((part, index) => {
+      if (part.startsWith("__OPTION_") && part.endsWith("__")) {
+        // This is an option identifier
+        const option = part.replace(/__OPTION_([A-E])__/, "$1");
+        const isSelected = selectedOption === option;
+        return (
+          <button
+            key={index}
+            onClick={() => onOptionClick && onOptionClick(option)}
+            className={`px-2 py-1 mr-2 border rounded focus:outline-none focus:ring ${
+              isSelected
+                ? "bg-green-200 border-green-500"
+                : "hover:bg-gray-100 focus:border-blue-300"
+            }`}
+          >
+            ({option})
+          </button>
+        );
+      } else {
+        return <MathJax key={index} inline={false}>{`${part}`}</MathJax>;
+      }
+    });
   };
 
   return (
-    <MathJaxContext>
-      <MathJax>{preprocessLatex(latex)}</MathJax>
+    <MathJaxContext config={mathJaxConfig}>
+      <div>{renderContent()}</div>
     </MathJaxContext>
   );
 };
