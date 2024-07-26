@@ -1,6 +1,11 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { auth } from "../firebase";
-import { GoogleAuthProvider, signInWithPopup, signOut } from "firebase/auth";
+import {
+  GoogleAuthProvider,
+  signInWithPopup,
+  signOut,
+  User as FirebaseUser,
+} from "firebase/auth";
 import { useNavigate } from "react-router-dom";
 import { User, UserProgress } from "../types";
 
@@ -13,54 +18,80 @@ const useUserData = () => {
   const [isAdminMode, setIsAdminMode] = useState(false);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    let unsubscribe: () => void;
-    if (auth && typeof auth.onAuthStateChanged === "function") {
-      unsubscribe = auth.onAuthStateChanged(async (firebaseUser) => {
-        if (firebaseUser) {
-          const token = await firebaseUser.getIdToken();
-          const userData = await fetchUserData(token);
-          setUser(userData);
-          setIsLoggedIn(true);
-          setUserProgress(userData.progress || []);
-        } else {
-          setUser(null);
-          setIsLoggedIn(false);
-          setIsAdminMode(false);
-          setUserProgress([]);
+  const clearUserData = useCallback(() => {
+    setUser(null);
+    setIsLoggedIn(false);
+    setUserProgress([]);
+    setIsAdminMode(false);
+    navigate("/");
+  }, [navigate]);
+
+  const fetchUserProfile = useCallback(
+    async (firebaseUser: FirebaseUser) => {
+      try {
+        const idToken = await firebaseUser.getIdToken();
+        const response = await fetch("/api/user/profile", {
+          headers: {
+            Authorization: `Bearer ${idToken}`,
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch user profile");
         }
-      });
-    }
 
-    return () => {
-      if (unsubscribe) {
-        unsubscribe();
+        const profileData = await response.json();
+
+        const userData: User = {
+          id: firebaseUser.uid,
+          name: profileData.name,
+          email: profileData.email,
+          avatar: profileData.avatar,
+          isAdmin: profileData.isAdmin,
+          isStaff: profileData.isStaff,
+          createdAt: profileData.createdAt,
+          lastLogin: profileData.lastLogin,
+          points: profileData.points,
+          role: profileData.role,
+          progress: profileData.progress,
+        };
+
+        setUser(userData);
+        setIsLoggedIn(true);
+        setUserProgress(profileData.testsTaken || []);
+        setIsAdminMode(userData.isAdmin);
+      } catch (error) {
+        console.error("Error fetching user profile:", error);
+        clearUserData();
       }
-    };
-  }, []);
+    },
+    [clearUserData],
+  );
 
-  const fetchUserData = async (token: string): Promise<User> => {
-    const response = await fetch("/api/user", {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-    if (!response.ok) {
-      throw new Error("Failed to fetch user data");
+  useEffect(() => {
+    if (auth && typeof auth.onAuthStateChanged === "function") {
+      const unsubscribe = auth.onAuthStateChanged(
+        (firebaseUser: FirebaseUser | null) => {
+          if (firebaseUser) {
+            fetchUserProfile(firebaseUser);
+          } else {
+            clearUserData();
+          }
+        },
+      );
+
+      return () => unsubscribe();
+    } else {
+      console.error("Firebase auth is not initialized correctly");
     }
-    return await response.json();
-  };
+  }, [clearUserData, fetchUserProfile]);
 
   const login: LoginFunction = async () => {
     if (auth) {
+      const provider = new GoogleAuthProvider();
       try {
-        const provider = new GoogleAuthProvider();
         const result = await signInWithPopup(auth, provider);
-        const token = await result.user.getIdToken();
-        const userData = await fetchUserData(token);
-        setUser(userData);
-        setIsLoggedIn(true);
-        setUserProgress(userData.progress || []);
+        await fetchUserProfile(result.user);
       } catch (error) {
         console.error("Error signing in with Google", error);
       }
@@ -72,29 +103,25 @@ const useUserData = () => {
   const logout = async () => {
     if (auth) {
       try {
-        const token = await auth.currentUser?.getIdToken();
+        await signOut(auth);
         const response = await fetch("/api/logout", {
           method: "POST",
           headers: {
-            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
           },
         });
 
         if (!response.ok) {
-          throw new Error("Failed to logout on server");
+          throw new Error("Logout API call failed");
         }
 
-        await signOut(auth);
+        clearUserData();
       } catch (error) {
         console.error("Error during logout:", error);
       }
+    } else {
+      console.error("Firebase auth is not initialized");
     }
-
-    setUser(null);
-    setIsLoggedIn(false);
-    setIsAdminMode(false);
-    setUserProgress([]);
-    navigate("/");
   };
 
   const bypassLogin = () => {
@@ -104,6 +131,11 @@ const useUserData = () => {
       email: "math1434@example.com",
       avatar: "",
       isAdmin: false,
+      isStaff: false,
+      createdAt: "0",
+      lastLogin: "0",
+      points: 1434,
+      role: "User",
       progress: [],
     };
     setUser(bypassUser);

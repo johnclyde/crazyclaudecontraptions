@@ -4,6 +4,11 @@ export interface User {
   email: string;
   avatar: string;
   isAdmin: boolean;
+  isStaff: boolean;
+  createdAt: string;
+  lastLogin: string;
+  points: number;
+  role: string;
   progress: UserProgress[];
 }
 
