@@ -38,15 +38,15 @@ const App: React.FC = () => {
           <Routes>
             <Route element={<GrindOlympiadsLayout isStaging={isStaging} />}>
               <Route index element={<GrindOlympiadsIndex />} />
+              <Route
+                path="competition/:competition/:year/:exam"
+                element={<ExamComponent />}
+              />
+              <Route
+                path="exam/:examId/respond"
+                element={<UserResponseComponent />}
+              />
               <Route element={<ProtectedRoute />}>
-                <Route
-                  path="competition/:competition/:year/:exam"
-                  element={<ExamComponent />}
-                />
-                <Route
-                  path="exam/:examId/respond"
-                  element={<UserResponseComponent />}
-                />
                 <Route path="users" element={<Users isAdminMode={false} />} />
               </Route>
               <Route element={<ProtectedRoute adminOnly={true} />}>
