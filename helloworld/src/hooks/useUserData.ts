@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { auth } from "../firebase";
 import {
   GoogleAuthProvider,
@@ -18,52 +18,55 @@ const useUserData = () => {
   const [isAdminMode, setIsAdminMode] = useState(false);
   const navigate = useNavigate();
 
-  const clearUserData = () => {
+  const clearUserData = useCallback(() => {
     setUser(null);
     setIsLoggedIn(false);
     setUserProgress([]);
     setIsAdminMode(false);
     navigate("/");
-  };
+  }, [navigate]);
 
-  const fetchUserProfile = async (firebaseUser: FirebaseUser) => {
-    try {
-      const idToken = await firebaseUser.getIdToken();
-      const response = await fetch("/api/user/profile", {
-        headers: {
-          Authorization: `Bearer ${idToken}`,
-        },
-      });
+  const fetchUserProfile = useCallback(
+    async (firebaseUser: FirebaseUser) => {
+      try {
+        const idToken = await firebaseUser.getIdToken();
+        const response = await fetch("/api/user/profile", {
+          headers: {
+            Authorization: `Bearer ${idToken}`,
+          },
+        });
 
-      if (!response.ok) {
-        throw new Error("Failed to fetch user profile");
+        if (!response.ok) {
+          throw new Error("Failed to fetch user profile");
+        }
+
+        const profileData = await response.json();
+
+        const userData: User = {
+          id: firebaseUser.uid,
+          name: profileData.name,
+          email: profileData.email,
+          avatar: profileData.avatar,
+          isAdmin: profileData.isAdmin,
+          isStaff: profileData.isStaff,
+          createdAt: profileData.createdAt,
+          lastLogin: profileData.lastLogin,
+          points: profileData.points,
+          role: profileData.role,
+          progress: profileData.progress,
+        };
+
+        setUser(userData);
+        setIsLoggedIn(true);
+        setUserProgress(profileData.testsTaken || []);
+        setIsAdminMode(userData.isAdmin);
+      } catch (error) {
+        console.error("Error fetching user profile:", error);
+        clearUserData();
       }
-
-      const profileData = await response.json();
-
-      const userData: User = {
-        id: firebaseUser.uid,
-        name: profileData.name,
-        email: profileData.email,
-        avatar: profileData.avatar,
-        isAdmin: profileData.isAdmin,
-        isStaff: profileData.isStaff,
-        createdAt: profileData.createdAt,
-        lastLogin: profileData.lastLogin,
-        points: profileData.points,
-        role: profileData.role,
-        progress: profileData.progress,
-      };
-
-      setUser(userData);
-      setIsLoggedIn(true);
-      setUserProgress(profileData.testsTaken || []);
-      setIsAdminMode(userData.isAdmin);
-    } catch (error) {
-      console.error("Error fetching user profile:", error);
-      clearUserData();
-    }
-  };
+    },
+    [clearUserData],
+  );
 
   useEffect(() => {
     if (auth && typeof auth.onAuthStateChanged === "function") {
@@ -81,7 +84,7 @@ const useUserData = () => {
     } else {
       console.error("Firebase auth is not initialized correctly");
     }
-  }, [clearUserData, fetchUserProfile, navigate]);
+  }, [clearUserData, fetchUserProfile]);
 
   const login: LoginFunction = async () => {
     if (auth) {
