@@ -19,22 +19,29 @@ const useUserData = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged(async (firebaseUser) => {
-      if (firebaseUser) {
-        const token = await firebaseUser.getIdToken();
-        const userData = await fetchUserData(token);
-        setUser(userData);
-        setIsLoggedIn(true);
-        setUserProgress(userData.progress || []);
-      } else {
-        setUser(null);
-        setIsLoggedIn(false);
-        setIsAdminMode(false);
-        setUserProgress([]);
-      }
-    });
+    let unsubscribe: () => void;
+    if (auth && typeof auth.onAuthStateChanged === "function") {
+      unsubscribe = auth.onAuthStateChanged(async (firebaseUser) => {
+        if (firebaseUser) {
+          const token = await firebaseUser.getIdToken();
+          const userData = await fetchUserData(token);
+          setUser(userData);
+          setIsLoggedIn(true);
+          setUserProgress(userData.progress || []);
+        } else {
+          setUser(null);
+          setIsLoggedIn(false);
+          setIsAdminMode(false);
+          setUserProgress([]);
+        }
+      });
+    }
 
-    return () => unsubscribe();
+    return () => {
+      if (unsubscribe) {
+        unsubscribe();
+      }
+    };
   }, []);
 
   const fetchUserData = async (token: string): Promise<User> => {
@@ -50,41 +57,49 @@ const useUserData = () => {
   };
 
   const login: LoginFunction = async () => {
-    try {
-      const provider = new GoogleAuthProvider();
-      const result = await signInWithPopup(auth, provider);
-      const token = await result.user.getIdToken();
-      const userData = await fetchUserData(token);
-      setUser(userData);
-      setIsLoggedIn(true);
-      setUserProgress(userData.progress || []);
-    } catch (error) {
-      console.error("Error signing in with Google", error);
+    if (auth) {
+      try {
+        const provider = new GoogleAuthProvider();
+        const result = await signInWithPopup(auth, provider);
+        const token = await result.user.getIdToken();
+        const userData = await fetchUserData(token);
+        setUser(userData);
+        setIsLoggedIn(true);
+        setUserProgress(userData.progress || []);
+      } catch (error) {
+        console.error("Error signing in with Google", error);
+      }
+    } else {
+      console.error("Firebase auth is not initialized");
     }
   };
 
   const logout = async () => {
-    try {
-      const token = await auth.currentUser?.getIdToken();
-      const response = await fetch("/api/logout", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+    if (auth) {
+      try {
+        const token = await auth.currentUser?.getIdToken();
+        const response = await fetch("/api/logout", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
 
-      if (!response.ok) {
-        throw new Error("Failed to logout on server");
+        if (!response.ok) {
+          throw new Error("Failed to logout on server");
+        }
+
+        await signOut(auth);
+        setUser(null);
+        setIsLoggedIn(false);
+        setIsAdminMode(false);
+        setUserProgress([]);
+        navigate("/");
+      } catch (error) {
+        console.error("Error during logout:", error);
       }
-
-      await signOut(auth);
-      setUser(null);
-      setIsLoggedIn(false);
-      setIsAdminMode(false);
-      setUserProgress([]);
-      navigate("/");
-    } catch (error) {
-      console.error("Error during logout:", error);
+    } else {
+      console.error("Firebase auth is not initialized");
     }
   };
 
