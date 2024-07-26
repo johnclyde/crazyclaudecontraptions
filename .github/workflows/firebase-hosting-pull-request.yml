@@ -38,6 +38,6 @@ jobs:
         with:
           repoToken: ${{ secrets.GITHUB_TOKEN }}
           firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_OLYMPIADS }}
-          channelId: unprotected
+          channelId: staging
           projectId: olympiads
           entryPoint: helloworld
