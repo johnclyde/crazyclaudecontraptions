@@ -1,11 +1,6 @@
 import { useState, useEffect } from "react";
 import { auth } from "../firebase";
-import {
-  GoogleAuthProvider,
-  signInWithPopup,
-  signOut,
-  User as FirebaseUser,
-} from "firebase/auth";
+import { GoogleAuthProvider, signInWithPopup, signOut } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
 import { User, UserProgress } from "../types";
 
@@ -19,50 +14,41 @@ const useUserData = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged(
-      async (firebaseUser: FirebaseUser | null) => {
+    let unsubscribe: () => void;
+    if (auth && typeof auth.onAuthStateChanged === "function") {
+      unsubscribe = auth.onAuthStateChanged(async (firebaseUser) => {
         if (firebaseUser) {
-          try {
-            const userData = await fetchUserData(firebaseUser);
-            setUser(userData);
-            setIsLoggedIn(true);
-            setUserProgress(userData.progress || []);
-          } catch (error) {
-            console.error("Error fetching user data:", error);
-            setUser(null);
-            setIsLoggedIn(false);
-          }
+          const token = await firebaseUser.getIdToken();
+          const userData = await fetchUserData(token);
+          setUser(userData);
+          setIsLoggedIn(true);
+          setUserProgress(userData.progress || []);
         } else {
           setUser(null);
           setIsLoggedIn(false);
           setIsAdminMode(false);
           setUserProgress([]);
         }
-      },
-    );
+      });
+    }
 
-    return () => unsubscribe();
+    return () => {
+      if (unsubscribe) {
+        unsubscribe();
+      }
+    };
   }, []);
 
-  const fetchUserData = async (firebaseUser: FirebaseUser): Promise<User> => {
-    const idToken = await firebaseUser.getIdToken();
+  const fetchUserData = async (token: string): Promise<User> => {
     const response = await fetch("/api/user", {
       headers: {
-        Authorization: `Bearer ${idToken}`,
+        Authorization: `Bearer ${token}`,
       },
     });
     if (!response.ok) {
       throw new Error("Failed to fetch user data");
     }
-    const userData = await response.json();
-    return {
-      id: firebaseUser.uid,
-      name: userData.name || firebaseUser.displayName || "Anonymous",
-      email: userData.email || firebaseUser.email || "",
-      avatar: userData.avatar || firebaseUser.photoURL || "",
-      isAdmin: userData.isAdmin || false,
-      progress: userData.progress || [],
-    };
+    return await response.json();
   };
 
   const login: LoginFunction = async () => {
@@ -70,7 +56,8 @@ const useUserData = () => {
       try {
         const provider = new GoogleAuthProvider();
         const result = await signInWithPopup(auth, provider);
-        const userData = await fetchUserData(result.user);
+        const token = await result.user.getIdToken();
+        const userData = await fetchUserData(token);
         setUser(userData);
         setIsLoggedIn(true);
         setUserProgress(userData.progress || []);
@@ -85,22 +72,43 @@ const useUserData = () => {
   const logout = async () => {
     if (auth) {
       try {
-        await signOut(auth);
+        const token = await auth.currentUser?.getIdToken();
         const response = await fetch("/api/logout", {
           method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         });
+
         if (!response.ok) {
-          console.error("Logout API call failed");
+          throw new Error("Failed to logout on server");
         }
+
+        await signOut(auth);
       } catch (error) {
         console.error("Error during logout:", error);
       }
     }
+
     setUser(null);
     setIsLoggedIn(false);
     setIsAdminMode(false);
     setUserProgress([]);
     navigate("/");
+  };
+
+  const bypassLogin = () => {
+    const bypassUser: User = {
+      id: "math1434",
+      name: "Math User",
+      email: "math1434@example.com",
+      avatar: "",
+      isAdmin: false,
+      progress: [],
+    };
+    setUser(bypassUser);
+    setIsLoggedIn(true);
+    setUserProgress([]);
   };
 
   const toggleAdminMode = () => {
@@ -115,6 +123,7 @@ const useUserData = () => {
     setIsLoggedIn,
     login,
     logout,
+    bypassLogin,
     userProgress,
     isAdminMode,
     toggleAdminMode,
