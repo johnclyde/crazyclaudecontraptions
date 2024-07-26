@@ -41,7 +41,7 @@
       },
       {
         "source": "/api/user/profile",
-        "function": "user-profile",
+        "function": "user-profile"
       },
       {
         "source": "**",
