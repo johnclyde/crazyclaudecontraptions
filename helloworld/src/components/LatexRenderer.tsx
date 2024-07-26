@@ -5,14 +5,34 @@ interface LatexRendererProps {
   latex: string;
 }
 
+const mathJaxConfig = {
+  loader: { load: ["input/asciimath", "output/chtml", "[tex]/ams"] },
+  asciimath: {
+    delimiters: [
+      ["$", "$"],
+      ["`", "`"],
+    ],
+  },
+  tex: {
+    inlineMath: [
+      ["$", "$"],
+      ["\\(", "\\)"],
+    ],
+    displayMath: [
+      ["$$", "$$"],
+      ["\\[", "\\]"],
+    ],
+    processEscapes: true,
+    packages: { "[+]": ["ams"] },
+  },
+};
+
 const LatexRenderer: React.FC<LatexRendererProps> = ({ latex }) => {
   const preprocessLatex = (input: string) => {
-    // Replace single $ with \( and \)
-    let processed = input.replace(/\$(.+?)\$/g, "\\($1\\)");
-
     // Parse options if present
     const optionRegex = /option ([A-E]): (.*?)(?=option [A-E]:|$)/gs;
     let match;
+    let processed = input;
     while ((match = optionRegex.exec(processed)) !== null) {
       const [fullMatch, option, content] = match;
       processed = processed.replace(
@@ -25,8 +45,8 @@ const LatexRenderer: React.FC<LatexRendererProps> = ({ latex }) => {
   };
 
   return (
-    <MathJaxContext>
-      <MathJax>{preprocessLatex(latex)}</MathJax>
+    <MathJaxContext config={mathJaxConfig}>
+      <MathJax dynamic>{preprocessLatex(latex)}</MathJax>
     </MathJaxContext>
   );
 };

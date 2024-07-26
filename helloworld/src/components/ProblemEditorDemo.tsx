@@ -4,8 +4,17 @@ import ProblemEditor, { Problem } from "./ProblemEditor";
 const initialProblem: Problem = {
   id: "demo-problem",
   number: 1,
-  problem:
-    "\\text{What is the value of } x \\text{ in the equation } 2x + 5 = 13?",
+  problem: `\\text{Solve the equation:}
+
+\\[x^2 + 4x + 4 = 0\\]
+
+\\text{What is the value of } x\\text{?}
+
+option A: $x = -2$
+option B: $x = 2$
+option C: $x = \\pm 2$
+option D: $x = -2 \\pm 2i$
+option E: \\text{The equation has no solution}`,
 };
 
 const ProblemEditorDemo: React.FC = () => {
