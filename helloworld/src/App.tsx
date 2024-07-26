@@ -47,9 +47,9 @@ const App: React.FC = () => {
                 path="exam/:examId/respond"
                 element={<UserResponseComponent />}
               />
+              <Route path="profile" element={<UserProfile />} />
               <Route element={<ProtectedRoute />}>
                 <Route path="users" element={<Users isAdminMode={false} />} />
-                <Route path="profile" element={<UserProfile />} />
               </Route>
               <Route element={<ProtectedRoute adminOnly={true} />}>
                 <Route
