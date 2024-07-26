@@ -9,6 +9,8 @@ import GrindOlympiadsLayout from "./GrindOlympiadsLayout";
 import InteractiveCounter from "./components/InteractiveCounter";
 import ExamComponent from "./components/ExamComponent";
 import UserResponseComponent from "./components/UserResponseComponent";
+import Users from "./components/Users";
+import ProtectedRoute from "./components/ProtectedRoute";
 import { UserDataProvider } from "./contexts/UserDataContext";
 
 const LabsLayout: React.FC = () => {
@@ -36,14 +38,23 @@ const App: React.FC = () => {
           <Routes>
             <Route element={<GrindOlympiadsLayout isStaging={isStaging} />}>
               <Route index element={<GrindOlympiadsIndex />} />
-              <Route
-                path="competition/:competition/:year/:exam"
-                element={<ExamComponent />}
-              />
-              <Route
-                path="exam/:examId/respond"
-                element={<UserResponseComponent />}
-              />
+              <Route element={<ProtectedRoute />}>
+                <Route
+                  path="competition/:competition/:year/:exam"
+                  element={<ExamComponent />}
+                />
+                <Route
+                  path="exam/:examId/respond"
+                  element={<UserResponseComponent />}
+                />
+                <Route path="users" element={<Users isAdminMode={false} />} />
+              </Route>
+              <Route element={<ProtectedRoute adminOnly={true} />}>
+                <Route
+                  path="admin/users"
+                  element={<Users isAdminMode={true} />}
+                />
+              </Route>
               <Route path="labs/*" element={<LabsLayout />} />
             </Route>
           </Routes>
