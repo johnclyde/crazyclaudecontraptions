@@ -51,25 +51,30 @@ const LatexRenderer: React.FC<LatexRendererProps> = ({
 
     return (
       <div>
+        {/* Render the LaTeX part above the options */}
+        <div>{latexPart}</div>
         <div style={{ display: "inline-block" }}>
-          {Object.keys(options).map((optionKey) => (
-            <span
-              key={`option-${optionKey}`}
-              style={{ display: "inline-block", margin: "0 8px" }}
-            >
-              <button
-                onClick={() => onOptionClick(optionKey)}
-                className={`px-2 py-1 mr-2 mb-2 border rounded focus:outline-none focus:ring ${
-                  selectedOption === optionKey
-                    ? "bg-green-200 border-green-500"
-                    : "hover:bg-gray-100 focus:border-blue-300"
-                }`}
+          {Object.keys(options).map((optionKey) => {
+            const optionLabel = optionKey.match(/__OPTION_([A-E])__/)[1];
+            return (
+              <span
+                key={`option-${optionKey}`}
+                style={{ display: "inline-block", margin: "0 8px" }}
               >
-                {optionKey}
-              </button>
-              {options[optionKey]}
-            </span>
-          ))}
+                <button
+                  onClick={() => onOptionClick(optionKey)}
+                  className={`px-2 py-1 mr-2 mb-2 border rounded focus:outline-none focus:ring ${
+                    selectedOption === optionKey
+                      ? "bg-green-200 border-green-500"
+                      : "hover:bg-gray-100 focus:border-blue-300"
+                  }`}
+                >
+                  ({optionLabel})
+                </button>
+                {options[optionKey]}
+              </span>
+            );
+          })}
         </div>
       </div>
     );
