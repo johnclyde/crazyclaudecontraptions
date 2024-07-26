@@ -45,6 +45,11 @@ const UserMenu = forwardRef<HTMLDivElement, UserMenuProps>(
       setShowMenu(false);
     };
 
+    const handleToggleAdminMode = () => {
+      toggleAdminMode();
+      setShowMenu(false);
+    };
+
     return (
       <div className="relative" ref={ref}>
         <button
@@ -101,10 +106,7 @@ const UserMenu = forwardRef<HTMLDivElement, UserMenuProps>(
                 </Link>
                 {user?.isAdmin && (
                   <button
-                    onClick={() => {
-                      toggleAdminMode();
-                      setShowMenu(false);
-                    }}
+                    onClick={handleToggleAdminMode}
                     className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                   >
                     {isAdminMode ? "Disable Admin Mode" : "Enable Admin Mode"}
