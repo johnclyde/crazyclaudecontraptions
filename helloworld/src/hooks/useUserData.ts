@@ -11,7 +11,6 @@ const useUserData = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userProgress, setUserProgress] = useState<UserProgress[]>([]);
   const [isAdminMode, setIsAdminMode] = useState(false);
-  const [isBypassLogin, setIsBypassLogin] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -24,8 +23,7 @@ const useUserData = () => {
           setUser(userData);
           setIsLoggedIn(true);
           setUserProgress(userData.progress || []);
-          setIsBypassLogin(false);
-        } else if (!isBypassLogin) {
+        } else {
           setUser(null);
           setIsLoggedIn(false);
           setIsAdminMode(false);
@@ -39,7 +37,7 @@ const useUserData = () => {
         unsubscribe();
       }
     };
-  }, [isBypassLogin]);
+  }, []);
 
   const fetchUserData = async (token: string): Promise<User> => {
     const response = await fetch("/api/user", {
@@ -63,7 +61,6 @@ const useUserData = () => {
         setUser(userData);
         setIsLoggedIn(true);
         setUserProgress(userData.progress || []);
-        setIsBypassLogin(false);
       } catch (error) {
         console.error("Error signing in with Google", error);
       }
@@ -73,7 +70,7 @@ const useUserData = () => {
   };
 
   const logout = async () => {
-    if (auth && !isBypassLogin) {
+    if (auth) {
       try {
         const token = await auth.currentUser?.getIdToken();
         const response = await fetch("/api/logout", {
@@ -97,7 +94,6 @@ const useUserData = () => {
     setIsLoggedIn(false);
     setIsAdminMode(false);
     setUserProgress([]);
-    setIsBypassLogin(false);
     navigate("/");
   };
 
@@ -113,7 +109,6 @@ const useUserData = () => {
     setUser(bypassUser);
     setIsLoggedIn(true);
     setUserProgress([]);
-    setIsBypassLogin(true);
   };
 
   const toggleAdminMode = () => {
@@ -132,7 +127,6 @@ const useUserData = () => {
     userProgress,
     isAdminMode,
     toggleAdminMode,
-    isBypassLogin,
   };
 };
 
