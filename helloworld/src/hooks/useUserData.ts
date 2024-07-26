@@ -1,11 +1,6 @@
 import { useState, useEffect } from "react";
 import { auth } from "../firebase";
-import {
-  GoogleAuthProvider,
-  signInWithPopup,
-  signOut,
-  User as FirebaseUser,
-} from "firebase/auth";
+import { GoogleAuthProvider, signInWithPopup, signOut } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
 import { User, UserProgress } from "../types";
 
