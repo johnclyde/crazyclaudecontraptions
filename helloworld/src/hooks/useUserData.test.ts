@@ -76,27 +76,34 @@ describe("useUserData", () => {
   it("should toggle admin mode only for admin users", async () => {
     const { result } = renderHook(() => useUserData());
 
+    // Initial state should not be in admin mode
     expect(result.current.isAdminMode).toBe(false);
+
+    // Attempt to toggle admin mode while not logged in and not an admin
     act(() => {
       result.current.toggleAdminMode();
     });
     expect(result.current.isAdminMode).toBe(false);
 
+    // Log in the user and set them as an admin
     act(() => {
       result.current.setIsLoggedIn(true);
-      result.current.user = { ...result.current.user, isAdmin: true } as User;
+      result.current.setUser({ ...result.current.user, isAdmin: true } as User);
     });
 
+    // Ensure still not in admin mode
     expect(result.current.isAdminMode).toBe(false);
+
+    // Toggle admin mode as an admin
     act(() => {
       result.current.toggleAdminMode();
     });
     expect(result.current.isAdminMode).toBe(true);
 
+    // Toggle admin mode off
     act(() => {
       result.current.toggleAdminMode();
     });
-
     expect(result.current.isAdminMode).toBe(false);
   });
 

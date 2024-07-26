@@ -152,6 +152,7 @@ const useUserData = () => {
 
   return {
     user,
+    setUser,
     isLoggedIn,
     setIsLoggedIn,
     login,
