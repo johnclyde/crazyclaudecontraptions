@@ -2,12 +2,7 @@ import React, { forwardRef, useState } from "react";
 import { GoogleLogin } from "@react-oauth/google";
 import { LoginFunction } from "../hooks/useUserData";
 import { Link } from "react-router-dom";
-
-interface User {
-  name: string;
-  avatar: string;
-  isAdmin: boolean;
-}
+import { User } from "../types";
 
 interface UserMenuProps {
   user: User | null;
@@ -16,10 +11,22 @@ interface UserMenuProps {
   logout: () => void;
   isAdminMode: boolean;
   toggleAdminMode: () => void;
+  stagingLogin?: () => void;
 }
 
 const UserMenu = forwardRef<HTMLDivElement, UserMenuProps>(
-  ({ user, isLoggedIn, login, logout, isAdminMode, toggleAdminMode }, ref) => {
+  (
+    {
+      user,
+      isLoggedIn,
+      login,
+      logout,
+      isAdminMode,
+      toggleAdminMode,
+      stagingLogin,
+    },
+    ref,
+  ) => {
     const [showMenu, setShowMenu] = useState(false);
     const [showLoginDialog, setShowLoginDialog] = useState(false);
 
@@ -122,6 +129,17 @@ const UserMenu = forwardRef<HTMLDivElement, UserMenuProps>(
                 >
                   Login
                 </button>
+                {stagingLogin && (
+                  <button
+                    onClick={() => {
+                      stagingLogin();
+                      setShowMenu(false);
+                    }}
+                    className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  >
+                    Log in as math1434
+                  </button>
+                )}
               </>
             )}
           </div>
