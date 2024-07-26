@@ -5,6 +5,10 @@ export interface User {
   avatar: string;
   isAdmin: boolean;
   isStaff: boolean;
+  createdAt: string;
+  lastLogin: string;
+  points: number;
+  role: string;
   progress: UserProgress[];
 }
 

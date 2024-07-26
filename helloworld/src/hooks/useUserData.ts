@@ -18,23 +18,13 @@ const useUserData = () => {
   const [isAdminMode, setIsAdminMode] = useState(false);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    if (auth && typeof auth.onAuthStateChanged === "function") {
-      const unsubscribe = auth.onAuthStateChanged(
-        (firebaseUser: FirebaseUser | null) => {
-          if (firebaseUser) {
-            fetchUserProfile(firebaseUser);
-          } else {
-            clearUserData();
-          }
-        },
-      );
-
-      return () => unsubscribe();
-    } else {
-      console.error("Firebase auth is not initialized correctly");
-    }
-  }, [navigate]);
+  const clearUserData = () => {
+    setUser(null);
+    setIsLoggedIn(false);
+    setUserProgress([]);
+    setIsAdminMode(false);
+    navigate("/");
+  };
 
   const fetchUserProfile = async (firebaseUser: FirebaseUser) => {
     try {
@@ -62,6 +52,7 @@ const useUserData = () => {
         lastLogin: profileData.lastLogin,
         points: profileData.points,
         role: profileData.role,
+        progress: profileData.progress,
       };
 
       setUser(userData);
@@ -74,13 +65,23 @@ const useUserData = () => {
     }
   };
 
-  const clearUserData = () => {
-    setUser(null);
-    setIsLoggedIn(false);
-    setUserProgress([]);
-    setIsAdminMode(false);
-    navigate("/");
-  };
+  useEffect(() => {
+    if (auth && typeof auth.onAuthStateChanged === "function") {
+      const unsubscribe = auth.onAuthStateChanged(
+        (firebaseUser: FirebaseUser | null) => {
+          if (firebaseUser) {
+            fetchUserProfile(firebaseUser);
+          } else {
+            clearUserData();
+          }
+        },
+      );
+
+      return () => unsubscribe();
+    } else {
+      console.error("Firebase auth is not initialized correctly");
+    }
+  }, [clearUserData, fetchUserProfile, navigate]);
 
   const login: LoginFunction = async () => {
     if (auth) {
@@ -128,6 +129,10 @@ const useUserData = () => {
       avatar: "",
       isAdmin: false,
       isStaff: false,
+      createdAt: "0",
+      lastLogin: "0",
+      points: 1434,
+      role: "User",
       progress: [],
     };
     setUser(bypassUser);
