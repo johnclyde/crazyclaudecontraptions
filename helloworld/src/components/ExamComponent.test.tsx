@@ -93,7 +93,56 @@ describe("ExamComponent", () => {
     });
   });
 
-  it("does not show Edit Problem button after enabling admin mode", async () => {
+  it("does not show Edit Problem button when admin mode is disabled", async () => {
+    (global.fetch as jest.Mock).mockResolvedValueOnce({
+      ok: true,
+      json: () =>
+        Promise.resolve({
+          problems: [{ id: "1", number: 1, problem: "Test problem" }],
+          comment: "Test comment",
+          examId: "test-exam-id",
+        }),
+    });
+
+    await act(async () => {
+      renderExamComponent();
+    });
+
+    await waitFor(() => {
+      expect(screen.getByText("Math - 2023 - Spring")).toBeInTheDocument();
+    });
+
+    expect(screen.queryByText("Edit Problem")).not.toBeInTheDocument();
+  });
+
+  it("shows Edit Problem button when admin mode is enabled", async () => {
+    (global.fetch as jest.Mock).mockResolvedValueOnce({
+      ok: true,
+      json: () =>
+        Promise.resolve({
+          problems: [{ id: "1", number: 1, problem: "Test problem" }],
+          comment: "Test comment",
+          examId: "test-exam-id",
+        }),
+    });
+
+    (UserDataContext.useUserDataContext as jest.Mock).mockReturnValue({
+      ...mockUserData,
+      isAdminMode: true,
+    });
+
+    await act(async () => {
+      renderExamComponent();
+    });
+
+    await waitFor(() => {
+      expect(screen.getByText("Math - 2023 - Spring")).toBeInTheDocument();
+    });
+
+    expect(screen.getByText("Edit Problem")).toBeInTheDocument();
+  });
+
+  it("Edit Problem button appears when enabling admin mode", async () => {
     (global.fetch as jest.Mock).mockResolvedValueOnce({
       ok: true,
       json: () =>
@@ -125,6 +174,6 @@ describe("ExamComponent", () => {
     });
 
     // Verify that the Edit Problem button is still not visible
-    expect(screen.queryByText("Edit Problem")).not.toBeInTheDocument();
+    expect(screen.queryByText("Edit Problem")).toBeInTheDocument();
   });
 });
