@@ -2,35 +2,32 @@ import React from "react";
 import { render, screen, fireEvent } from "@testing-library/react";
 import { BrowserRouter as Router } from "react-router-dom";
 import Header from "./Header";
-import NotificationBell from "./NotificationBell";
-import UserMenu from "./UserMenu";
-import { UserDataContext } from "../contexts/UserDataContext";
+import { NotificationBellProps } from "./NotificationBell";
+import { UserMenuProps } from "./UserMenu";
 import { NotificationType } from "../types";
+import * as UserDataContext from "../contexts/UserDataContext";
 
+// Mock the useUserDataContext hook
 jest.mock("../contexts/UserDataContext", () => ({
   useUserDataContext: jest.fn(),
 }));
 
-// Mock the useNavigate hook
-jest.mock("react-router-dom", () => ({
-  ...jest.requireActual("react-router-dom"),
-  useNavigate: () => jest.fn(),
-}));
+const MockNotificationBell = React.forwardRef<
+  HTMLDivElement,
+  NotificationBellProps
+>((props, ref) => (
+  <button ref={ref} aria-label="Notifications">
+    NotificationBell
+  </button>
+));
 
-const defaultProps = {
-  notifications: [
-    {
-      id: "1",
-      message: "Test notification",
-      timestamp: "2023-05-01",
-      read: false,
-    },
-  ] as NotificationType[],
-  notificationsError: null,
-  markNotificationAsRead: jest.fn(),
-  NotificationBell,
-  UserMenu,
-};
+const MockUserMenu = React.forwardRef<HTMLDivElement, UserMenuProps>(
+  (props, ref) => (
+    <button ref={ref} aria-label="User menu">
+      UserMenu
+    </button>
+  ),
+);
 
 const mockUserDataContext = {
   user: null,
@@ -39,6 +36,14 @@ const mockUserDataContext = {
   logout: jest.fn(),
   isAdminMode: false,
   toggleAdminMode: jest.fn(),
+};
+
+const defaultProps = {
+  notifications: [] as NotificationType[],
+  notificationsError: null,
+  markNotificationAsRead: jest.fn(),
+  NotificationBell: MockNotificationBell,
+  UserMenu: MockUserMenu,
 };
 
 const renderHeader = (props = {}, contextValue = mockUserDataContext) => {
