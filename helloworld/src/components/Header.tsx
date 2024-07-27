@@ -46,6 +46,7 @@ const Header: React.FC<HeaderProps> = ({
   UserMenu,
 }) => {
   const [showNotifications, setShowNotifications] = useState(false);
+  const [showUserMenu, setShowUserMenu] = useState(false);
   const notificationRef = useRef<HTMLDivElement>(null);
   const userMenuRef = useRef<HTMLDivElement>(null);
   const location = useLocation();
@@ -57,6 +58,12 @@ const Header: React.FC<HeaderProps> = ({
       !notificationRef.current.contains(event.target as Node)
     ) {
       setShowNotifications(false);
+    }
+    if (
+      userMenuRef.current &&
+      !userMenuRef.current.contains(event.target as Node)
+    ) {
+      setShowUserMenu(false);
     }
   };
 
@@ -101,6 +108,8 @@ const Header: React.FC<HeaderProps> = ({
             logout={logout}
             isAdminMode={isAdminMode}
             toggleAdminMode={toggleAdminMode}
+            showUserMenu={showUserMenu}
+            setShowUserMenu={setShowUserMenu}
             stagingLogin={stagingLogin}
           />
         </div>
