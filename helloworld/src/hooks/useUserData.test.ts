@@ -24,7 +24,7 @@ describe("useUserData", () => {
     (useNavigate as jest.Mock).mockReturnValue(mockNavigate);
     (auth.onAuthStateChanged as jest.Mock).mockImplementation((callback) => {
       callback(null);
-      return jest.fn(); // This is the unsubscribe function
+      return jest.fn();
     });
     global.fetch = jest.fn();
   });
@@ -55,7 +55,7 @@ describe("useUserData", () => {
 
     (global.fetch as jest.Mock).mockResolvedValueOnce({
       ok: true,
-      json: async () => ({ user: mockUser }),
+      json: async () => mockUser,
     });
 
     const { result } = renderHook(() => useUserData());
@@ -65,14 +65,13 @@ describe("useUserData", () => {
         uid: "admin123",
         getIdToken: () => Promise.resolve("fake-token"),
       });
-
-      await waitFor(() => {
-        expect(result.current.user).toEqual(mockUser);
-      });
     });
 
-    expect(result.current.isLoggedIn).toBe(true);
-    expect(result.current.isAdminMode).toBe(false);
+    await waitFor(() => {
+      expect(result.current.user).toEqual(mockUser);
+      expect(result.current.isLoggedIn).toBe(true);
+      expect(result.current.isAdminMode).toBe(false);
+    });
   });
 
   it("should toggle admin mode only for admin users", async () => {

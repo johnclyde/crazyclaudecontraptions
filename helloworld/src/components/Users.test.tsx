@@ -3,13 +3,19 @@ import { render, screen, waitFor } from "@testing-library/react";
 import Users from "./Users";
 import * as firebase from "../firebase";
 
-// Mock the firebase module
 jest.mock("../firebase", () => ({
   getIdToken: jest.fn(),
 }));
 
-// Mock fetch
 global.fetch = jest.fn();
+
+const originalConsoleError = console.error;
+beforeAll(() => {
+  console.error = jest.fn();
+});
+afterAll(() => {
+  console.error = originalConsoleError;
+});
 
 describe("Users component", () => {
   beforeEach(() => {
@@ -54,6 +60,8 @@ describe("Users component", () => {
       expect(screen.getByText("jane@example.com")).toBeInTheDocument();
       expect(screen.queryByText("Loading...")).not.toBeInTheDocument();
     });
+
+    expect(console.error).not.toHaveBeenCalled();
   });
 
   it("should handle empty response from API", async () => {
@@ -69,6 +77,8 @@ describe("Users component", () => {
       expect(screen.getByText("Users")).toBeInTheDocument();
       expect(screen.queryByText("Loading...")).not.toBeInTheDocument();
     });
+
+    expect(console.error).not.toHaveBeenCalled();
   });
 
   it("should handle error when fetching users", async () => {
@@ -83,5 +93,10 @@ describe("Users component", () => {
       ).toBeInTheDocument();
       expect(screen.queryByText("Loading...")).not.toBeInTheDocument();
     });
+
+    expect(console.error).toHaveBeenCalledWith(
+      "Error fetching users:",
+      expect.any(Error),
+    );
   });
 });
