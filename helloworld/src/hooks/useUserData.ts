@@ -59,7 +59,7 @@ const useUserData = () => {
         setUser(userData);
         setIsLoggedIn(true);
         setUserProgress(profileData.testsTaken || []);
-        setIsAdminMode(False);
+        setIsAdminMode(false);
       } catch (error) {
         console.error("Error fetching user profile:", error);
         clearUserData();
@@ -141,16 +141,18 @@ const useUserData = () => {
     setUser(bypassUser);
     setIsLoggedIn(true);
     setUserProgress([]);
+    setIsAdminMode(false);
   };
 
-  const toggleAdminMode = () => {
+  const toggleAdminMode = useCallback(() => {
     if (user?.isAdmin) {
-      setIsAdminMode(!isAdminMode);
+      setIsAdminMode((prevMode) => !prevMode);
     }
-  };
+  }, [user]);
 
   return {
     user,
+    setUser,
     isLoggedIn,
     setIsLoggedIn,
     login,
