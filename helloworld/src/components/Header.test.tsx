@@ -1,5 +1,5 @@
-import React from "react";
-import { render, screen, fireEvent } from "@testing-library/react";
+import React, { useState, useRef, useEffect } from "react";
+import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { BrowserRouter as Router } from "react-router-dom";
 import Header from "./Header";
 import { NotificationBellProps } from "./NotificationBell";
@@ -12,13 +12,34 @@ jest.mock("../contexts/UserDataContext", () => ({
   useUserDataContext: jest.fn(),
 }));
 
+const useOutsideClick = (callback: () => void) => {
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (ref.current && !ref.current.contains(event.target as Node)) {
+        callback();
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [callback]);
+
+  return ref;
+};
+
 const MockNotificationBell = React.forwardRef<
   HTMLDivElement,
   NotificationBellProps
 >((props, ref) => {
-  const [isOpen, setIsOpen] = React.useState(false);
+  const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useOutsideClick(() => setIsOpen(false));
+
   return (
-    <div>
+    <div ref={dropdownRef}>
       <button
         ref={ref}
         aria-label="Notifications"
@@ -35,9 +56,11 @@ const MockNotificationBell = React.forwardRef<
 
 const MockUserMenu = React.forwardRef<HTMLDivElement, UserMenuProps>(
   (props, ref) => {
-    const [isOpen, setIsOpen] = React.useState(false);
+    const [isOpen, setIsOpen] = useState(false);
+    const menuRef = useOutsideClick(() => setIsOpen(false));
+
     return (
-      <div>
+      <div ref={menuRef}>
         <button
           ref={ref}
           aria-label="User menu"
@@ -106,7 +129,7 @@ describe("Header", () => {
     ).toBeInTheDocument();
   });
 
-  it("closes notification dropdown when clicking outside", () => {
+  it("closes notification dropdown when clicking outside", async () => {
     renderHeader({}, { ...mockUserDataContext, isLoggedIn: true });
     const notificationBell = screen.getByLabelText("Notifications");
 
@@ -114,12 +137,14 @@ describe("Header", () => {
     expect(screen.getByTestId("notification-dropdown")).toBeInTheDocument();
 
     fireEvent.mouseDown(document.body);
-    expect(
-      screen.queryByTestId("notification-dropdown"),
-    ).not.toBeInTheDocument();
+    await waitFor(() => {
+      expect(
+        screen.queryByTestId("notification-dropdown"),
+      ).not.toBeInTheDocument();
+    });
   });
 
-  it("closes user menu when clicking outside", () => {
+  it("closes user menu when clicking outside", async () => {
     renderHeader();
     const userMenuButton = screen.getByLabelText("User menu");
 
@@ -127,6 +152,10 @@ describe("Header", () => {
     expect(screen.getByTestId("user-menu-dropdown")).toBeInTheDocument();
 
     fireEvent.mouseDown(document.body);
-    expect(screen.queryByTestId("user-menu-dropdown")).not.toBeInTheDocument();
+    await waitFor(() => {
+      expect(
+        screen.queryByTestId("user-menu-dropdown"),
+      ).not.toBeInTheDocument();
+    });
   });
 });
