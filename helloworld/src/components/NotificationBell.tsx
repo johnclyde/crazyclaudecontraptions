@@ -24,6 +24,7 @@ const NotificationBell = forwardRef<HTMLDivElement, NotificationBellProps>(
         <button
           onClick={() => setShowNotifications(!showNotifications)}
           className="p-2 hover:bg-gray-700 rounded-full"
+          aria-label="Notifications"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"

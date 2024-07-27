@@ -55,6 +55,7 @@ const UserMenu = forwardRef<HTMLDivElement, UserMenuProps>(
         <button
           onClick={() => setShowMenu(!showMenu)}
           className="flex items-center space-x-2 hover:bg-gray-700 p-2 rounded-full"
+          aria-label="User menu"
         >
           {isLoggedIn ? (
             <img
