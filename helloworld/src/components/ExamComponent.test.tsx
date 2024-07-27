@@ -1,11 +1,4 @@
-import React from "react";
-import {
-  render,
-  screen,
-  fireEvent,
-  waitFor,
-  act,
-} from "@testing-library/react";
+import { render, screen, waitFor, act } from "@testing-library/react";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 import ExamComponent from "./ExamComponent";
 import * as UserDataContext from "../contexts/UserDataContext";
@@ -46,6 +39,13 @@ describe("ExamComponent", () => {
     (UserDataContext.useUserDataContext as jest.Mock).mockReturnValue(
       mockUserData,
     );
+    // Silence console.error for our tests
+    jest.spyOn(console, "error").mockImplementation(() => {});
+  });
+
+  afterEach(() => {
+    // Restore console.error after each test
+    (console.error as jest.Mock).mockRestore();
   });
 
   it("shows loading state initially", async () => {
