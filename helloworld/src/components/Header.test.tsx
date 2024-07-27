@@ -4,7 +4,7 @@ import { BrowserRouter as Router } from "react-router-dom";
 import Header from "./Header";
 import NotificationBell from "./NotificationBell";
 import UserMenu from "./UserMenu";
-import { UserDataProvider } from "../contexts/UserDataContext";
+import { UserDataProvider, UserDataContext } from "../contexts/UserDataContext";
 import { NotificationType } from "../types";
 
 // Mock the useNavigate hook
@@ -28,25 +28,21 @@ const defaultProps = {
   UserMenu,
 };
 
-// Mock the useUserDataContext hook
-jest.mock("../contexts/UserDataContext", () => ({
-  ...jest.requireActual("../contexts/UserDataContext"),
-  useUserDataContext: () => ({
-    user: null,
-    isLoggedIn: false,
-    login: jest.fn(),
-    logout: jest.fn(),
-    isAdminMode: false,
-    toggleAdminMode: jest.fn(),
-  }),
-}));
+const mockUserDataContext = {
+  user: null,
+  isLoggedIn: false,
+  login: jest.fn(),
+  logout: jest.fn(),
+  isAdminMode: false,
+  toggleAdminMode: jest.fn(),
+};
 
-const renderHeader = (props = {}) => {
+const renderHeader = (props = {}, contextValue = mockUserDataContext) => {
   return render(
     <Router>
-      <UserDataProvider>
+      <UserDataContext.Provider value={contextValue}>
         <Header {...defaultProps} {...props} />
-      </UserDataProvider>
+      </UserDataContext.Provider>
     </Router>,
   );
 };
@@ -58,13 +54,7 @@ describe("Header", () => {
   });
 
   it("renders NotificationBell when logged in", () => {
-    jest
-      .spyOn(require("../contexts/UserDataContext"), "useUserDataContext")
-      .mockReturnValue({
-        ...require("../contexts/UserDataContext").useUserDataContext(),
-        isLoggedIn: true,
-      });
-    renderHeader();
+    renderHeader({}, { ...mockUserDataContext, isLoggedIn: true });
     expect(
       screen.getByRole("button", { name: /notifications/i }),
     ).toBeInTheDocument();
@@ -85,13 +75,7 @@ describe("Header", () => {
   });
 
   it("closes notification dropdown when clicking outside", () => {
-    jest
-      .spyOn(require("../contexts/UserDataContext"), "useUserDataContext")
-      .mockReturnValue({
-        ...require("../contexts/UserDataContext").useUserDataContext(),
-        isLoggedIn: true,
-      });
-    renderHeader();
+    renderHeader({}, { ...mockUserDataContext, isLoggedIn: true });
     const notificationBell = screen.getByRole("button", {
       name: /notifications/i,
     });
