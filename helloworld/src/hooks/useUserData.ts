@@ -53,7 +53,7 @@ const useUserData = () => {
           lastLogin: profileData.lastLogin,
           points: profileData.points,
           role: profileData.role,
-          progress: profileData.progress,
+          progress: profileData.progress || [],
         };
 
         setUser(userData);

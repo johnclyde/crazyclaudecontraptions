@@ -55,7 +55,7 @@ describe("useUserData", () => {
 
     (global.fetch as jest.Mock).mockResolvedValueOnce({
       ok: true,
-      json: async () => ({ user: mockUser }),
+      json: async () => mockUser,
     });
 
     const { result } = renderHook(() => useUserData());
