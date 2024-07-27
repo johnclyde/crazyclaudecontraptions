@@ -65,14 +65,13 @@ describe("useUserData", () => {
         uid: "admin123",
         getIdToken: () => Promise.resolve("fake-token"),
       });
-
-      await waitFor(() => {
-        expect(result.current.user).toEqual(mockUser);
-      });
     });
 
-    expect(result.current.isLoggedIn).toBe(true);
-    expect(result.current.isAdminMode).toBe(false);
+    await waitFor(() => {
+      expect(result.current.user).toEqual(mockUser);
+      expect(result.current.isLoggedIn).toBe(true);
+      expect(result.current.isAdminMode).toBe(false);
+    });
   });
 
   it("should toggle admin mode only for admin users", async () => {
