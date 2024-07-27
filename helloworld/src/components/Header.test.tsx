@@ -4,8 +4,12 @@ import { BrowserRouter as Router } from "react-router-dom";
 import Header from "./Header";
 import NotificationBell from "./NotificationBell";
 import UserMenu from "./UserMenu";
-import { UserDataProvider, UserDataContext } from "../contexts/UserDataContext";
+import { UserDataContext } from "../contexts/UserDataContext";
 import { NotificationType } from "../types";
+
+jest.mock("../contexts/UserDataContext", () => ({
+  useUserDataContext: jest.fn(),
+}));
 
 // Mock the useNavigate hook
 jest.mock("react-router-dom", () => ({
@@ -38,11 +42,12 @@ const mockUserDataContext = {
 };
 
 const renderHeader = (props = {}, contextValue = mockUserDataContext) => {
+  (UserDataContext.useUserDataContext as jest.Mock).mockReturnValue(
+    contextValue,
+  );
   return render(
     <Router>
-      <UserDataContext.Provider value={contextValue}>
-        <Header {...defaultProps} {...props} />
-      </UserDataContext.Provider>
+      <Header {...defaultProps} {...props} />
     </Router>,
   );
 };
