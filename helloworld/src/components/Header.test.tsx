@@ -34,14 +34,21 @@ const useOutsideClick = (callback: () => void) => {
 const MockNotificationBell = React.forwardRef<
   HTMLDivElement,
   NotificationBellProps
->((props, ref) => {
+>((props, forwardedRef) => {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useOutsideClick(() => setIsOpen(false));
 
   return (
     <div ref={dropdownRef}>
       <button
-        ref={ref}
+        ref={(node) => {
+          // Correctly handle both function and object refs
+          if (typeof forwardedRef === "function") {
+            forwardedRef(node);
+          } else if (forwardedRef) {
+            forwardedRef.current = node;
+          }
+        }}
         aria-label="Notifications"
         onClick={() => setIsOpen(!isOpen)}
       >
@@ -55,14 +62,21 @@ const MockNotificationBell = React.forwardRef<
 });
 
 const MockUserMenu = React.forwardRef<HTMLDivElement, UserMenuProps>(
-  (props, ref) => {
+  (props, forwardedRef) => {
     const [isOpen, setIsOpen] = useState(false);
     const menuRef = useOutsideClick(() => setIsOpen(false));
 
     return (
       <div ref={menuRef}>
         <button
-          ref={ref}
+          ref={(node) => {
+            // Correctly handle both function and object refs
+            if (typeof forwardedRef === "function") {
+              forwardedRef(node);
+            } else if (forwardedRef) {
+              forwardedRef.current = node;
+            }
+          }}
           aria-label="User menu"
           onClick={() => setIsOpen(!isOpen)}
         >
