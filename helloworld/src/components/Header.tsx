@@ -18,11 +18,10 @@ interface HeaderProps {
   markNotificationAsRead: (id: string) => void;
   login: LoginFunction;
   logout: () => void;
-  setIsLoggedIn: React.Dispatch<React.SetStateAction<boolean>>;
   isAdminMode: boolean;
   toggleAdminMode: () => void;
   stagingLogin?: () => void;
-  NotificationBell: React.ComponentType<any>;
+  NotificationBell: React.ComponentType<HTMLDivElement>;
   UserMenu: React.ComponentType<any>;
 }
 
@@ -34,7 +33,6 @@ const Header: React.FC<HeaderProps> = ({
   markNotificationAsRead,
   login,
   logout,
-  setIsLoggedIn,
   isAdminMode,
   toggleAdminMode,
   stagingLogin,

@@ -3,13 +3,33 @@ import { render, screen, fireEvent } from "@testing-library/react";
 import { BrowserRouter as Router } from "react-router-dom";
 import Header from "./Header";
 
-const MockNotificationBell = ({ notifications }) => (
-  <div data-testid="notification-dropdown">
-    Notifications: {notifications.length}
-  </div>
-);
+const MockNotificationBell = ({ notifications }) => {
+  const [showNotifications, setShowNotifications] = React.useState(false);
+  return (
+    <div>
+      <button onClick={() => setShowNotifications(!showNotifications)}>
+        Toggle Notifications
+      </button>
+      {showNotifications && (
+        <div data-testid="notification-dropdown">
+          Notifications: {notifications.length}
+        </div>
+      )}
+    </div>
+  );
+};
 
-const MockUserMenu = () => <div>User Menu</div>;
+const MockUserMenu = () => {
+  const [showMenu, setShowMenu] = React.useState(false);
+  return (
+    <div>
+      <button onClick={() => setShowMenu(!showMenu)}>Toggle User Menu</button>
+      {showMenu && (
+        <div data-testid="user-menu-dropdown">User Menu Content</div>
+      )}
+    </div>
+  );
+};
 
 const defaultProps = {
   user: null,
@@ -42,23 +62,22 @@ describe("Header", () => {
 
   it("renders NotificationBell when logged in", () => {
     renderHeader({ isLoggedIn: true });
-    expect(screen.getByTestId("notification-dropdown")).toBeInTheDocument();
+    expect(screen.getByText("Toggle Notifications")).toBeInTheDocument();
   });
 
   it("doesn't render NotificationBell when not logged in", () => {
     renderHeader({ isLoggedIn: false });
-    expect(
-      screen.queryByTestId("notification-dropdown"),
-    ).not.toBeInTheDocument();
+    expect(screen.queryByText("Toggle Notifications")).not.toBeInTheDocument();
   });
 
   it("renders UserMenu", () => {
     renderHeader();
-    expect(screen.getByText("User Menu")).toBeInTheDocument();
+    expect(screen.getByText("Toggle User Menu")).toBeInTheDocument();
   });
 
   it("closes notification dropdown when clicking outside", () => {
-    renderHeader();
+    renderHeader({ isLoggedIn: true });
+
     // Open notifications
     fireEvent.click(screen.getByText("Toggle Notifications"));
     expect(screen.getByTestId("notification-dropdown")).toBeInTheDocument();
