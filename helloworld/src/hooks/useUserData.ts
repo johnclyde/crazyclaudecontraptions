@@ -20,8 +20,8 @@ const useUserData = () => {
 
   const clearUserData = useCallback(() => {
     setUser(null);
-    setIsLoggedIn(false);
     setUserProgress([]);
+    setIsLoggedIn(false);
     setIsAdminMode(false);
     navigate("/");
   }, [navigate]);
@@ -59,7 +59,7 @@ const useUserData = () => {
         setUser(userData);
         setIsLoggedIn(true);
         setUserProgress(profileData.testsTaken || []);
-        setIsAdminMode(userData.isAdmin);
+        setIsAdminMode(False);
       } catch (error) {
         console.error("Error fetching user profile:", error);
         clearUserData();
