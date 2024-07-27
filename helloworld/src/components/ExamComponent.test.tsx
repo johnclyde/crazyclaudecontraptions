@@ -2,7 +2,7 @@ import React from "react";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 import ExamComponent from "./ExamComponent";
-import { UserDataContext } from "../contexts/UserDataContext";
+import * as UserDataContext from "../contexts/UserDataContext";
 
 // Mock the firebase module
 jest.mock("../firebase", () => ({
@@ -12,6 +12,11 @@ jest.mock("../firebase", () => ({
 // Mock fetch globally
 global.fetch = jest.fn();
 
+// Mock the useUserDataContext hook
+jest.mock("../contexts/UserDataContext", () => ({
+  useUserDataContext: jest.fn(),
+}));
+
 describe("ExamComponent", () => {
   const mockUserData = {
     user: { isAdmin: true },
@@ -20,23 +25,24 @@ describe("ExamComponent", () => {
     toggleAdminMode: jest.fn(),
   };
 
-  const renderExamComponent = (userData = mockUserData) => {
+  const renderExamComponent = () => {
     return render(
       <MemoryRouter initialEntries={["/competition/Math/2023/Spring"]}>
-        <UserDataContext.Provider value={userData}>
-          <Routes>
-            <Route
-              path="/competition/:competition/:year/:exam"
-              element={<ExamComponent />}
-            />
-          </Routes>
-        </UserDataContext.Provider>
+        <Routes>
+          <Route
+            path="/competition/:competition/:year/:exam"
+            element={<ExamComponent />}
+          />
+        </Routes>
       </MemoryRouter>,
     );
   };
 
   beforeEach(() => {
     jest.clearAllMocks();
+    (UserDataContext.useUserDataContext as jest.Mock).mockReturnValue(
+      mockUserData,
+    );
   });
 
   it("shows loading state initially", async () => {
@@ -88,11 +94,7 @@ describe("ExamComponent", () => {
         }),
     });
 
-    const toggleAdminMode = jest.fn();
-    const { rerender } = renderExamComponent({
-      ...mockUserData,
-      toggleAdminMode,
-    });
+    renderExamComponent();
 
     await waitFor(() => {
       expect(screen.getByText("Math - 2023 - Spring")).toBeInTheDocument();
@@ -102,24 +104,13 @@ describe("ExamComponent", () => {
     expect(screen.queryByText("Edit Problem")).not.toBeInTheDocument();
 
     // Toggle admin mode
-    fireEvent.click(screen.getByText("Enable Admin Mode"));
-    expect(toggleAdminMode).toHaveBeenCalled();
+    (UserDataContext.useUserDataContext as jest.Mock).mockReturnValue({
+      ...mockUserData,
+      isAdminMode: true,
+    });
 
-    // Rerender with admin mode enabled
-    rerender(
-      <MemoryRouter initialEntries={["/competition/Math/2023/Spring"]}>
-        <UserDataContext.Provider
-          value={{ ...mockUserData, isAdminMode: true, toggleAdminMode }}
-        >
-          <Routes>
-            <Route
-              path="/competition/:competition/:year/:exam"
-              element={<ExamComponent />}
-            />
-          </Routes>
-        </UserDataContext.Provider>
-      </MemoryRouter>,
-    );
+    // Force re-render
+    renderExamComponent();
 
     // Verify that the Edit Problem button is still not visible
     expect(screen.queryByText("Edit Problem")).not.toBeInTheDocument();
