@@ -30,7 +30,7 @@ const ExamComponent: React.FC = () => {
         const response = await fetch(
           `/api/exam?competition=${competition}&year=${year}&exam=${exam}`,
         );
-        if (!response || !response.ok) {
+        if (!response.ok) {
           throw new Error("Failed to fetch exam data");
         }
         const data = await response.json();

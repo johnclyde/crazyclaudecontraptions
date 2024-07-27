@@ -1,28 +1,14 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { LoginFunction } from "../hooks/useUserData";
-import { User } from "../types";
+import { useUserDataContext } from "../contexts/UserDataContext";
 import { NotificationBellProps } from "./NotificationBell";
 import { UserMenuProps } from "./UserMenu";
-
-interface Notification {
-  id: string;
-  message: string;
-  timestamp: string;
-  read: boolean;
-}
+import { NotificationType } from "../types";
 
 interface HeaderProps {
-  user: User | null;
-  isLoggedIn: boolean;
-  notifications: Notification[];
+  notifications: NotificationType[];
   notificationsError: string | null;
   markNotificationAsRead: (id: string) => void;
-  login: LoginFunction;
-  logout: () => void;
-  isAdminMode: boolean;
-  toggleAdminMode: () => void;
-  stagingLogin?: () => void;
   NotificationBell: React.ForwardRefExoticComponent<
     NotificationBellProps & React.RefAttributes<HTMLDivElement>
   >;
@@ -32,16 +18,9 @@ interface HeaderProps {
 }
 
 const Header: React.FC<HeaderProps> = ({
-  user,
-  isLoggedIn,
   notifications,
   notificationsError,
   markNotificationAsRead,
-  login,
-  logout,
-  isAdminMode,
-  toggleAdminMode,
-  stagingLogin,
   NotificationBell,
   UserMenu,
 }) => {
@@ -51,6 +30,9 @@ const Header: React.FC<HeaderProps> = ({
   const userMenuRef = useRef<HTMLDivElement>(null);
   const location = useLocation();
   const isLabsPath = location.pathname.startsWith("/labs");
+
+  const { user, isLoggedIn, login, logout, isAdminMode, toggleAdminMode } =
+    useUserDataContext();
 
   const handleClickOutside = (event: MouseEvent) => {
     if (
@@ -110,7 +92,6 @@ const Header: React.FC<HeaderProps> = ({
             logout={logout}
             isAdminMode={isAdminMode}
             toggleAdminMode={toggleAdminMode}
-            stagingLogin={stagingLogin}
           />
         </div>
       </div>

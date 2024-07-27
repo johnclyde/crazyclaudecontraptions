@@ -4,6 +4,7 @@ import { BrowserRouter as Router } from "react-router-dom";
 import Header from "./Header";
 import NotificationBell from "./NotificationBell";
 import UserMenu from "./UserMenu";
+import { NotificationType } from "../types";
 
 const defaultProps = {
   user: null,
@@ -15,7 +16,7 @@ const defaultProps = {
       timestamp: "2023-05-01",
       read: false,
     },
-  ],
+  ] as NotificationType[],
   notificationsError: null,
   markNotificationAsRead: jest.fn(),
   login: jest.fn(),
