@@ -1,6 +1,7 @@
 import React, { forwardRef } from "react";
 
-export interface NotificationBellProps extends React.ComponentPropsWithoutRef<"div"> {
+export interface NotificationBellProps
+  extends React.ComponentPropsWithoutRef<"div"> {
   notifications: any[]; // Replace 'any' with your notification type
   notificationsError: string | null;
   showNotifications: boolean;

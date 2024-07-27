@@ -7,7 +7,6 @@ import { UserMenuProps } from "./UserMenu";
 import { NotificationType } from "../types";
 import * as UserDataContext from "../contexts/UserDataContext";
 
-// Mock the useUserDataContext hook
 jest.mock("../contexts/UserDataContext", () => ({
   useUserDataContext: jest.fn(),
 }));
@@ -37,18 +36,20 @@ const MockNotificationBell = React.forwardRef<
 >((props, forwardedRef) => {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useOutsideClick(() => setIsOpen(false));
+  const buttonRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    if (typeof forwardedRef === "function") {
+      forwardedRef(dropdownRef.current);
+    } else if (forwardedRef) {
+      forwardedRef.current = dropdownRef.current;
+    }
+  }, [forwardedRef]);
 
   return (
     <div ref={dropdownRef}>
       <button
-        ref={(node) => {
-          // Correctly handle both function and object refs
-          if (typeof forwardedRef === "function") {
-            forwardedRef(node);
-          } else if (forwardedRef) {
-            forwardedRef.current = node;
-          }
-        }}
+        ref={buttonRef}
         aria-label="Notifications"
         onClick={() => setIsOpen(!isOpen)}
       >
@@ -65,18 +66,20 @@ const MockUserMenu = React.forwardRef<HTMLDivElement, UserMenuProps>(
   (props, forwardedRef) => {
     const [isOpen, setIsOpen] = useState(false);
     const menuRef = useOutsideClick(() => setIsOpen(false));
+    const buttonRef = useRef<HTMLButtonElement>(null);
+
+    useEffect(() => {
+      if (typeof forwardedRef === "function") {
+        forwardedRef(menuRef.current);
+      } else if (forwardedRef) {
+        forwardedRef.current = menuRef.current;
+      }
+    }, [forwardedRef]);
 
     return (
       <div ref={menuRef}>
         <button
-          ref={(node) => {
-            // Correctly handle both function and object refs
-            if (typeof forwardedRef === "function") {
-              forwardedRef(node);
-            } else if (forwardedRef) {
-              forwardedRef.current = node;
-            }
-          }}
+          ref={buttonRef}
           aria-label="User menu"
           onClick={() => setIsOpen(!isOpen)}
         >
