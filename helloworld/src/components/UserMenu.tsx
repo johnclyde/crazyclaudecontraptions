@@ -4,7 +4,7 @@ import { LoginFunction } from "../hooks/useUserData";
 import { Link } from "react-router-dom";
 import { User } from "../types";
 
-interface UserMenuProps {
+export interface UserMenuProps {
   user: User | null;
   isLoggedIn: boolean;
   login: LoginFunction;

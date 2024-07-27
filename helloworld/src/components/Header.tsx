@@ -2,6 +2,8 @@ import React, { useState, useRef, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { LoginFunction } from "../hooks/useUserData";
 import { User } from "../types";
+import { NotificationBellProps } from "./NotificationBell";
+import { UserMenuProps } from "./UserMenu";
 
 interface Notification {
   id: string;
@@ -21,8 +23,12 @@ interface HeaderProps {
   isAdminMode: boolean;
   toggleAdminMode: () => void;
   stagingLogin?: () => void;
-  NotificationBell: React.ComponentType<HTMLDivElement>;
-  UserMenu: React.ComponentType<HTMLDivElement>;
+  NotificationBell: React.ForwardRefExoticComponent<
+    NotificationBellProps & React.RefAttributes<HTMLDivElement>
+  >;
+  UserMenu: React.ForwardRefExoticComponent<
+    UserMenuProps & React.RefAttributes<HTMLDivElement>
+  >;
 }
 
 const Header: React.FC<HeaderProps> = ({

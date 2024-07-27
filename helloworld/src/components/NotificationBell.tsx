@@ -1,6 +1,6 @@
 import React, { forwardRef } from "react";
 
-interface NotificationBellProps {
+export interface NotificationBellProps {
   notifications: any[]; // Replace 'any' with your notification type
   notificationsError: string | null;
   showNotifications: boolean;
