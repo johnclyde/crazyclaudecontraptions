@@ -3,13 +3,9 @@ import { render, screen, fireEvent } from "@testing-library/react";
 import { BrowserRouter as Router } from "react-router-dom";
 import Header from "./Header";
 
-const MockNotificationBell = ({ notifications }) => {
-  const [showNotifications, setShowNotifications] = React.useState(false);
+const MockNotificationBell = ({ notifications, showNotifications }) => {
   return (
     <div>
-      <button onClick={() => setShowNotifications(!showNotifications)}>
-        Toggle Notifications
-      </button>
       {showNotifications && (
         <div data-testid="notification-dropdown">
           Notifications: {notifications.length}
@@ -19,11 +15,9 @@ const MockNotificationBell = ({ notifications }) => {
   );
 };
 
-const MockUserMenu = () => {
-  const [showMenu, setShowMenu] = React.useState(false);
+const MockUserMenu = ({ showMenu }) => {
   return (
     <div>
-      <button onClick={() => setShowMenu(!showMenu)}>Toggle User Menu</button>
       {showMenu && (
         <div data-testid="user-menu-dropdown">User Menu Content</div>
       )}
@@ -62,24 +56,24 @@ describe("Header", () => {
 
   it("renders NotificationBell when logged in", () => {
     renderHeader({ isLoggedIn: true });
-    expect(screen.getByText("Toggle Notifications")).toBeInTheDocument();
+    expect(screen.getByText("Notifications")).toBeInTheDocument();
   });
 
   it("doesn't render NotificationBell when not logged in", () => {
     renderHeader({ isLoggedIn: false });
-    expect(screen.queryByText("Toggle Notifications")).not.toBeInTheDocument();
+    expect(screen.queryByText("Notifications")).not.toBeInTheDocument();
   });
 
   it("renders UserMenu", () => {
     renderHeader();
-    expect(screen.getByText("Toggle User Menu")).toBeInTheDocument();
+    expect(screen.getByText("User Menu Content")).toBeInTheDocument();
   });
 
   it("closes notification dropdown when clicking outside", () => {
     renderHeader({ isLoggedIn: true });
 
     // Open notifications
-    fireEvent.click(screen.getByText("Toggle Notifications"));
+    fireEvent.click(screen.getByText("Notifications"));
     expect(screen.getByTestId("notification-dropdown")).toBeInTheDocument();
 
     // Click outside (on the header container)
@@ -95,7 +89,7 @@ describe("Header", () => {
     renderHeader();
 
     // Open user menu
-    fireEvent.click(screen.getByText("Toggle User Menu"));
+    fireEvent.click(screen.getByText("User Menu Content"));
     expect(screen.getByTestId("user-menu-dropdown")).toBeInTheDocument();
 
     // Click outside (on the header container)

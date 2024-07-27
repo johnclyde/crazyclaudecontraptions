@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { LoginFunction } from "../hooks/useUserData";
 import { User } from "../types";
@@ -22,7 +22,7 @@ interface HeaderProps {
   toggleAdminMode: () => void;
   stagingLogin?: () => void;
   NotificationBell: React.ComponentType<HTMLDivElement>;
-  UserMenu: React.ComponentType<any>;
+  UserMenu: React.ComponentType<HTMLDivElement>;
 }
 
 const Header: React.FC<HeaderProps> = ({
@@ -39,8 +39,27 @@ const Header: React.FC<HeaderProps> = ({
   NotificationBell,
   UserMenu,
 }) => {
+  const [showNotifications, setShowNotifications] = useState(false);
+  const notificationRef = useRef<HTMLDivElement>(null);
+  const userMenuRef = useRef<HTMLDivElement>(null);
   const location = useLocation();
   const isLabsPath = location.pathname.startsWith("/labs");
+
+  const handleClickOutside = (event: MouseEvent) => {
+    if (
+      notificationRef.current &&
+      !notificationRef.current.contains(event.target as Node)
+    ) {
+      setShowNotifications(false);
+    }
+  };
+
+  useEffect(() => {
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   const headerBackgroundColor = isAdminMode ? "bg-red-900" : "bg-gray-800";
 
@@ -60,12 +79,16 @@ const Header: React.FC<HeaderProps> = ({
           )}
           {isLoggedIn && (
             <NotificationBell
+              ref={notificationRef}
               notifications={notifications}
               notificationsError={notificationsError}
+              showNotifications={showNotifications}
+              setShowNotifications={setShowNotifications}
               markNotificationAsRead={markNotificationAsRead}
             />
           )}
           <UserMenu
+            ref={userMenuRef}
             user={user}
             isLoggedIn={isLoggedIn}
             login={login}
