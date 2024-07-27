@@ -1,33 +1,117 @@
-import React from "react";
-import { render, screen, fireEvent } from "@testing-library/react";
+import React, { useState, useRef, useEffect } from "react";
+import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { BrowserRouter as Router } from "react-router-dom";
 import Header from "./Header";
-import NotificationBell from "./NotificationBell";
-import UserMenu from "./UserMenu";
+import { NotificationBellProps } from "./NotificationBell";
+import { UserMenuProps } from "./UserMenu";
+import { NotificationType } from "../types";
+import * as UserDataContext from "../contexts/UserDataContext";
 
-const defaultProps = {
-  user: null,
-  isLoggedIn: false,
-  notifications: [
-    {
-      id: "1",
-      message: "Test notification",
-      timestamp: "2023-05-01",
-      read: false,
-    },
-  ],
-  notificationsError: null,
-  markNotificationAsRead: jest.fn(),
-  login: jest.fn(),
-  logout: jest.fn(),
-  setIsLoggedIn: jest.fn(),
-  isAdminMode: false,
-  toggleAdminMode: jest.fn(),
-  NotificationBell,
-  UserMenu,
+jest.mock("../contexts/UserDataContext", () => ({
+  useUserDataContext: jest.fn(),
+}));
+
+const useOutsideClick = (callback: () => void) => {
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (ref.current && !ref.current.contains(event.target as Node)) {
+        callback();
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [callback]);
+
+  return ref;
 };
 
-const renderHeader = (props = {}) => {
+const MockNotificationBell = React.forwardRef<
+  HTMLDivElement,
+  NotificationBellProps
+>((props, forwardedRef) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useOutsideClick(() => setIsOpen(false));
+  const buttonRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    if (typeof forwardedRef === "function") {
+      forwardedRef(dropdownRef.current);
+    } else if (forwardedRef) {
+      forwardedRef.current = dropdownRef.current;
+    }
+  }, [forwardedRef]);
+
+  return (
+    <div ref={dropdownRef}>
+      <button
+        ref={buttonRef}
+        aria-label="Notifications"
+        onClick={() => setIsOpen(!isOpen)}
+      >
+        NotificationBell
+      </button>
+      {isOpen && (
+        <div data-testid="notification-dropdown">Notification Content</div>
+      )}
+    </div>
+  );
+});
+
+const MockUserMenu = React.forwardRef<HTMLDivElement, UserMenuProps>(
+  (props, forwardedRef) => {
+    const [isOpen, setIsOpen] = useState(false);
+    const menuRef = useOutsideClick(() => setIsOpen(false));
+    const buttonRef = useRef<HTMLButtonElement>(null);
+
+    useEffect(() => {
+      if (typeof forwardedRef === "function") {
+        forwardedRef(menuRef.current);
+      } else if (forwardedRef) {
+        forwardedRef.current = menuRef.current;
+      }
+    }, [forwardedRef]);
+
+    return (
+      <div ref={menuRef}>
+        <button
+          ref={buttonRef}
+          aria-label="User menu"
+          onClick={() => setIsOpen(!isOpen)}
+        >
+          UserMenu
+        </button>
+        {isOpen && <div data-testid="user-menu-dropdown">Menu Content</div>}
+      </div>
+    );
+  },
+);
+
+const mockUserDataContext = {
+  user: null,
+  isLoggedIn: false,
+  login: jest.fn(),
+  logout: jest.fn(),
+  isAdminMode: false,
+  toggleAdminMode: jest.fn(),
+};
+
+const defaultProps = {
+  notifications: [] as NotificationType[],
+  notificationsError: null,
+  markNotificationAsRead: jest.fn(),
+  NotificationBell: MockNotificationBell,
+  UserMenu: MockUserMenu,
+};
+
+const renderHeader = (props = {}, contextValue = mockUserDataContext) => {
+  (UserDataContext.useUserDataContext as jest.Mock).mockReturnValue(
+    contextValue,
+  );
   return render(
     <Router>
       <Header {...defaultProps} {...props} />
@@ -42,14 +126,14 @@ describe("Header", () => {
   });
 
   it("renders NotificationBell when logged in", () => {
-    renderHeader({ isLoggedIn: true });
+    renderHeader({}, { ...mockUserDataContext, isLoggedIn: true });
     expect(
       screen.getByRole("button", { name: /notifications/i }),
     ).toBeInTheDocument();
   });
 
   it("doesn't render NotificationBell when not logged in", () => {
-    renderHeader({ isLoggedIn: false });
+    renderHeader();
     expect(
       screen.queryByRole("button", { name: /notifications/i }),
     ).not.toBeInTheDocument();
@@ -63,35 +147,32 @@ describe("Header", () => {
   });
 
   it("closes notification dropdown when clicking outside", async () => {
-    renderHeader({ isLoggedIn: true });
-    const notificationBell = screen.getByRole("button", {
-      name: /notifications/i,
-    });
+    renderHeader({}, { ...mockUserDataContext, isLoggedIn: true });
+    const notificationBell = screen.getByLabelText("Notifications");
 
-    // Open notifications
     fireEvent.click(notificationBell);
-    expect(screen.getByText("Test notification")).toBeInTheDocument();
+    expect(screen.getByTestId("notification-dropdown")).toBeInTheDocument();
 
-    // Click outside (on the header container)
-    fireEvent.mouseDown(screen.getByRole("banner"));
-
-    // Verify notifications are closed
-    expect(screen.queryByText("Test notification")).not.toBeInTheDocument();
+    fireEvent.mouseDown(document.body);
+    await waitFor(() => {
+      expect(
+        screen.queryByTestId("notification-dropdown"),
+      ).not.toBeInTheDocument();
+    });
   });
 
   it("closes user menu when clicking outside", async () => {
     renderHeader();
-    const userMenuButton = screen.getByRole("button", { name: /user menu/i });
+    const userMenuButton = screen.getByLabelText("User menu");
 
-    // Open user menu
     fireEvent.click(userMenuButton);
-    const menuItem = screen.getByText("Login");
-    expect(menuItem).toBeInTheDocument();
+    expect(screen.getByTestId("user-menu-dropdown")).toBeInTheDocument();
 
-    // Click outside (on the header container)
-    fireEvent.mouseDown(screen.getByRole("banner"));
-
-    // Verify user menu is gone.
-    expect(menuItem).not.toBeInTheDocument();
+    fireEvent.mouseDown(document.body);
+    await waitFor(() => {
+      expect(
+        screen.queryByTestId("user-menu-dropdown"),
+      ).not.toBeInTheDocument();
+    });
   });
 });

@@ -4,7 +4,7 @@ import { LoginFunction } from "../hooks/useUserData";
 import { Link } from "react-router-dom";
 import { User } from "../types";
 
-export interface UserMenuProps {
+export interface UserMenuProps extends React.ComponentPropsWithoutRef<"div"> {
   user: User | null;
   isLoggedIn: boolean;
   showUserMenu: boolean;
