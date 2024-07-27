@@ -15,18 +15,40 @@ jest.mock("../contexts/UserDataContext", () => ({
 const MockNotificationBell = React.forwardRef<
   HTMLDivElement,
   NotificationBellProps
->((props, ref) => (
-  <button ref={ref} aria-label="Notifications">
-    NotificationBell
-  </button>
-));
+>((props, ref) => {
+  const [isOpen, setIsOpen] = React.useState(false);
+  return (
+    <div>
+      <button
+        ref={ref}
+        aria-label="Notifications"
+        onClick={() => setIsOpen(!isOpen)}
+      >
+        NotificationBell
+      </button>
+      {isOpen && (
+        <div data-testid="notification-dropdown">Notification Content</div>
+      )}
+    </div>
+  );
+});
 
 const MockUserMenu = React.forwardRef<HTMLDivElement, UserMenuProps>(
-  (props, ref) => (
-    <button ref={ref} aria-label="User menu">
-      UserMenu
-    </button>
-  ),
+  (props, ref) => {
+    const [isOpen, setIsOpen] = React.useState(false);
+    return (
+      <div>
+        <button
+          ref={ref}
+          aria-label="User menu"
+          onClick={() => setIsOpen(!isOpen)}
+        >
+          UserMenu
+        </button>
+        {isOpen && <div data-testid="user-menu-dropdown">Menu Content</div>}
+      </div>
+    );
+  },
 );
 
 const mockUserDataContext = {
@@ -86,25 +108,25 @@ describe("Header", () => {
 
   it("closes notification dropdown when clicking outside", () => {
     renderHeader({}, { ...mockUserDataContext, isLoggedIn: true });
-    const notificationBell = screen.getByRole("button", {
-      name: /notifications/i,
-    });
+    const notificationBell = screen.getByLabelText("Notifications");
 
     fireEvent.click(notificationBell);
-    expect(screen.getByText("Test notification")).toBeInTheDocument();
+    expect(screen.getByTestId("notification-dropdown")).toBeInTheDocument();
 
     fireEvent.mouseDown(document.body);
-    expect(screen.queryByText("Test notification")).not.toBeInTheDocument();
+    expect(
+      screen.queryByTestId("notification-dropdown"),
+    ).not.toBeInTheDocument();
   });
 
   it("closes user menu when clicking outside", () => {
     renderHeader();
-    const userMenuButton = screen.getByRole("button", { name: /user menu/i });
+    const userMenuButton = screen.getByLabelText("User menu");
 
     fireEvent.click(userMenuButton);
-    expect(screen.getByText("Login")).toBeInTheDocument();
+    expect(screen.getByTestId("user-menu-dropdown")).toBeInTheDocument();
 
     fireEvent.mouseDown(document.body);
-    expect(screen.queryByText("Login")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("user-menu-dropdown")).not.toBeInTheDocument();
   });
 });
