@@ -7,6 +7,8 @@ import { User } from "../types";
 export interface UserMenuProps {
   user: User | null;
   isLoggedIn: boolean;
+  showUserMenu: boolean;
+  setShowUserMenu: React.Dispatch<React.SetStateAction<boolean>>;
   login: LoginFunction;
   logout: () => void;
   isAdminMode: boolean;
@@ -19,6 +21,8 @@ const UserMenu = forwardRef<HTMLDivElement, UserMenuProps>(
     {
       user,
       isLoggedIn,
+      showUserMenu,
+      setShowUserMenu,
       login,
       logout,
       isAdminMode,
@@ -27,33 +31,32 @@ const UserMenu = forwardRef<HTMLDivElement, UserMenuProps>(
     },
     ref,
   ) => {
-    const [showMenu, setShowMenu] = useState(false);
     const [showLoginDialog, setShowLoginDialog] = useState(false);
 
     const handleSettingsClick = () => {
+      setShowUserMenu(false);
       console.log("Navigate to settings");
-      setShowMenu(false);
     };
 
     const handleLogout = () => {
+      setShowUserMenu(false);
       logout();
-      setShowMenu(false);
     };
 
     const handleLoginClick = () => {
+      setShowUserMenu(false);
       setShowLoginDialog(true);
-      setShowMenu(false);
     };
 
     const handleToggleAdminMode = () => {
       toggleAdminMode();
-      setShowMenu(false);
+      setShowUserMenu(false);
     };
 
     return (
       <div className="relative" ref={ref}>
         <button
-          onClick={() => setShowMenu(!showMenu)}
+          onClick={() => setShowUserMenu(!showUserMenu)}
           className="flex items-center space-x-2 hover:bg-gray-700 p-2 rounded-full"
           aria-label="User menu"
         >
@@ -80,14 +83,14 @@ const UserMenu = forwardRef<HTMLDivElement, UserMenuProps>(
             </svg>
           )}
         </button>
-        {showMenu && (
+        {showUserMenu && (
           <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1">
             {isLoggedIn ? (
               <>
                 <Link
                   to="/profile"
                   className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                  onClick={() => setShowMenu(false)}
+                  onClick={() => setShowUserMenu(false)}
                 >
                   Profile
                 </Link>
@@ -101,7 +104,7 @@ const UserMenu = forwardRef<HTMLDivElement, UserMenuProps>(
                 <Link
                   to="/users"
                   className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                  onClick={() => setShowMenu(false)}
+                  onClick={() => setShowUserMenu(false)}
                 >
                   Users
                 </Link>
@@ -131,8 +134,8 @@ const UserMenu = forwardRef<HTMLDivElement, UserMenuProps>(
                 {stagingLogin && (
                   <button
                     onClick={() => {
+                      setShowUserMenu(false);
                       stagingLogin();
-                      setShowMenu(false);
                     }}
                     className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                   >
