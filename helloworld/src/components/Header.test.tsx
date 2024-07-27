@@ -4,11 +4,16 @@ import { BrowserRouter as Router } from "react-router-dom";
 import Header from "./Header";
 import NotificationBell from "./NotificationBell";
 import UserMenu from "./UserMenu";
+import { UserDataProvider } from "../contexts/UserDataContext";
 import { NotificationType } from "../types";
 
+// Mock the useNavigate hook
+jest.mock("react-router-dom", () => ({
+  ...jest.requireActual("react-router-dom"),
+  useNavigate: () => jest.fn(),
+}));
+
 const defaultProps = {
-  user: null,
-  isLoggedIn: false,
   notifications: [
     {
       id: "1",
@@ -19,19 +24,29 @@ const defaultProps = {
   ] as NotificationType[],
   notificationsError: null,
   markNotificationAsRead: jest.fn(),
-  login: jest.fn(),
-  logout: jest.fn(),
-  setIsLoggedIn: jest.fn(),
-  isAdminMode: false,
-  toggleAdminMode: jest.fn(),
   NotificationBell,
   UserMenu,
 };
 
+// Mock the useUserDataContext hook
+jest.mock("../contexts/UserDataContext", () => ({
+  ...jest.requireActual("../contexts/UserDataContext"),
+  useUserDataContext: () => ({
+    user: null,
+    isLoggedIn: false,
+    login: jest.fn(),
+    logout: jest.fn(),
+    isAdminMode: false,
+    toggleAdminMode: jest.fn(),
+  }),
+}));
+
 const renderHeader = (props = {}) => {
   return render(
     <Router>
-      <Header {...defaultProps} {...props} />
+      <UserDataProvider>
+        <Header {...defaultProps} {...props} />
+      </UserDataProvider>
     </Router>,
   );
 };
@@ -43,14 +58,20 @@ describe("Header", () => {
   });
 
   it("renders NotificationBell when logged in", () => {
-    renderHeader({ isLoggedIn: true });
+    jest
+      .spyOn(require("../contexts/UserDataContext"), "useUserDataContext")
+      .mockReturnValue({
+        ...require("../contexts/UserDataContext").useUserDataContext(),
+        isLoggedIn: true,
+      });
+    renderHeader();
     expect(
       screen.getByRole("button", { name: /notifications/i }),
     ).toBeInTheDocument();
   });
 
   it("doesn't render NotificationBell when not logged in", () => {
-    renderHeader({ isLoggedIn: false });
+    renderHeader();
     expect(
       screen.queryByRole("button", { name: /notifications/i }),
     ).not.toBeInTheDocument();
@@ -63,36 +84,33 @@ describe("Header", () => {
     ).toBeInTheDocument();
   });
 
-  it("closes notification dropdown when clicking outside", async () => {
-    renderHeader({ isLoggedIn: true });
+  it("closes notification dropdown when clicking outside", () => {
+    jest
+      .spyOn(require("../contexts/UserDataContext"), "useUserDataContext")
+      .mockReturnValue({
+        ...require("../contexts/UserDataContext").useUserDataContext(),
+        isLoggedIn: true,
+      });
+    renderHeader();
     const notificationBell = screen.getByRole("button", {
       name: /notifications/i,
     });
 
-    // Open notifications
     fireEvent.click(notificationBell);
     expect(screen.getByText("Test notification")).toBeInTheDocument();
 
-    // Click outside (on the header container)
-    fireEvent.mouseDown(screen.getByRole("banner"));
-
-    // Verify notifications are closed
+    fireEvent.mouseDown(document.body);
     expect(screen.queryByText("Test notification")).not.toBeInTheDocument();
   });
 
-  it("closes user menu when clicking outside", async () => {
+  it("closes user menu when clicking outside", () => {
     renderHeader();
     const userMenuButton = screen.getByRole("button", { name: /user menu/i });
 
-    // Open user menu
     fireEvent.click(userMenuButton);
-    const menuItem = screen.getByText("Login");
-    expect(menuItem).toBeInTheDocument();
+    expect(screen.getByText("Login")).toBeInTheDocument();
 
-    // Click outside (on the header container)
-    fireEvent.mouseDown(screen.getByRole("banner"));
-
-    // Verify user menu is gone.
-    expect(menuItem).not.toBeInTheDocument();
+    fireEvent.mouseDown(document.body);
+    expect(screen.queryByText("Login")).not.toBeInTheDocument();
   });
 });
