@@ -173,7 +173,7 @@ describe("ExamComponent", () => {
       renderExamComponent();
     });
 
-    // Verify that the Edit Problem button is still not visible
+    // Verify that the Edit Problem button has appeared.
     expect(screen.queryByText("Edit Problem")).toBeInTheDocument();
   });
 });

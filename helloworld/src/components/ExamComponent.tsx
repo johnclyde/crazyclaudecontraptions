@@ -19,6 +19,7 @@ const ExamComponent: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [examId, setExamId] = useState<string | null>(null);
   const [editingProblem, setEditingProblem] = useState<Problem | null>(null);
+  const [showEditButton, setShowEditButton] = useState(false);
 
   const { user, isAdminMode } = useUserDataContext();
 
@@ -29,7 +30,7 @@ const ExamComponent: React.FC = () => {
         const response = await fetch(
           `/api/exam?competition=${competition}&year=${year}&exam=${exam}`,
         );
-        if (!response.ok) {
+        if (!response || !response.ok) {
           throw new Error("Failed to fetch exam data");
         }
         const data = await response.json();
@@ -47,6 +48,10 @@ const ExamComponent: React.FC = () => {
 
     fetchExamData();
   }, [competition, year, exam]);
+
+  useEffect(() => {
+    setShowEditButton(isAdminMode && user?.isAdmin);
+  }, [isAdminMode, user]);
 
   const handlePrevious = () => {
     setCurrentProblemIndex((prev) => Math.max(0, prev - 1));
@@ -102,7 +107,7 @@ const ExamComponent: React.FC = () => {
           className="mt-2 max-w-full h-auto"
         />
       )}
-      {isAdminMode && user?.isAdmin && (
+      {showEditButton && (
         <button
           onClick={() => handleEditProblem(problem)}
           className="mt-2 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors"
