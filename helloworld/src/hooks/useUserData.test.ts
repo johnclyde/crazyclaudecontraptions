@@ -22,6 +22,10 @@ describe("useUserData", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     (useNavigate as jest.Mock).mockReturnValue(mockNavigate);
+    (auth.onAuthStateChanged as jest.Mock).mockImplementation((callback) => {
+      callback(null);
+      return jest.fn();
+    });
     global.fetch = jest.fn();
   });
 
