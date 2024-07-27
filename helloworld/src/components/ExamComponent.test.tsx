@@ -153,9 +153,16 @@ describe("ExamComponent", () => {
         }),
     });
 
-    await act(async () => {
-      renderExamComponent();
-    });
+    const { rerender } = render(
+      <MemoryRouter initialEntries={["/competition/Math/2023/Spring"]}>
+        <Routes>
+          <Route
+            path="/competition/:competition/:year/:exam"
+            element={<ExamComponent />}
+          />
+        </Routes>
+      </MemoryRouter>,
+    );
 
     await waitFor(() => {
       expect(screen.getByText("Math - 2023 - Spring")).toBeInTheDocument();
@@ -165,15 +172,28 @@ describe("ExamComponent", () => {
     expect(screen.queryByText("Edit Problem")).not.toBeInTheDocument();
 
     // Toggle admin mode
-    await act(async () => {
+    act(() => {
       (UserDataContext.useUserDataContext as jest.Mock).mockReturnValue({
         ...mockUserData,
         isAdminMode: true,
       });
-      renderExamComponent();
     });
 
-    // Verify that the Edit Problem button has appeared.
-    expect(screen.queryByText("Edit Problem")).toBeInTheDocument();
+    // Re-render the component
+    rerender(
+      <MemoryRouter initialEntries={["/competition/Math/2023/Spring"]}>
+        <Routes>
+          <Route
+            path="/competition/:competition/:year/:exam"
+            element={<ExamComponent />}
+          />
+        </Routes>
+      </MemoryRouter>,
+    );
+
+    // Wait for the component to update
+    await waitFor(() => {
+      expect(screen.queryByText("Edit Problem")).toBeInTheDocument();
+    });
   });
 });
