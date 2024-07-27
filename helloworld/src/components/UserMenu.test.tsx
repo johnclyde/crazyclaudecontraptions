@@ -20,6 +20,8 @@ const mockUser = {
 const defaultProps = {
   user: null,
   isLoggedIn: false,
+  showUserMenu: false,
+  setShowUserMenu: jest.fn(),
   login: jest.fn(),
   logout: jest.fn(),
   isAdminMode: false,
@@ -40,6 +42,9 @@ describe("UserMenu", () => {
     await act(async () => {
       fireEvent.click(screen.getByRole("button"));
     });
+    expect(defaultProps.setShowUserMenu).toHaveBeenCalledWith(true);
+
+    renderUserMenu({ showUserMenu: true });
     expect(screen.getByText("Login")).toBeInTheDocument();
   });
 
