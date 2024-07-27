@@ -3,13 +3,20 @@ import { render, screen, waitFor } from "@testing-library/react";
 import Users from "./Users";
 import * as firebase from "../firebase";
 
-// Mock the firebase module
 jest.mock("../firebase", () => ({
   getIdToken: jest.fn(),
 }));
 
 // Mock fetch
 global.fetch = jest.fn();
+
+const originalConsoleError = console.error;
+beforeAll(() => {
+  console.error = jest.fn();
+});
+afterAll(() => {
+  console.error = originalConsoleError;
+});
 
 describe("Users component", () => {
   beforeEach(() => {
