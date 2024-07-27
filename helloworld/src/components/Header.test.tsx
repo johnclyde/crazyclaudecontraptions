@@ -1,48 +1,64 @@
-import React, { useState } from "react";
+import React from "react";
 import { render, screen, fireEvent } from "@testing-library/react";
-import { BrowserRouter } from "react-router-dom";
+import { BrowserRouter as Router } from "react-router-dom";
 import Header from "./Header";
 
-// Mock components with click behavior
-const MockNotificationBell = () => {
-  const [isOpen, setIsOpen] = useState(false);
-  return (
-    <div data-testid="notification-bell">
-      <button onClick={() => setIsOpen(!isOpen)}>Toggle Notifications</button>
-      {isOpen && <div data-testid="notification-dropdown">Notifications</div>}
-    </div>
-  );
-};
+const MockNotificationBell = ({ notifications }) => (
+  <div data-testid="notification-dropdown">
+    Notifications: {notifications.length}
+  </div>
+);
 
-const MockUserMenu = () => {
-  const [isOpen, setIsOpen] = useState(false);
-  return (
-    <div data-testid="user-menu">
-      <button onClick={() => setIsOpen(!isOpen)}>Toggle User Menu</button>
-      {isOpen && <div data-testid="user-menu-dropdown">User Menu</div>}
-    </div>
-  );
-};
+const MockUserMenu = () => <div>User Menu</div>;
 
 const defaultProps = {
+  user: null,
+  isLoggedIn: false,
+  notifications: [],
+  notificationsError: null,
+  markNotificationAsRead: jest.fn(),
+  login: jest.fn(),
+  logout: jest.fn(),
+  setIsLoggedIn: jest.fn(),
+  isAdminMode: false,
+  toggleAdminMode: jest.fn(),
   NotificationBell: MockNotificationBell,
   UserMenu: MockUserMenu,
-  isLoggedIn: true,
-  isAdminMode: false,
 };
 
 const renderHeader = (props = {}) => {
   return render(
-    <BrowserRouter>
+    <Router>
       <Header {...defaultProps} {...props} />
-    </BrowserRouter>,
+    </Router>,
   );
 };
 
 describe("Header", () => {
+  it("renders GrindOlympiads link", () => {
+    renderHeader();
+    expect(screen.getByText("GrindOlympiads")).toBeInTheDocument();
+  });
+
+  it("renders NotificationBell when logged in", () => {
+    renderHeader({ isLoggedIn: true });
+    expect(screen.getByTestId("notification-dropdown")).toBeInTheDocument();
+  });
+
+  it("doesn't render NotificationBell when not logged in", () => {
+    renderHeader({ isLoggedIn: false });
+    expect(
+      screen.queryByTestId("notification-dropdown"),
+    ).not.toBeInTheDocument();
+  });
+
+  it("renders UserMenu", () => {
+    renderHeader();
+    expect(screen.getByText("User Menu")).toBeInTheDocument();
+  });
+
   it("closes notification dropdown when clicking outside", () => {
     renderHeader();
-
     // Open notifications
     fireEvent.click(screen.getByText("Toggle Notifications"));
     expect(screen.getByTestId("notification-dropdown")).toBeInTheDocument();

@@ -10,6 +10,9 @@ import UserProfile from "./components/UserProfile";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { UserDataProvider } from "./contexts/UserDataContext";
 import LabsRoutes from "./LabsRoutes";
+import Header from "./components/Header";
+import NotificationBell from "./components/NotificationBell";
+import UserMenu from "./components/UserMenu";
 
 const App: React.FC = () => {
   const isStaging = process.env.REACT_APP_ENVIRONMENT === "staging";
@@ -19,7 +22,16 @@ const App: React.FC = () => {
       <Router>
         <UserDataProvider>
           <Routes>
-            <Route element={<GrindOlympiadsLayout isStaging={isStaging} />}>
+            <Route
+              element={
+                <GrindOlympiadsLayout
+                  isStaging={isStaging}
+                  Header={Header}
+                  NotificationBell={NotificationBell}
+                  UserMenu={UserMenu}
+                />
+              }
+            >
               <Route index element={<GrindOlympiadsIndex />} />
               <Route
                 path="competition/:competition/:year/:exam"

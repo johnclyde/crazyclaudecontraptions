@@ -1,15 +1,20 @@
 import React from "react";
 import { Outlet } from "react-router-dom";
-import Header from "./components/Header";
 import useNotifications from "./hooks/useNotifications";
 import useUserData from "./hooks/useUserData";
 
 interface GrindOlympiadsLayoutProps {
   isStaging: boolean;
+  Header: React.ComponentType<any>;
+  NotificationBell: React.ComponentType<any>;
+  UserMenu: React.ComponentType<any>;
 }
 
 const GrindOlympiadsLayout: React.FC<GrindOlympiadsLayoutProps> = ({
   isStaging,
+  Header,
+  NotificationBell,
+  UserMenu,
 }) => {
   const {
     user,
@@ -40,6 +45,8 @@ const GrindOlympiadsLayout: React.FC<GrindOlympiadsLayoutProps> = ({
         isAdminMode={isAdminMode}
         toggleAdminMode={toggleAdminMode}
         stagingLogin={stagingLogin}
+        NotificationBell={NotificationBell}
+        UserMenu={UserMenu}
       />
       <main className="flex-grow">
         <Outlet />

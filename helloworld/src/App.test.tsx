@@ -1,6 +1,24 @@
 import { render, screen } from "@testing-library/react";
 import App from "./App";
 
+jest.mock("./components/Header", () => {
+  return function MockHeader() {
+    return <div>GrindOlympiads</div>;
+  };
+});
+
+jest.mock("./components/NotificationBell", () => {
+  return function MockNotificationBell() {
+    return <div>Notifications</div>;
+  };
+});
+
+jest.mock("./components/UserMenu", () => {
+  return function MockUserMenu() {
+    return <div>User Menu</div>;
+  };
+});
+
 jest.mock("../firebase", () => ({
   auth: {
     onAuthStateChanged: jest.fn((callback) => {
