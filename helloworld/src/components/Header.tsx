@@ -1,9 +1,9 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-import NotificationBell from "./NotificationBell";
-import UserMenu from "./UserMenu";
 import { LoginFunction } from "../hooks/useUserData";
 import { User } from "../types";
+import { NotificationBellProps } from "./NotificationBell";
+import { UserMenuProps } from "./UserMenu";
 
 interface Notification {
   id: string;
@@ -20,10 +20,15 @@ interface HeaderProps {
   markNotificationAsRead: (id: string) => void;
   login: LoginFunction;
   logout: () => void;
-  setIsLoggedIn: React.Dispatch<React.SetStateAction<boolean>>;
   isAdminMode: boolean;
   toggleAdminMode: () => void;
   stagingLogin?: () => void;
+  NotificationBell: React.ForwardRefExoticComponent<
+    NotificationBellProps & React.RefAttributes<HTMLDivElement>
+  >;
+  UserMenu: React.ForwardRefExoticComponent<
+    UserMenuProps & React.RefAttributes<HTMLDivElement>
+  >;
 }
 
 const Header: React.FC<HeaderProps> = ({
@@ -34,10 +39,11 @@ const Header: React.FC<HeaderProps> = ({
   markNotificationAsRead,
   login,
   logout,
-  setIsLoggedIn,
   isAdminMode,
   toggleAdminMode,
   stagingLogin,
+  NotificationBell,
+  UserMenu,
 }) => {
   const [showNotifications, setShowNotifications] = useState(false);
   const notificationRef = useRef<HTMLDivElement>(null);

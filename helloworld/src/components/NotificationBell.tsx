@@ -1,6 +1,6 @@
 import React, { forwardRef } from "react";
 
-interface NotificationBellProps {
+export interface NotificationBellProps {
   notifications: any[]; // Replace 'any' with your notification type
   notificationsError: string | null;
   showNotifications: boolean;
@@ -24,6 +24,7 @@ const NotificationBell = forwardRef<HTMLDivElement, NotificationBellProps>(
         <button
           onClick={() => setShowNotifications(!showNotifications)}
           className="p-2 hover:bg-gray-700 rounded-full"
+          aria-label="Notifications"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
