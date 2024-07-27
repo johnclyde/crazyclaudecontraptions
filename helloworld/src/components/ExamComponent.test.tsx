@@ -93,7 +93,7 @@ describe("ExamComponent", () => {
     });
   });
 
-  it("does not show Edit Problem button after enabling admin mode", async () => {
+  it("does not show Edit Problem button when admin mode is disabled", async () => {
     (global.fetch as jest.Mock).mockResolvedValueOnce({
       ok: true,
       json: () =>
@@ -112,19 +112,88 @@ describe("ExamComponent", () => {
       expect(screen.getByText("Math - 2023 - Spring")).toBeInTheDocument();
     });
 
+    expect(screen.queryByText("Edit Problem")).not.toBeInTheDocument();
+  });
+
+  it("shows Edit Problem button when admin mode is enabled", async () => {
+    (global.fetch as jest.Mock).mockResolvedValueOnce({
+      ok: true,
+      json: () =>
+        Promise.resolve({
+          problems: [{ id: "1", number: 1, problem: "Test problem" }],
+          comment: "Test comment",
+          examId: "test-exam-id",
+        }),
+    });
+
+    (UserDataContext.useUserDataContext as jest.Mock).mockReturnValue({
+      ...mockUserData,
+      isAdminMode: true,
+    });
+
+    await act(async () => {
+      renderExamComponent();
+    });
+
+    await waitFor(() => {
+      expect(screen.getByText("Math - 2023 - Spring")).toBeInTheDocument();
+    });
+
+    expect(screen.getByText("Edit Problem")).toBeInTheDocument();
+  });
+
+  it("Edit Problem button appears when enabling admin mode", async () => {
+    (global.fetch as jest.Mock).mockResolvedValueOnce({
+      ok: true,
+      json: () =>
+        Promise.resolve({
+          problems: [{ id: "1", number: 1, problem: "Test problem" }],
+          comment: "Test comment",
+          examId: "test-exam-id",
+        }),
+    });
+
+    const { rerender } = render(
+      <MemoryRouter initialEntries={["/competition/Math/2023/Spring"]}>
+        <Routes>
+          <Route
+            path="/competition/:competition/:year/:exam"
+            element={<ExamComponent />}
+          />
+        </Routes>
+      </MemoryRouter>,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText("Math - 2023 - Spring")).toBeInTheDocument();
+    });
+
     // Verify that the Edit Problem button is not visible initially
     expect(screen.queryByText("Edit Problem")).not.toBeInTheDocument();
 
     // Toggle admin mode
-    await act(async () => {
+    act(() => {
       (UserDataContext.useUserDataContext as jest.Mock).mockReturnValue({
         ...mockUserData,
         isAdminMode: true,
       });
-      renderExamComponent();
     });
 
-    // Verify that the Edit Problem button is still not visible
-    expect(screen.queryByText("Edit Problem")).not.toBeInTheDocument();
+    // Re-render the component
+    rerender(
+      <MemoryRouter initialEntries={["/competition/Math/2023/Spring"]}>
+        <Routes>
+          <Route
+            path="/competition/:competition/:year/:exam"
+            element={<ExamComponent />}
+          />
+        </Routes>
+      </MemoryRouter>,
+    );
+
+    // Wait for the component to update
+    await waitFor(() => {
+      expect(screen.queryByText("Edit Problem")).toBeInTheDocument();
+    });
   });
 });
