@@ -7,7 +7,6 @@ jest.mock("../firebase", () => ({
   getIdToken: jest.fn(),
 }));
 
-// Mock fetch
 global.fetch = jest.fn();
 
 const originalConsoleError = console.error;
@@ -61,6 +60,8 @@ describe("Users component", () => {
       expect(screen.getByText("jane@example.com")).toBeInTheDocument();
       expect(screen.queryByText("Loading...")).not.toBeInTheDocument();
     });
+
+    expect(console.error).not.toHaveBeenCalled();
   });
 
   it("should handle empty response from API", async () => {
@@ -76,6 +77,8 @@ describe("Users component", () => {
       expect(screen.getByText("Users")).toBeInTheDocument();
       expect(screen.queryByText("Loading...")).not.toBeInTheDocument();
     });
+
+    expect(console.error).not.toHaveBeenCalled();
   });
 
   it("should handle error when fetching users", async () => {
@@ -90,5 +93,10 @@ describe("Users component", () => {
       ).toBeInTheDocument();
       expect(screen.queryByText("Loading...")).not.toBeInTheDocument();
     });
+
+    expect(console.error).toHaveBeenCalledWith(
+      "Error fetching users:",
+      expect.any(Error),
+    );
   });
 });
