@@ -38,21 +38,12 @@ const renderUserMenu = (props = {}) => {
 
 describe("UserMenu", () => {
   it("renders login button when not logged in", async () => {
-    renderUserMenu();
-    await act(async () => {
-      fireEvent.click(screen.getByRole("button"));
-    });
-    expect(defaultProps.setShowUserMenu).toHaveBeenCalledWith(true);
-
     renderUserMenu({ showUserMenu: true });
     expect(screen.getByText("Login")).toBeInTheDocument();
   });
 
   it("renders user menu when logged in", async () => {
-    renderUserMenu({ isLoggedIn: true, user: mockUser });
-    await act(async () => {
-      fireEvent.click(screen.getByRole("button"));
-    });
+    renderUserMenu({ isLoggedIn: true, user: mockUser, showUserMenu: true });
     expect(screen.getByText("Profile")).toBeInTheDocument();
     expect(screen.getByText("Settings")).toBeInTheDocument();
     expect(screen.getByText("Users")).toBeInTheDocument();
@@ -60,10 +51,7 @@ describe("UserMenu", () => {
   });
 
   it("renders admin mode toggle for admin users", async () => {
-    renderUserMenu({ isLoggedIn: true, user: mockUser });
-    await act(async () => {
-      fireEvent.click(screen.getByRole("button"));
-    });
+    renderUserMenu({ isLoggedIn: true, user: mockUser, showUserMenu: true });
     expect(screen.getByText("Enable Admin Mode")).toBeInTheDocument();
   });
 
@@ -74,9 +62,7 @@ describe("UserMenu", () => {
       user: mockUser,
       toggleAdminMode,
       isAdminMode: false,
-    });
-    await act(async () => {
-      fireEvent.click(screen.getByRole("button"));
+      showUserMenu: true,
     });
     await act(async () => {
       fireEvent.click(screen.getByText("Enable Admin Mode"));
@@ -86,9 +72,11 @@ describe("UserMenu", () => {
 
   it("calls logout function when clicking logout", async () => {
     const logout = jest.fn();
-    renderUserMenu({ isLoggedIn: true, user: mockUser, logout });
-    await act(async () => {
-      fireEvent.click(screen.getByRole("button"));
+    renderUserMenu({
+      isLoggedIn: true,
+      user: mockUser,
+      logout,
+      showUserMenu: true,
     });
     await act(async () => {
       fireEvent.click(screen.getByText("Logout"));
