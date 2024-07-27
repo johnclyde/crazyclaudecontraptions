@@ -20,8 +20,8 @@ const useUserData = () => {
 
   const clearUserData = useCallback(() => {
     setUser(null);
-    setIsLoggedIn(false);
     setUserProgress([]);
+    setIsLoggedIn(false);
     setIsAdminMode(false);
     navigate("/");
   }, [navigate]);
