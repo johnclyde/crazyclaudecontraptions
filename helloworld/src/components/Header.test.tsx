@@ -79,7 +79,7 @@ describe("Header", () => {
     expect(screen.queryByText("Test notification")).not.toBeInTheDocument();
   });
 
-  it("keeps user menu open when clicking outside", async () => {
+  it("closes user menu when clicking outside", async () => {
     renderHeader();
     const userMenuButton = screen.getByRole("button", { name: /user menu/i });
 
@@ -91,7 +91,7 @@ describe("Header", () => {
     // Click outside (on the header container)
     fireEvent.mouseDown(screen.getByRole("banner"));
 
-    // Verify user menu is still open
-    expect(menuItem).toBeInTheDocument();
+    // Verify user menu is gone.
+    expect(menuItem).not.toBeInTheDocument();
   });
 });

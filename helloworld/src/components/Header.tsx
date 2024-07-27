@@ -104,12 +104,12 @@ const Header: React.FC<HeaderProps> = ({
             ref={userMenuRef}
             user={user}
             isLoggedIn={isLoggedIn}
+            showUserMenu={showUserMenu}
+            setShowUserMenu={setShowUserMenu}
             login={login}
             logout={logout}
             isAdminMode={isAdminMode}
             toggleAdminMode={toggleAdminMode}
-            showUserMenu={showUserMenu}
-            setShowUserMenu={setShowUserMenu}
             stagingLogin={stagingLogin}
           />
         </div>

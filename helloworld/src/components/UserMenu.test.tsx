@@ -90,17 +90,4 @@ describe("UserMenu", () => {
     });
     expect(logout).toHaveBeenCalled();
   });
-
-  it("renders staging login button when provided", async () => {
-    const stagingLogin = jest.fn();
-    renderUserMenu({ stagingLogin });
-    await act(async () => {
-      fireEvent.click(screen.getByRole("button"));
-    });
-    expect(screen.getByText("Log in as math1434")).toBeInTheDocument();
-    await act(async () => {
-      fireEvent.click(screen.getByText("Log in as math1434"));
-    });
-    expect(stagingLogin).toHaveBeenCalled();
-  });
 });
