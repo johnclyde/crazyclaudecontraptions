@@ -1,7 +1,5 @@
-import React, { useState, useRef, useEffect } from "react";
+import React from "react";
 import { Link, useLocation } from "react-router-dom";
-import NotificationBell from "./NotificationBell";
-import UserMenu from "./UserMenu";
 import { LoginFunction } from "../hooks/useUserData";
 import { User } from "../types";
 
@@ -24,6 +22,8 @@ interface HeaderProps {
   isAdminMode: boolean;
   toggleAdminMode: () => void;
   stagingLogin?: () => void;
+  NotificationBell: React.ComponentType<any>;
+  UserMenu: React.ComponentType<any>;
 }
 
 const Header: React.FC<HeaderProps> = ({
@@ -38,28 +38,11 @@ const Header: React.FC<HeaderProps> = ({
   isAdminMode,
   toggleAdminMode,
   stagingLogin,
+  NotificationBell,
+  UserMenu,
 }) => {
-  const [showNotifications, setShowNotifications] = useState(false);
-  const notificationRef = useRef<HTMLDivElement>(null);
-  const userMenuRef = useRef<HTMLDivElement>(null);
   const location = useLocation();
   const isLabsPath = location.pathname.startsWith("/labs");
-
-  const handleClickOutside = (event: MouseEvent) => {
-    if (
-      notificationRef.current &&
-      !notificationRef.current.contains(event.target as Node)
-    ) {
-      setShowNotifications(false);
-    }
-  };
-
-  useEffect(() => {
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, []);
 
   const headerBackgroundColor = isAdminMode ? "bg-red-900" : "bg-gray-800";
 
@@ -79,16 +62,12 @@ const Header: React.FC<HeaderProps> = ({
           )}
           {isLoggedIn && (
             <NotificationBell
-              ref={notificationRef}
               notifications={notifications}
               notificationsError={notificationsError}
-              showNotifications={showNotifications}
-              setShowNotifications={setShowNotifications}
               markNotificationAsRead={markNotificationAsRead}
             />
           )}
           <UserMenu
-            ref={userMenuRef}
             user={user}
             isLoggedIn={isLoggedIn}
             login={login}

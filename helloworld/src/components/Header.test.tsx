@@ -1,38 +1,34 @@
-import React from "react";
+import React, { useState } from "react";
 import { render, screen, fireEvent } from "@testing-library/react";
 import { BrowserRouter } from "react-router-dom";
 import Header from "./Header";
 
-// Mock child components
-jest.mock("./NotificationBell", () => {
-  return function MockNotificationBell({ setShowNotifications }) {
-    return (
-      <div data-testid="notification-bell">
-        <button onClick={() => setShowNotifications(true)}>
-          Show Notifications
-        </button>
-      </div>
-    );
-  };
-});
+// Mock components with click behavior
+const MockNotificationBell = () => {
+  const [isOpen, setIsOpen] = useState(false);
+  return (
+    <div data-testid="notification-bell">
+      <button onClick={() => setIsOpen(!isOpen)}>Toggle Notifications</button>
+      {isOpen && <div data-testid="notification-dropdown">Notifications</div>}
+    </div>
+  );
+};
 
-jest.mock("./UserMenu", () => {
-  return function MockUserMenu() {
-    return <div data-testid="user-menu">User Menu</div>;
-  };
-});
+const MockUserMenu = () => {
+  const [isOpen, setIsOpen] = useState(false);
+  return (
+    <div data-testid="user-menu">
+      <button onClick={() => setIsOpen(!isOpen)}>Toggle User Menu</button>
+      {isOpen && <div data-testid="user-menu-dropdown">User Menu</div>}
+    </div>
+  );
+};
 
 const defaultProps = {
-  user: null,
+  NotificationBell: MockNotificationBell,
+  UserMenu: MockUserMenu,
   isLoggedIn: true,
-  notifications: [],
-  notificationsError: null,
-  markNotificationAsRead: jest.fn(),
-  login: jest.fn(),
-  logout: jest.fn(),
-  setIsLoggedIn: jest.fn(),
   isAdminMode: false,
-  toggleAdminMode: jest.fn(),
 };
 
 const renderHeader = (props = {}) => {
@@ -48,28 +44,29 @@ describe("Header", () => {
     renderHeader();
 
     // Open notifications
-    fireEvent.click(screen.getByText("Show Notifications"));
-
-    // Verify notifications are shown
-    expect(screen.getByTestId("notification-bell")).toBeInTheDocument();
+    fireEvent.click(screen.getByText("Toggle Notifications"));
+    expect(screen.getByTestId("notification-dropdown")).toBeInTheDocument();
 
     // Click outside (on the header container)
     fireEvent.mouseDown(screen.getByRole("banner"));
 
-    // Verify notifications are no longer shown
-    expect(screen.queryByText("No new notifications")).not.toBeInTheDocument();
+    // Verify notifications are closed
+    expect(
+      screen.queryByTestId("notification-dropdown"),
+    ).not.toBeInTheDocument();
   });
 
   it("keeps user menu open when clicking outside", () => {
     renderHeader();
 
-    // Assuming user menu is already open (since we can't directly control its state in this test setup)
-    expect(screen.getByTestId("user-menu")).toBeInTheDocument();
+    // Open user menu
+    fireEvent.click(screen.getByText("Toggle User Menu"));
+    expect(screen.getByTestId("user-menu-dropdown")).toBeInTheDocument();
 
     // Click outside (on the header container)
     fireEvent.mouseDown(screen.getByRole("banner"));
 
-    // Verify user menu is still shown
-    expect(screen.getByTestId("user-menu")).toBeInTheDocument();
+    // Verify user menu is still open
+    expect(screen.getByTestId("user-menu-dropdown")).toBeInTheDocument();
   });
 });
