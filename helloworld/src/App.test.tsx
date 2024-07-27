@@ -10,17 +10,17 @@ jest.mock("../firebase", () => ({
   },
 }));
 
-jest.mock("react-router-dom", () => ({
-  ...jest.requireActual("react-router-dom"),
-  useNavigate: () => jest.fn(),
-}));
+const originalConsoleError = console.error;
+beforeAll(() => {
+  console.error = jest.fn();
+});
+afterAll(() => {
+  console.error = originalConsoleError;
+});
 
 test("renders GrindOlympiads header", () => {
-  render(
-    <MemoryRouter>
-      <App />
-    </MemoryRouter>
-  );
+  render(<App />);
   const headerElement = screen.getByText(/GrindOlympiads/i);
   expect(headerElement).toBeInTheDocument();
+  expect(console.error).not.toHaveBeenCalled();
 });
