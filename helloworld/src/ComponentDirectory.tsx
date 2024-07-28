@@ -1,4 +1,3 @@
-import React from "react";
 import { Link } from "react-router-dom";
 
 const ComponentDirectory = () => {
@@ -22,6 +21,11 @@ const ComponentDirectory = () => {
       name: "Problem Editor Demo",
       path: "/labs/problem-editor-demo",
       description: "Demonstration of the Problem Editor component",
+    },
+    {
+      name: "Login Warning Popup",
+      path: "/labs/login-warning-popup",
+      description: "Demo of the login warning popup for non-logged-in users",
     },
     {
       name: "GrindOlympiads Index",
