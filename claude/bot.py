@@ -1,6 +1,7 @@
 import os
 import tempfile
 import sys
+import inspect
 from anthropic import Anthropic
 from anthropic.types import MessageParam, ToolParam
 
@@ -9,6 +10,10 @@ client = Anthropic()
 # Create a temporary directory for logs
 temp_dir = tempfile.mkdtemp()
 log_file_path = os.path.join(temp_dir, "conversation_log.txt")
+
+
+def is_github_codespace():
+    return os.environ.get("CODESPACES") == "true"
 
 
 def log_to_file(message):
@@ -56,8 +61,8 @@ tools: list[ToolParam] = [
         },
     },
     {
-        "name": "get_script_name",
-        "description": "Get the name of the running script",
+        "name": "get_script_path",
+        "description": "Get the full path of the running script",
         "input_schema": {
             "type": "object",
             "properties": {},
@@ -103,8 +108,11 @@ def list_directory():
         return f"Error listing directory: {str(e)}"
 
 
-def get_script_name():
-    return os.path.basename(sys.argv[0])
+def get_script_path():
+    try:
+        return os.path.abspath(inspect.getfile(inspect.currentframe()))
+    except Exception as e:
+        return f"Error getting script path: {str(e)}"
 
 
 def execute_tool(tool_use_request):
@@ -119,8 +127,8 @@ def execute_tool(tool_use_request):
         return read_conversation_log()
     elif tool_use_request.name == "list_directory":
         return list_directory()
-    elif tool_use_request.name == "get_script_name":
-        return get_script_name()
+    elif tool_use_request.name == "get_script_path":
+        return get_script_path()
     else:
         return "Unknown tool use request."
 
@@ -203,4 +211,8 @@ def conversation_loop():
 
 
 if __name__ == "__main__":
-    conversation_loop()
+    if is_github_codespace():
+        conversation_loop()
+    else:
+        print("This script can only run inside a GitHub Codespace environment.")
+        sys.exit(1)
