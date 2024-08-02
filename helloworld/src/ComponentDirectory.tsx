@@ -32,6 +32,11 @@ const ComponentDirectory = () => {
       path: "/",
       description: "Index page for GrindOlympiads math platform",
     },
+    {
+      name: "Challenges",
+      path: "/labs/challenges",
+      description: "Display and interact with math challenges",
+    },
   ];
 
   return (
