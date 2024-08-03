@@ -76,7 +76,7 @@ def read_file(file_path):
         with open(file_path, "r") as file:
             content = file.read()
         log_to_file(f"Read file: {file_path}")
-        return f"File contents:\n{content}"
+        return content
     except FileNotFoundError:
         return f"Error: File '{file_path}' not found."
     except Exception as e:
@@ -115,41 +115,60 @@ def get_script_path():
         return f"Error getting script path: {str(e)}"
 
 
-def execute_tool(tool_use_request):
-    if tool_use_request.name == "read_file":
-        file_path = tool_use_request.input["file_path"]
-        return read_file(file_path)
-    elif tool_use_request.name == "write_file":
-        file_path = tool_use_request.input["file_path"]
-        content = tool_use_request.input["content"]
-        return write_file(file_path, content)
-    elif tool_use_request.name == "read_conversation_log":
-        return read_conversation_log()
-    elif tool_use_request.name == "list_directory":
-        return list_directory()
-    elif tool_use_request.name == "get_script_path":
-        return get_script_path()
+def append_run_another_tool(tools):
+    return [
+        {
+            **tool,
+            "input_schema": {
+                **tool["input_schema"],
+                "properties": {
+                    **tool["input_schema"].get("properties", {}),
+                    "run_another_tool": {"type": "boolean"},
+                },
+            },
+        }
+        for tool in tools
+    ]
+
+
+def execute_tool(tool_call):
+    run_another_tool = tool_call.input.get("run_another_tool", False)
+
+    if tool_call.name == "read_file":
+        file_path = tool_call.input["file_path"]
+        result = read_file(file_path)
+    elif tool_call.name == "write_file":
+        file_path = tool_call.input["file_path"]
+        content = tool_call.input["content"]
+        result = write_file(file_path, content)
+    elif tool_call.name == "read_conversation_log":
+        result = read_conversation_log()
+    elif tool_call.name == "list_directory":
+        result = list_directory()
+    elif tool_call.name == "get_script_path":
+        result = get_script_path()
     else:
-        return "Unknown tool use request."
+        result = "Unknown tool use request."
+
+    return result, run_another_tool
 
 
 def format_claude_response(message):
     formatted_response = ""
-    execute_next_tool = False
-    next_tool = None
+    tool_calls = []
 
     for content in message.content:
         if content.type == "text":
             formatted_response += content.text + "\n"
-            if "I would like to execute another tool" in content.text:
-                execute_next_tool = True
         elif content.type == "tool_use":
-            tool_response = execute_tool(content)
+            tool_calls.append(content)
             formatted_response += f"\nTool used: {content.name}\n"
-            formatted_response += f"Result: {tool_response}\n"
-            next_tool = content
+            result, run_another_tool = execute_tool(content)
+            formatted_response += f"Result: {result}\n"
+            if run_another_tool:
+                formatted_response += "Claude wants to execute another tool.\n"
 
-    return formatted_response.strip(), execute_next_tool, next_tool
+    return formatted_response.strip(), tool_calls
 
 
 def conversation_loop():
@@ -174,40 +193,39 @@ def conversation_loop():
                 model="claude-3-5-sonnet-20240620",
                 max_tokens=4000,
                 messages=messages,
-                tools=tools,
+                tools=append_run_another_tool(tools),
                 system="You are claude-3-5-sonnet-20240620. If you are asked to write software that talks to Claude, "
                 "you must tell it to talk to claude-3-5-sonnet-20240620 and not some older model. You can ask to see "
-                "the conversation logs if you think it would be helpful for the current conversation. "
-                "After each tool use, if you want to execute another tool, explicitly state 'I would like to execute another tool' "
-                "and explain why. The user will then have the option to allow the next tool execution or interject.",
+                "the conversation logs if you think it would be helpful for the current conversation.",
             )
 
-            formatted_response, execute_next_tool, next_tool = format_claude_response(
-                message
-            )
+            formatted_response, tool_calls = format_claude_response(message)
             print(f"\nClaude: {formatted_response}")
             log_to_file(f"Claude: {formatted_response}")
 
             messages.append({"role": "assistant", "content": formatted_response})
 
-            if execute_next_tool:
-                user_choice = (
-                    input("\nClaude wants to execute another tool. Allow? (Y/n): ")
-                    .strip()
-                    .lower()
-                )
-                if user_choice == "" or user_choice == "y":
-                    tool_response = execute_tool(next_tool)
-                    print(f"\nTool used: {next_tool.name}")
-                    print(f"Result: {tool_response}")
-                    log_to_file(f"Tool used: {next_tool.name}")
-                    log_to_file(f"Result: {tool_response}")
-                    messages.append({"role": "tool", "content": tool_response})
+            if tool_calls:
+                for tool_call in tool_calls:
+                    tool_result, run_another_tool = execute_tool(tool_call)
+                    tool_message: MessageParam = {
+                        "role": "tool",
+                        "content": tool_result,
+                        "tool_call_id": tool_call.id,
+                    }
+                    messages.append(tool_message)
+                    log_to_file(f"Tool result sent: {tool_result}")
+
+                    if run_another_tool:
+                        user_choice = input("\nAllow Claude to execute another tool? (Y/n): ").strip().lower()
+                        if user_choice != "y" and user_choice != "":
+                            print("\nTool execution skipped. Waiting for Claude's response.")
+                            break
+                    else:
+                        break
                 else:
-                    print("\nTool execution skipped. You may now respond.")
-                    break
-            else:
-                break
+                    continue
+            break
 
 
 if __name__ == "__main__":
@@ -215,4 +233,3 @@ if __name__ == "__main__":
         conversation_loop()
     else:
         print("This script can only run inside a GitHub Codespace environment.")
-        sys.exit(1)
