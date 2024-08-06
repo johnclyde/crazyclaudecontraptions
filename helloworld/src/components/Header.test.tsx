@@ -175,4 +175,47 @@ describe("Header", () => {
       ).not.toBeInTheDocument();
     });
   });
+
+  it("toggles off admin mode when clicking on Users", async () => {
+    const mockToggleAdminMode = jest.fn();
+    const mockUseUserDataContext = {
+      user: { id: "1", name: "Test User", isAdmin: true },
+      isLoggedIn: true,
+      login: jest.fn(),
+      logout: jest.fn(),
+      isAdminMode: true,
+      toggleAdminMode: mockToggleAdminMode,
+    };
+
+    (UserDataContext.useUserDataContext as jest.Mock).mockReturnValue(
+      mockUseUserDataContext
+    );
+
+    render(
+      <MemoryRouter>
+        <Header
+          notifications={[]}
+          notificationsError={null}
+          markNotificationAsRead={jest.fn()}
+          NotificationBell={MockNotificationBell}
+          UserMenu={MockUserMenu}
+        />
+      </MemoryRouter>
+    );
+
+    // Open the user menu
+    fireEvent.click(screen.getByLabelText("User menu"));
+
+    // Click on the Users link
+    fireEvent.click(screen.getByText("Users"));
+
+    // Wait for any asynchronous actions to complete
+    await waitFor(() => {
+      // Check if toggleAdminMode was called, which it shouldn't be
+      expect(mockToggleAdminMode).not.toHaveBeenCalled();
+      
+      // The isAdminMode should still be true
+      expect(mockUseUserDataContext.isAdminMode).toBe(true);
+    });
+  });
 });
