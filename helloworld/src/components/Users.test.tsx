@@ -11,19 +11,33 @@ jest.mock("../firebase", () => ({
 global.fetch = jest.fn();
 
 const mockUserDataContext = {
-  user: { isAdmin: true },
+  user: {
+    id: null,
+    isAdmin: true,
+    isStaff: true,
+    name: "Frank Drebbin",
+    email: "mrdrebbin@example.com",
+    avatar: "",
+    createdAt: "2023-01-01",
+    lastLogin: "2023-01-01",
+    points: 0,
+    role: "User",
+    progress: null,
+  },
   isLoggedIn: true,
+  setIsLoggedIn: jest.fn(),
   login: jest.fn(),
   logout: jest.fn(),
   isAdminMode: true,
   toggleAdminMode: jest.fn(),
+  userProgress: null,
 };
 
 const renderUsers = (props = {}) => {
   return render(
     <MemoryRouter>
       <UserDataContext.UserDataProvider>
-        <Users isAdminMode={true} {...props} />
+        <Users {...props} />
       </UserDataContext.UserDataProvider>
     </MemoryRouter>,
   );
