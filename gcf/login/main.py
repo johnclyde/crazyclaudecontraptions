@@ -51,8 +51,13 @@ def login(request: Request) -> Response:
             user_data = {
                 "email": firebase_user.email,
                 "name": firebase_user.display_name or firebase_user.email,
+                "avatar": firebase_user.photo_url or "",
+                "role": "user",
+                "isAdmin": False,
+                "isStaff": False,
                 "created_at": datetime.datetime.now(),
                 "last_login": datetime.datetime.now(),
+                "points": 0,
             }
             user_ref.set(user_data)
 

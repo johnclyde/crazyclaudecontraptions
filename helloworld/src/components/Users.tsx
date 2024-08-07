@@ -6,7 +6,12 @@ interface User {
   id: string;
   name: string;
   email: string;
-  status: "admin" | "user" | "disabled";
+  role: string;
+  isAdmin: boolean;
+  isStaff: boolean;
+  createdAt: string;
+  lastLogin: string;
+  points: number;
 }
 
 const Users: React.FC = () => {
@@ -45,7 +50,11 @@ const Users: React.FC = () => {
         const data = await response.json();
         addDebugInfo(`Received data: ${JSON.stringify(data)}`);
 
-        setUsers(data.users || []);
+        if (Array.isArray(data.users)) {
+          setUsers(data.users);
+        } else {
+          throw new Error("Unexpected data structure");
+        }
         setError(null);
       } catch (err) {
         console.error("Error fetching users:", err);
@@ -76,7 +85,22 @@ const Users: React.FC = () => {
                   Email
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Status
+                  Role
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Admin
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Staff
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Points
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Created At
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Last Login
                 </th>
               </tr>
             </thead>
@@ -85,18 +109,19 @@ const Users: React.FC = () => {
                 <tr key={user.id}>
                   <td className="px-6 py-4 whitespace-nowrap">{user.name}</td>
                   <td className="px-6 py-4 whitespace-nowrap">{user.email}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">{user.role}</td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span
-                      className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                        user.status === "admin"
-                          ? "bg-green-100 text-green-800"
-                          : user.status === "disabled"
-                            ? "bg-red-100 text-red-800"
-                            : "bg-blue-100 text-blue-800"
-                      }`}
-                    >
-                      {user.status}
-                    </span>
+                    {user.isAdmin ? "Yes" : "No"}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    {user.isStaff ? "Yes" : "No"}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">{user.points}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    {new Date(user.createdAt).toLocaleString()}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    {new Date(user.lastLogin).toLocaleString()}
                   </td>
                 </tr>
               ))}
