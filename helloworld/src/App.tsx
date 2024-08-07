@@ -42,14 +42,8 @@ const App: React.FC = () => {
                 element={<UserResponseComponent />}
               />
               <Route path="profile" element={<UserProfile />} />
-              <Route element={<ProtectedRoute />}>
-                <Route path="users" element={<Users isAdminMode={false} />} />
-              </Route>
               <Route element={<ProtectedRoute adminOnly={true} />}>
-                <Route
-                  path="admin/users"
-                  element={<Users isAdminMode={true} />}
-                />
+                <Route path="admin/users" element={<Users />} />
               </Route>
               <Route path="labs/*" element={<LabsRoutes />} />
             </Route>

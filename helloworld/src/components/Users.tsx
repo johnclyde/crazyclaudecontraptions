@@ -1,38 +1,58 @@
-import React, { useState } from "react";
-import useAdminUsers from "../hooks/useAdminUsers";
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { getIdToken } from "../firebase";
+import { useUserDataContext } from "../contexts/UserDataContext";
 
-interface UsersProps {
-  isAdminMode: boolean;
+interface User {
+  id: string;
+  name: string;
+  email: string;
+  status: "admin" | "user" | "disabled";
 }
 
-const Users: React.FC<UsersProps> = ({ isAdminMode }) => {
-  const { users, loading, error, fetchUsers } = useAdminUsers();
-  const [selectedStatus, setSelectedStatus] = useState<{
-    [key: string]: "admin" | "user" | "disabled";
-  }>({});
+const Users: React.FC = () => {
+  const [users, setUsers] = useState<User[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+  const { user, isAdminMode } = useUserDataContext();
+  const navigate = useNavigate();
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "admin":
-        return "text-green-600 bg-green-100";
-      case "user":
-        return "text-blue-600 bg-blue-100";
-      case "disabled":
-        return "text-red-600 bg-red-100";
-      default:
-        return "text-gray-600 bg-gray-100";
+  useEffect(() => {
+    if (!user?.isAdmin || !isAdminMode) {
+      navigate("/");
+      return;
+    }
+
+    fetchUsers();
+  }, [user, isAdminMode, navigate]);
+
+  const fetchUsers = async () => {
+    try {
+      setLoading(true);
+      const idToken = await getIdToken();
+      const response = await fetch("/api/admin/users", {
+        headers: {
+          Authorization: `Bearer ${idToken}`,
+        },
+      });
+      if (!response.ok) {
+        throw new Error("Failed to fetch users");
+      }
+      const data = await response.json();
+      setUsers(data.users || []);
+      setError(null);
+    } catch (err) {
+      console.error("Error fetching users:", err);
+      setError("Failed to load users. Please try again later.");
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleStatusChange = (
+  const handleStatusChange = async (
     userId: string,
     newStatus: "admin" | "user" | "disabled",
   ) => {
-    setSelectedStatus((prev) => ({ ...prev, [userId]: newStatus }));
-  };
-
-  const handleSubmitChange = async (userId: string) => {
     try {
       const idToken = await getIdToken();
       const response = await fetch("/api/admin/user", {
@@ -41,7 +61,7 @@ const Users: React.FC<UsersProps> = ({ isAdminMode }) => {
           Authorization: `Bearer ${idToken}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ userId, newStatus: selectedStatus[userId] }),
+        body: JSON.stringify({ userId, newStatus }),
       });
       if (!response.ok) {
         throw new Error("Failed to update user status");
@@ -49,101 +69,60 @@ const Users: React.FC<UsersProps> = ({ isAdminMode }) => {
       await fetchUsers();
     } catch (err) {
       console.error("Error updating user status:", err);
-      // You might want to set an error state here to display to the user
+      setError("Failed to update user status. Please try again.");
     }
   };
 
+  if (!user?.isAdmin || !isAdminMode) {
+    return null; // This will prevent any flickering before redirect
+  }
+
   if (loading) {
-    return (
-      <div className="flex justify-center items-center h-screen">
-        Loading...
-      </div>
-    );
+    return <div className="p-4">Loading users...</div>;
   }
 
   if (error) {
-    return (
-      <div className="flex justify-center items-center h-screen">
-        <div
-          className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative"
-          role="alert"
-        >
-          <strong className="font-bold">Error: </strong>
-          <span className="block sm:inline">{error}</span>
-        </div>
-      </div>
-    );
+    return <div className="p-4 text-red-500">{error}</div>;
   }
 
   return (
-    <div className="container mx-auto py-8">
-      <h1 className="text-3xl font-bold mb-6">Users</h1>
-      <div className="bg-white shadow-md rounded-lg overflow-hidden">
-        <table className="min-w-full">
-          <thead>
-            <tr className="bg-gray-100">
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Name
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Email
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Status
-              </th>
-              {isAdminMode && (
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Actions
-                </th>
-              )}
+    <div className="p-4">
+      <h1 className="text-2xl font-bold mb-4">Admin Users</h1>
+      <table className="min-w-full bg-white">
+        <thead>
+          <tr>
+            <th className="py-2 px-4 border-b">Name</th>
+            <th className="py-2 px-4 border-b">Email</th>
+            <th className="py-2 px-4 border-b">Status</th>
+            <th className="py-2 px-4 border-b">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {users.map((user) => (
+            <tr key={user.id}>
+              <td className="py-2 px-4 border-b">{user.name}</td>
+              <td className="py-2 px-4 border-b">{user.email}</td>
+              <td className="py-2 px-4 border-b">{user.status}</td>
+              <td className="py-2 px-4 border-b">
+                <select
+                  value={user.status}
+                  onChange={(e) =>
+                    handleStatusChange(
+                      user.id,
+                      e.target.value as "admin" | "user" | "disabled",
+                    )
+                  }
+                  className="border rounded p-1"
+                >
+                  <option value="user">User</option>
+                  <option value="admin">Admin</option>
+                  <option value="disabled">Disabled</option>
+                </select>
+              </td>
             </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {users.map((user) => (
-              <tr key={user.id}>
-                <td className="px-6 py-4 whitespace-nowrap">{user.name}</td>
-                <td className="px-6 py-4 whitespace-nowrap">{user.email}</td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <span
-                    className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(user.status)}`}
-                  >
-                    {user.status}
-                  </span>
-                </td>
-                {isAdminMode && (
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <select
-                      value={selectedStatus[user.id] || user.status}
-                      onChange={(e) =>
-                        handleStatusChange(
-                          user.id,
-                          e.target.value as "admin" | "user" | "disabled",
-                        )
-                      }
-                      disabled={user.status === "admin"}
-                      className="mr-2 p-1 border rounded"
-                    >
-                      <option value="user">User</option>
-                      <option value="admin">Admin</option>
-                      <option value="disabled">Disabled</option>
-                    </select>
-                    <button
-                      onClick={() => handleSubmitChange(user.id)}
-                      disabled={
-                        user.status === "admin" ||
-                        user.status === (selectedStatus[user.id] || user.status)
-                      }
-                      className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded disabled:opacity-50"
-                    >
-                      Update
-                    </button>
-                  </td>
-                )}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 };

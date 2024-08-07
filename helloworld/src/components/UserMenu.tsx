@@ -55,8 +55,10 @@ const UserMenu = forwardRef<HTMLDivElement, UserMenuProps>(
     };
 
     const handleUsersClick = () => {
+      console.log("handleUsersClick called"); // Debug log
       setShowUserMenu(false);
       navigate("/admin/users");
+      console.log("Navigated to /admin/users"); // Debug log
     };
 
     return (
