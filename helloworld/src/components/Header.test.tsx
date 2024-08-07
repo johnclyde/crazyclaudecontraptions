@@ -1,3 +1,6 @@
+Certainly. Here's the complete, updated file incorporating all the changes we've discussed:
+
+```typescript
 import React, { useState, useRef, useEffect } from "react";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { BrowserRouter as Router, MemoryRouter } from "react-router-dom";
@@ -83,9 +86,16 @@ const MockUserMenu = React.forwardRef<HTMLDivElement, UserMenuProps>(
           aria-label="User menu"
           onClick={() => setIsOpen(!isOpen)}
         >
-          Mocked Users Text
+          User Icon
         </button>
-        {isOpen && <div data-testid="user-menu-dropdown">Menu Content</div>}
+        {isOpen && (
+          <div data-testid="user-menu-dropdown">
+            <button>Profile</button>
+            <button>Users</button>
+            <button>Settings</button>
+            <button>Logout</button>
+          </div>
+        )}
       </div>
     );
   },
@@ -163,7 +173,7 @@ describe("Header", () => {
 
   it("closes user menu when clicking outside", async () => {
     renderHeader();
-    const userMenuButton = screen.getByLabelText("Mocked Users Text");
+    const userMenuButton = screen.getByLabelText("User menu");
 
     fireEvent.click(userMenuButton);
     expect(screen.getByTestId("user-menu-dropdown")).toBeInTheDocument();
@@ -206,8 +216,8 @@ describe("Header", () => {
     // Open the user menu
     fireEvent.click(screen.getByLabelText("User menu"));
 
-    // Click on the Users link
-    fireEvent.click(screen.getByText("Mocked Users Text"));
+    // Click on the Users button in the dropdown
+    fireEvent.click(screen.getByText("Users"));
 
     // Wait for any asynchronous actions to complete
     await waitFor(() => {
@@ -219,3 +229,6 @@ describe("Header", () => {
     });
   });
 });
+```
+
+This file includes all the necessary imports, mocks, helper functions, and test cases we've discussed. It should now correctly represent the structure of your Header component, including the user menu with its dropdown containing various options.
