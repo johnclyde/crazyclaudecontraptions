@@ -52,9 +52,23 @@ describe("useUserData", () => {
       progress: [],
     };
 
-    (global.fetch as jest.Mock).mockResolvedValueOnce({
-      ok: true,
-      json: async () => mockUser,
+    // Mock the login API call
+    (global.fetch as jest.Mock).mockImplementation((url) => {
+      if (url === "/api/login") {
+        return Promise.resolve({
+          ok: true,
+          json: async () => ({ message: "Login successful" }),
+        });
+      } else if (url === "/api/user/profile") {
+        return Promise.resolve({
+          ok: true,
+          json: async () => mockUser,
+        });
+      }
+    });
+
+    (auth.signInWithPopup as jest.Mock).mockResolvedValueOnce({
+      user: { getIdToken: jest.fn().mockResolvedValue("mock-token") },
     });
 
     const { result } = renderHook(() => useUserData());
