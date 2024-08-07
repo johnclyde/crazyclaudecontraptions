@@ -42,9 +42,12 @@ export const UserDataProvider: React.FC<{ children: ReactNode }> = ({
   }, [isAdminMode]);
 
   const toggleAdminMode = useCallback(() => {
-    if (userData.user?.isAdmin) {
-      setIsAdminMode((prevMode) => !prevMode);
-    }
+    setIsAdminMode((prevMode) => {
+      if (userData.user?.isAdmin) {
+        return !prevMode;
+      }
+      return prevMode;
+    });
   }, [userData.user]);
 
   const logout = useCallback(async () => {
@@ -54,7 +57,7 @@ export const UserDataProvider: React.FC<{ children: ReactNode }> = ({
       localStorage.removeItem("isAdminMode");
       resolve();
     });
-  }, [userData.logout]);
+  }, [userData]);
 
   const contextValue = {
     ...userData,
