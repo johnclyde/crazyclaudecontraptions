@@ -1,6 +1,6 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import useChallenges from '../hooks/useChallenges';
+import React from "react";
+import { Link } from "react-router-dom";
+import useChallenges from "../hooks/useChallenges";
 
 const Challenges: React.FC = () => {
   const { challenges, loading, error } = useChallenges();
@@ -22,18 +22,25 @@ const Challenges: React.FC = () => {
             <h3 className="text-xl font-bold mb-2">{challenge.name}</h3>
             <p className="text-gray-600 mb-4">{challenge.description}</p>
             <p className="mb-2">Source: {challenge.sourceExam}</p>
-            <p className="mb-2">Problems: {challenge.problems.join(', ')}</p>
+            <p className="mb-2">Problems: {challenge.problems.join(", ")}</p>
             <p className="mb-4">Max Score: {challenge.maxScore}</p>
-            
+
             {challenge.userProgress ? (
               <div>
                 <p className="font-bold">Your Progress:</p>
-                <p>Score: {challenge.userProgress.score} / {challenge.maxScore}</p>
-                <p>Completed: {new Date(challenge.userProgress.completedAt).toLocaleString()}</p>
+                <p>
+                  Score: {challenge.userProgress.score} / {challenge.maxScore}
+                </p>
+                <p>
+                  Completed:{" "}
+                  {new Date(
+                    challenge.userProgress.completedAt,
+                  ).toLocaleString()}
+                </p>
               </div>
             ) : (
-              <Link 
-                to={`/challenge/${challenge.id}`} 
+              <Link
+                to={`/challenge/${challenge.id}`}
                 className="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 transition-colors"
               >
                 Start Challenge

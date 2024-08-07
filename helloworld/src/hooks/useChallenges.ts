@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { getIdToken } from '../firebase';
+import { useState, useEffect } from "react";
+import { getIdToken } from "../firebase";
 
 interface Challenge {
   id: string;
@@ -30,22 +30,22 @@ const useChallenges = () => {
     try {
       setLoading(true);
       const idToken = await getIdToken();
-      const response = await fetch('/api/challenges', {
+      const response = await fetch("/api/challenges", {
         headers: {
-          'Authorization': `Bearer ${idToken}`,
+          Authorization: `Bearer ${idToken}`,
         },
       });
 
       if (!response.ok) {
-        throw new Error('Failed to fetch challenges');
+        throw new Error("Failed to fetch challenges");
       }
 
       const data = await response.json();
       setChallenges(data);
       setError(null);
     } catch (err) {
-      console.error('Error fetching challenges:', err);
-      setError('Failed to load challenges. Please try again later.');
+      console.error("Error fetching challenges:", err);
+      setError("Failed to load challenges. Please try again later.");
     } finally {
       setLoading(false);
     }
@@ -55,53 +55,68 @@ const useChallenges = () => {
     fetchChallenges();
   }, []);
 
-  const submitChallengeResponse = async (challengeId: string, responses: { [key: string]: { answer: string, timeSpent: number } }) => {
+  const submitChallengeResponse = async (
+    challengeId: string,
+    responses: { [key: string]: { answer: string; timeSpent: number } },
+  ) => {
     try {
       const idToken = await getIdToken();
-      const response = await fetch('/api/submit-challenge', {
-        method: 'POST',
+      const response = await fetch("/api/submit-challenge", {
+        method: "POST",
         headers: {
-          'Authorization': `Bearer ${idToken}`,
-          'Content-Type': 'application/json',
+          Authorization: `Bearer ${idToken}`,
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({ challengeId, responses }),
       });
 
       if (!response.ok) {
-        throw new Error('Failed to submit challenge response');
+        throw new Error("Failed to submit challenge response");
       }
 
       const result = await response.json();
-      
+
       // Update the local state with the new progress
-      setChallenges(challenges.map(challenge => 
-        challenge.id === challengeId
-          ? { 
-              ...challenge, 
-              userProgress: {
-                completedAt: new Date().toISOString(),
-                score: result.score,
-                problemResponses: Object.entries(responses).reduce((acc, [problemNumber, response]) => ({
-                  ...acc,
-                  [problemNumber]: {
-                    answer: response.answer,
-                    correct: result.score > challenge.userProgress?.score || 0,
-                    timeSpent: response.timeSpent,
-                  },
-                }), {}),
-              },
-            }
-          : challenge
-      ));
+      setChallenges(
+        challenges.map((challenge) =>
+          challenge.id === challengeId
+            ? {
+                ...challenge,
+                userProgress: {
+                  completedAt: new Date().toISOString(),
+                  score: result.score,
+                  problemResponses: Object.entries(responses).reduce(
+                    (acc, [problemNumber, response]) => ({
+                      ...acc,
+                      [problemNumber]: {
+                        answer: response.answer,
+                        correct:
+                          result.score > challenge.userProgress?.score || 0,
+                        timeSpent: response.timeSpent,
+                      },
+                    }),
+                    {},
+                  ),
+                },
+              }
+            : challenge,
+        ),
+      );
 
       return result;
     } catch (err) {
-      console.error('Error submitting challenge response:', err);
+      console.error("Error submitting challenge response:", err);
       throw err;
     }
   };
 
-  return { challenges, loading, error, fetchChallenges, submitChallengeResponse };
+  return {
+    challenges,
+    loading,
+    error,
+    fetchChallenges,
+    submitChallengeResponse,
+  };
 };
 
 export default useChallenges;
