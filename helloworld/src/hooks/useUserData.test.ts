@@ -84,9 +84,11 @@ describe("useUserData", () => {
     // Mock the login API call
     };
 
-    (auth.signInWithPopup as jest.Mock).mockResolvedValueOnce({
+    mockSignInWithPopup.mockResolvedValueOnce({
       user: mockFirebaseUser,
-    });
+      providerId: "google.com",
+      operationType: "signIn",
+    } as UserCredential);
 
     (global.fetch as jest.Mock).mockImplementation((url) => {
       if (url === "/api/login") {
@@ -110,6 +112,9 @@ describe("useUserData", () => {
       useUserData(mockAuth, mockSignInWithPopup),
     );
     const { result } = renderHook(() => useUserData());
+    const { result } = renderHook(() =>
+      useUserData(mockAuth, mockSignInWithPopup),
+    );
 
     await act(async () => {
       await result.current.login();
