@@ -15,6 +15,7 @@ export interface UserDataContextType {
   setIsLoggedIn: React.Dispatch<React.SetStateAction<boolean>>;
   login: LoginFunction;
   logout: () => Promise<void>;
+  bypassLogin: () => void;
   userProgress: UserProgress[];
   isAdminMode: boolean;
   toggleAdminMode: () => void;

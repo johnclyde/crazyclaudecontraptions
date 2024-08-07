@@ -44,7 +44,30 @@ def login(request: Request) -> Response:
             # Update existing user
             user_data = user_doc.to_dict()
             user_data["last_login"] = datetime.datetime.now()
-            user_ref.update(user_data)
+
+            # Check for incomplete fields and update if necessary
+            firebase_user = auth.get_user(uid)
+            fields_to_update = {}
+            if "email" not in user_data:
+                fields_to_update["email"] = firebase_user.email
+            if "name" not in user_data:
+                fields_to_update["name"] = (
+                    firebase_user.display_name or firebase_user.email
+                )
+            if "avatar" not in user_data:
+                fields_to_update["avatar"] = firebase_user.photo_url or ""
+            if "role" not in user_data:
+                fields_to_update["role"] = "user"
+            if "isAdmin" not in user_data:
+                fields_to_update["isAdmin"] = False
+            if "isStaff" not in user_data:
+                fields_to_update["isStaff"] = False
+            if "points" not in user_data:
+                fields_to_update["points"] = 0
+
+            if fields_to_update:
+                user_data.update(fields_to_update)
+                user_ref.update(user_data)
         else:
             # Create new user
             firebase_user = auth.get_user(uid)
@@ -73,5 +96,9 @@ def login(request: Request) -> Response:
         return jsonify({"error": "Revoked ID token"}), 401, headers
     except auth.UserNotFoundError:
         return jsonify({"error": "User not found"}), 404, headers
-    except Exception:
-        return jsonify({"error": "An unexpected error occurred"}), 500, headers
+    except Exception as e:
+        return (
+            jsonify({"error": f"An unexpected error occurred: {str(e)}"}),
+            500,
+            headers,
+        )
