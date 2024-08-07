@@ -52,7 +52,15 @@ describe("useUserData", () => {
       progress: [],
     };
 
-    // Mock the login API call
+    const mockFirebaseUser = {
+      uid: "admin123",
+      getIdToken: jest.fn().mockResolvedValue("mock-token"),
+    };
+
+    (auth.signInWithPopup as jest.Mock).mockResolvedValueOnce({
+      user: mockFirebaseUser,
+    });
+
     (global.fetch as jest.Mock).mockImplementation((url) => {
       if (url === "/api/login") {
         return Promise.resolve({
@@ -65,10 +73,6 @@ describe("useUserData", () => {
           json: async () => mockUser,
         });
       }
-    });
-
-    (auth.signInWithPopup as jest.Mock).mockResolvedValueOnce({
-      user: { getIdToken: jest.fn().mockResolvedValue("mock-token") },
     });
 
     const { result } = renderHook(() => useUserData());

@@ -73,23 +73,27 @@ const useUserData = () => {
       const provider = new GoogleAuthProvider();
       try {
         const result = await signInWithPopup(auth, provider);
-        const idToken = await result.user.getIdToken();
+        if (result.user) {
+          const idToken = await result.user.getIdToken();
 
-        // Call the login API endpoint
-        const loginResponse = await fetch("/api/login", {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${idToken}`,
-            "Content-Type": "application/json",
-          },
-        });
+          // Call the login API endpoint
+          const loginResponse = await fetch("/api/login", {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${idToken}`,
+              "Content-Type": "application/json",
+            },
+          });
 
-        if (!loginResponse.ok) {
-          throw new Error("Backend login failed");
+          if (!loginResponse.ok) {
+            throw new Error("Backend login failed");
+          }
+
+          // After successful login, fetch the user profile
+          await fetchUserProfile(result.user);
+        } else {
+          throw new Error("No user returned from Firebase");
         }
-
-        // After successful login, fetch the user profile
-        await fetchUserProfile(result.user);
       } catch (error) {
         console.error("Error during login process:", error);
         clearUserData();
