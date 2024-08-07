@@ -1,7 +1,7 @@
 import React, { forwardRef, useState } from "react";
 import { GoogleLogin } from "@react-oauth/google";
 import { LoginFunction } from "../hooks/useUserData";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { User } from "../types";
 
 export interface UserMenuProps extends React.ComponentPropsWithoutRef<"div"> {
@@ -32,6 +32,7 @@ const UserMenu = forwardRef<HTMLDivElement, UserMenuProps>(
     ref,
   ) => {
     const [showLoginDialog, setShowLoginDialog] = useState(false);
+    const navigate = useNavigate();
 
     const handleSettingsClick = () => {
       setShowUserMenu(false);
@@ -51,6 +52,11 @@ const UserMenu = forwardRef<HTMLDivElement, UserMenuProps>(
     const handleToggleAdminMode = () => {
       toggleAdminMode();
       setShowUserMenu(false);
+    };
+
+    const handleUsersClick = () => {
+      setShowUserMenu(false);
+      navigate("/admin/users");
     };
 
     return (
@@ -100,21 +106,24 @@ const UserMenu = forwardRef<HTMLDivElement, UserMenuProps>(
                 >
                   Settings
                 </button>
-                <div className="border-t border-gray-200 my-1"></div>
-                <Link
-                  to="/users"
-                  className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                  onClick={() => setShowUserMenu(false)}
-                >
-                  Users
-                </Link>
                 {user?.isAdmin && (
-                  <button
-                    onClick={handleToggleAdminMode}
-                    className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                  >
-                    {isAdminMode ? "Disable Admin Mode" : "Enable Admin Mode"}
-                  </button>
+                  <>
+                    <div className="border-t border-gray-200 my-1"></div>
+                    {isAdminMode && (
+                      <button
+                        onClick={handleUsersClick}
+                        className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      >
+                        Users
+                      </button>
+                    )}
+                    <button
+                      onClick={handleToggleAdminMode}
+                      className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    >
+                      {isAdminMode ? "Disable Admin Mode" : "Enable Admin Mode"}
+                    </button>
+                  </>
                 )}
                 <button
                   onClick={handleLogout}

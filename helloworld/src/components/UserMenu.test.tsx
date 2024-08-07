@@ -46,8 +46,36 @@ describe("UserMenu", () => {
     renderUserMenu({ isLoggedIn: true, user: mockUser, showUserMenu: true });
     expect(screen.getByText("Profile")).toBeInTheDocument();
     expect(screen.getByText("Settings")).toBeInTheDocument();
-    expect(screen.getByText("Users")).toBeInTheDocument();
     expect(screen.getByText("Logout")).toBeInTheDocument();
+  });
+
+  it("does not render Users button for non-admin users", async () => {
+    renderUserMenu({
+      isLoggedIn: true,
+      user: { ...mockUser, isAdmin: false },
+      showUserMenu: true,
+    });
+    expect(screen.queryByText("Users")).not.toBeInTheDocument();
+  });
+
+  it("does not render Users button for admin users when admin mode is off", async () => {
+    renderUserMenu({
+      isLoggedIn: true,
+      user: mockUser,
+      showUserMenu: true,
+      isAdminMode: false,
+    });
+    expect(screen.queryByText("Users")).not.toBeInTheDocument();
+  });
+
+  it("renders Users button for admin users when admin mode is on", async () => {
+    renderUserMenu({
+      isLoggedIn: true,
+      user: mockUser,
+      showUserMenu: true,
+      isAdminMode: true,
+    });
+    expect(screen.getByText("Users")).toBeInTheDocument();
   });
 
   it("renders admin mode toggle for admin users", async () => {
