@@ -51,12 +51,9 @@ export const UserDataProvider: React.FC<{ children: ReactNode }> = ({
   }, [userData.user]);
 
   const logout = useCallback(async () => {
+    setIsAdminMode(false);
+    localStorage.removeItem("isAdminMode");
     await userData.logout();
-    return new Promise<void>((resolve) => {
-      setIsAdminMode(false);
-      localStorage.removeItem("isAdminMode");
-      resolve();
-    });
   }, [userData]);
 
   const contextValue: UserDataContextType = {
