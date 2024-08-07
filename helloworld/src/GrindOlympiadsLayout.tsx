@@ -16,16 +16,8 @@ const GrindOlympiadsLayout: React.FC<GrindOlympiadsLayoutProps> = ({
   NotificationBell,
   UserMenu,
 }) => {
-  const {
-    user,
-    isLoggedIn,
-    setIsLoggedIn,
-    login,
-    logout,
-    isAdminMode,
-    toggleAdminMode,
-    bypassLogin,
-  } = useUserData();
+  const { user, isLoggedIn, setIsLoggedIn, login, logout, bypassLogin } =
+    useUserData();
   const { notifications, notificationsError, markNotificationAsRead } =
     useNotifications(isLoggedIn);
 
@@ -42,8 +34,6 @@ const GrindOlympiadsLayout: React.FC<GrindOlympiadsLayoutProps> = ({
         markNotificationAsRead={markNotificationAsRead}
         login={login}
         logout={logout}
-        isAdminMode={isAdminMode}
-        toggleAdminMode={toggleAdminMode}
         stagingLogin={stagingLogin}
         NotificationBell={NotificationBell}
         UserMenu={UserMenu}
