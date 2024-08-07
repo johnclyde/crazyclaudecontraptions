@@ -15,7 +15,10 @@ const useUserData = () => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userProgress, setUserProgress] = useState<UserProgress[]>([]);
-  const [isAdminMode, setIsAdminMode] = useState(false);
+  const [isAdminMode, setIsAdminMode] = useState<boolean>(() => {
+    const storedAdminMode = localStorage.getItem('isAdminMode');
+    return storedAdminMode ? JSON.parse(storedAdminMode) : false;
+  });
   const navigate = useNavigate();
 
   const clearUserData = useCallback(() => {
@@ -23,6 +26,7 @@ const useUserData = () => {
     setUserProgress([]);
     setIsLoggedIn(false);
     setIsAdminMode(false);
+    localStorage.removeItem('isAdminMode');
     navigate("/");
   }, [navigate]);
 
@@ -59,7 +63,6 @@ const useUserData = () => {
         setUser(userData);
         setIsLoggedIn(true);
         setUserProgress(profileData.testsTaken || []);
-        setIsAdminMode(false);
       } catch (error) {
         console.error("Error fetching user profile:", error);
         clearUserData();
@@ -146,7 +149,11 @@ const useUserData = () => {
 
   const toggleAdminMode = useCallback(() => {
     if (user?.isAdmin) {
-      setIsAdminMode((prevMode) => !prevMode);
+      setIsAdminMode((prevMode) => {
+        const newMode = !prevMode;
+        localStorage.setItem('isAdminMode', JSON.stringify(newMode));
+        return newMode;
+      });
     }
   }, [user]);
 
