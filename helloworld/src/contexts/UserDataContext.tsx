@@ -81,8 +81,8 @@ export const UserDataProvider: React.FC<{ children: ReactNode }> = ({
   }, [userData.user]);
 
   const logout = useCallback(async () => {
-    await userData.logout();
     setIsAdminMode(false);
+    await userData.logout();
   }, [userData]);
 
   const contextValue: UserDataContextType = {
