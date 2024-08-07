@@ -4,6 +4,7 @@ import React, {
   ReactNode,
   useState,
   useEffect,
+  useCallback,
 } from "react";
 import useUserData, { LoginFunction } from "../hooks/useUserData";
 import { User, UserProgress } from "../types";
@@ -27,25 +28,42 @@ export const UserDataProvider: React.FC<{ children: ReactNode }> = ({
   children,
 }) => {
   const userData = useUserData();
-  const [isAdminMode, setIsAdminMode] = useState(() => {
+  const [isAdminMode, setIsAdminMode] = useState(false);
+
+  useEffect(() => {
     const storedAdminMode = localStorage.getItem("isAdminMode");
-    return storedAdminMode ? JSON.parse(storedAdminMode) : false;
-  });
+    if (storedAdminMode) {
+      setIsAdminMode(JSON.parse(storedAdminMode));
+    }
+  }, []);
 
   useEffect(() => {
     localStorage.setItem("isAdminMode", JSON.stringify(isAdminMode));
   }, [isAdminMode]);
 
-  const toggleAdminMode = () => {
-    if (userData.user?.isAdmin) {
-      setIsAdminMode((prevMode) => !prevMode);
-    }
-  };
+  const toggleAdminMode = useCallback(() => {
+    setIsAdminMode((prevMode) => {
+      if (userData.user?.isAdmin) {
+        return !prevMode;
+      }
+      return prevMode;
+    });
+  }, [userData.user]);
+
+  const logout = useCallback(async () => {
+    await userData.logout();
+    return new Promise<void>((resolve) => {
+      setIsAdminMode(false);
+      localStorage.removeItem("isAdminMode");
+      resolve();
+    });
+  }, [userData]);
 
   const contextValue = {
     ...userData,
     isAdminMode,
     toggleAdminMode,
+    logout,
   };
 
   return (
@@ -64,3 +82,5 @@ export const useUserDataContext = () => {
   }
   return context;
 };
+
+export default UserDataContext;
