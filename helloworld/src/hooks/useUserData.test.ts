@@ -1,4 +1,4 @@
-import { waitFor, renderHook, act } from "@testing-library/react";
+import { renderHook, act } from "@testing-library/react";
 import { useNavigate } from "react-router-dom";
 import useUserData from "./useUserData";
 import { auth } from "../firebase";
@@ -35,10 +35,10 @@ describe("useUserData", () => {
     expect(result.current.user).toBeNull();
     expect(result.current.isLoggedIn).toBe(false);
     expect(result.current.userProgress).toEqual([]);
-    expect(result.current.isAdminMode).toBe(false);
+    // Remove the isAdminMode check as it's no longer part of useUserData
   });
 
-  it("should set isAdminMode to false when admin logs in", async () => {
+  it("should update user data when admin logs in", async () => {
     const mockUser: User = {
       id: "admin123",
       name: "Admin User",
@@ -67,45 +67,13 @@ describe("useUserData", () => {
       });
     });
 
-    await waitFor(() => {
-      expect(result.current.user).toEqual(mockUser);
-      expect(result.current.isLoggedIn).toBe(true);
-      expect(result.current.isAdminMode).toBe(false);
-    });
-  });
-
-  it("should toggle admin mode only for admin users", async () => {
-    const { result } = renderHook(() => useUserData());
-
-    // Initial state should not be in admin mode
-    expect(result.current.isAdminMode).toBe(false);
-
-    // Attempt to toggle admin mode while not logged in and not an admin
-    act(() => {
-      result.current.toggleAdminMode();
-    });
-    expect(result.current.isAdminMode).toBe(false);
-
-    // Log in the user and set them as an admin
-    act(() => {
-      result.current.setIsLoggedIn(true);
-      result.current.setUser({ ...result.current.user, isAdmin: true } as User);
+    await act(async () => {
+      // wait for state updates
     });
 
-    // Ensure still not in admin mode
-    expect(result.current.isAdminMode).toBe(false);
-
-    // Toggle admin mode as an admin
-    act(() => {
-      result.current.toggleAdminMode();
-    });
-    expect(result.current.isAdminMode).toBe(true);
-
-    // Toggle admin mode off
-    act(() => {
-      result.current.toggleAdminMode();
-    });
-    expect(result.current.isAdminMode).toBe(false);
+    expect(result.current.user).toEqual(mockUser);
+    expect(result.current.isLoggedIn).toBe(true);
+    // Remove the isAdminMode check
   });
 
   it("should clear user data on logout", async () => {
@@ -127,7 +95,7 @@ describe("useUserData", () => {
 
     await act(async () => {
       result.current.setIsLoggedIn(true);
-      result.current.user = mockUser;
+      result.current.setUser(mockUser);
     });
 
     (global.fetch as jest.Mock).mockResolvedValueOnce({
@@ -141,7 +109,7 @@ describe("useUserData", () => {
     expect(result.current.user).toBeNull();
     expect(result.current.isLoggedIn).toBe(false);
     expect(result.current.userProgress).toEqual([]);
-    expect(result.current.isAdminMode).toBe(false);
+    // Remove the isAdminMode check
     expect(mockNavigate).toHaveBeenCalledWith("/");
   });
 });
