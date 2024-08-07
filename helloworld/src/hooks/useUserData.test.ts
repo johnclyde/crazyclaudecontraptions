@@ -35,7 +35,6 @@ describe("useUserData", () => {
     expect(result.current.user).toBeNull();
     expect(result.current.isLoggedIn).toBe(false);
     expect(result.current.userProgress).toEqual([]);
-    // Remove the isAdminMode check as it's no longer part of useUserData
   });
 
   it("should update user data when admin logs in", async () => {
@@ -61,19 +60,11 @@ describe("useUserData", () => {
     const { result } = renderHook(() => useUserData());
 
     await act(async () => {
-      (auth.onAuthStateChanged as jest.Mock).mock.calls[0][0]({
-        uid: "admin123",
-        getIdToken: () => Promise.resolve("fake-token"),
-      });
-    });
-
-    await act(async () => {
-      // wait for state updates
+      await result.current.login();
     });
 
     expect(result.current.user).toEqual(mockUser);
     expect(result.current.isLoggedIn).toBe(true);
-    // Remove the isAdminMode check
   });
 
   it("should clear user data on logout", async () => {
@@ -94,8 +85,8 @@ describe("useUserData", () => {
     const { result } = renderHook(() => useUserData());
 
     await act(async () => {
-      result.current.setIsLoggedIn(true);
       result.current.setUser(mockUser);
+      result.current.setIsLoggedIn(true);
     });
 
     (global.fetch as jest.Mock).mockResolvedValueOnce({
@@ -109,7 +100,6 @@ describe("useUserData", () => {
     expect(result.current.user).toBeNull();
     expect(result.current.isLoggedIn).toBe(false);
     expect(result.current.userProgress).toEqual([]);
-    // Remove the isAdminMode check
     expect(mockNavigate).toHaveBeenCalledWith("/");
   });
 });

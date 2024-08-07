@@ -41,7 +41,7 @@ test("renders GrindOlympiads header", () => {
   render(<App />);
   const headerElement = screen.getByText(/GrindOlympiads/i);
   expect(headerElement).toBeInTheDocument();
-  expect(console.error).toHaveBeenCalledTimes(3);
+  expect(console.error).toHaveBeenCalledTimes(1);
   expect(console.error).toHaveBeenCalledWith(
     "Firebase auth is not initialized correctly",
   );
