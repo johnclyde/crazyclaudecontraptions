@@ -145,11 +145,10 @@ describe("UserDataContext", () => {
 
     // Logout
     await act(async () => {
-      getByText("Logout").click();
-      await waitFor(() => {});
+      await getByText("Logout").click();
     });
 
-    // Check that admin mode is still on
+    // Check that admin mode is turned off
     expect(getByTestId("admin-mode")).toHaveTextContent("false");
     expect(localStorage.getItem("isAdminMode")).toBe("false");
   });

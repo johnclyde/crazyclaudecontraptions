@@ -28,10 +28,14 @@ export const UserDataProvider: React.FC<{ children: ReactNode }> = ({
   children,
 }) => {
   const userData = useUserData();
-  const [isAdminMode, setIsAdminMode] = useState(() => {
+  const [isAdminMode, setIsAdminMode] = useState(false);
+
+  useEffect(() => {
     const storedAdminMode = localStorage.getItem("isAdminMode");
-    return storedAdminMode ? JSON.parse(storedAdminMode) : false;
-  });
+    if (storedAdminMode) {
+      setIsAdminMode(JSON.parse(storedAdminMode));
+    }
+  }, []);
 
   useEffect(() => {
     localStorage.setItem("isAdminMode", JSON.stringify(isAdminMode));
@@ -45,8 +49,11 @@ export const UserDataProvider: React.FC<{ children: ReactNode }> = ({
 
   const logout = useCallback(async () => {
     await userData.logout();
-    setIsAdminMode(false);
-    localStorage.removeItem("isAdminMode");
+    return new Promise<void>((resolve) => {
+      setIsAdminMode(false);
+      localStorage.removeItem("isAdminMode");
+      resolve();
+    });
   }, [userData.logout]);
 
   const contextValue = {
@@ -72,3 +79,5 @@ export const useUserDataContext = () => {
   }
   return context;
 };
+
+export default UserDataContext;
