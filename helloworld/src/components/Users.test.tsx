@@ -3,6 +3,7 @@ import { render, act, screen, waitFor } from "@testing-library/react";
 import Users from "./Users";
 import * as UserDataContext from "../contexts/UserDataContext";
 import { MemoryRouter } from "react-router-dom";
+import { User, UserProgress } from "../types"; // Make sure to import these types
 
 jest.mock("../firebase", () => ({
   getIdToken: jest.fn().mockResolvedValue("mock-token"),
@@ -10,22 +11,29 @@ jest.mock("../firebase", () => ({
 
 global.fetch = jest.fn();
 
-const mockUserDataContext = {
-  user: {
-    id: "1",
-    isAdmin: true,
-    isStaff: true,
-    name: "Frank Drebbin",
-    email: "mrdrebbin@example.com",
-    avatar: "",
-    createdAt: "2023-01-01",
-    lastLogin: "2023-01-01",
-    points: 0,
-    role: "User",
-    progress: [],
-  },
+const mockUser: User = {
+  id: "1",
+  isAdmin: true,
+  isStaff: true,
+  name: "Frank Drebbin",
+  email: "mrdrebbin@example.com",
+  avatar: "",
+  createdAt: "2023-01-01",
+  lastLogin: "2023-01-01",
+  points: 0,
+  role: "User",
+  progress: [],
+};
+
+const mockUserDataContext: UserDataContext.UserDataContextType = {
+  user: mockUser,
   isLoggedIn: true,
+  setIsLoggedIn: jest.fn(),
+  login: jest.fn(),
+  logout: jest.fn(),
+  userProgress: [],
   isAdminMode: true,
+  toggleAdminMode: jest.fn(),
 };
 
 const renderUsers = () => {
@@ -103,7 +111,7 @@ describe("Users component", () => {
   it("should render for non-admin users", async () => {
     jest.spyOn(UserDataContext, "useUserDataContext").mockReturnValue({
       ...mockUserDataContext,
-      user: { ...mockUserDataContext.user, isAdmin: false },
+      user: { ...mockUser, isAdmin: false },
     });
 
     renderUsers();
