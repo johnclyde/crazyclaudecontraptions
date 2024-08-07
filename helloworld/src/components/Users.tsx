@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useLayoutEffect, useCallback } from "react";
 import { getIdToken } from "../firebase";
 import { useUserDataContext } from "../contexts/UserDataContext";
 import { useNavigate } from "react-router-dom";
@@ -51,19 +51,19 @@ const Users: React.FC<{ isAdminMode: boolean }> = ({ isAdminMode }) => {
     }
   }, [isAdminMode, user]);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
+    console.log("Effect running...");
+    console.log("Is admin mode:", isAdminMode);
+    console.log("Current user:", user);
+
     if (!isAdminMode || !user?.isAdmin) {
       console.log("Not admin or admin mode not enabled. Redirecting...");
-      navigate("/");
+      setTimeout(() => navigate("/"), 1000); // Delay redirect by 1 second
       return;
     }
 
     fetchUsers();
   }, [fetchUsers, isAdminMode, user, navigate]);
-
-  if (!isAdminMode || !user?.isAdmin) {
-    return null; // or return a "Permission Denied" message
-  }
 
   if (loading) {
     return (

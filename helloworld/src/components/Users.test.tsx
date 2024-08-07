@@ -121,9 +121,12 @@ describe("Users component", () => {
 
     renderUsers(false);
 
-    await waitFor(() => {
-      expect(mockNavigate).toHaveBeenCalledWith("/");
-    });
+    await waitFor(
+      () => {
+        expect(mockNavigate).toHaveBeenCalledWith("/");
+      },
+      { timeout: 2000 },
+    );
   });
 
   it("should redirect when admin mode is off", async () => {
@@ -133,9 +136,12 @@ describe("Users component", () => {
     });
 
     renderUsers(false);
-    await waitFor(() => {
-      console.log("No idea");
-      // expect(mockNavigate).toHaveBeenCalledWith("/");
-    });
+
+    await waitFor(
+      () => {
+        expect(mockNavigate).toHaveBeenCalledWith("/");
+      },
+      { timeout: 2000 },
+    );
   });
 });
