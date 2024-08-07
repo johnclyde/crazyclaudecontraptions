@@ -1,7 +1,6 @@
-import React, { useState, useLayoutEffect, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import { getIdToken } from "../firebase";
 import { useUserDataContext } from "../contexts/UserDataContext";
-import { useNavigate } from "react-router-dom";
 
 interface User {
   id: string;
@@ -10,124 +9,108 @@ interface User {
   status: "admin" | "user" | "disabled";
 }
 
-const Users: React.FC<{ isAdminMode: boolean }> = ({ isAdminMode }) => {
+const Users: React.FC = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const { user } = useUserDataContext();
-  const navigate = useNavigate();
+  const { user, isAdminMode } = useUserDataContext();
+  const [debugInfo, setDebugInfo] = useState<string[]>([]);
 
-  const fetchUsers = useCallback(async () => {
-    try {
-      console.log("Fetching users...");
-      console.log("Is admin mode:", isAdminMode);
-      console.log("Current user:", user);
+  const addDebugInfo = (info: string) => {
+    setDebugInfo((prev) => [...prev, `${new Date().toISOString()}: ${info}`]);
+  };
 
-      setLoading(true);
-      const idToken = await getIdToken();
-      console.log("Got ID token");
+  useEffect(() => {
+    addDebugInfo("Users component mounted");
+    addDebugInfo(`isAdminMode: ${isAdminMode}`);
+    addDebugInfo(`user: ${JSON.stringify(user)}`);
 
-      const response = await fetch("/api/admin/users", {
-        headers: {
-          Authorization: `Bearer ${idToken}`,
-        },
-      });
-      console.log("API response status:", response.status);
+    const fetchUsers = async () => {
+      try {
+        addDebugInfo("Fetching users...");
+        setLoading(true);
+        const idToken = await getIdToken();
+        addDebugInfo("Got ID token");
 
-      if (!response.ok) {
-        throw new Error(`Failed to fetch users: ${response.statusText}`);
+        const response = await fetch("/api/admin/users", {
+          headers: {
+            Authorization: `Bearer ${idToken}`,
+          },
+        });
+        addDebugInfo(`API response status: ${response.status}`);
+
+        if (!response.ok) {
+          throw new Error(`Failed to fetch users: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        addDebugInfo(`Received data: ${JSON.stringify(data)}`);
+
+        setUsers(data.users || []);
+        setError(null);
+      } catch (err) {
+        console.error("Error fetching users:", err);
+        setError("Failed to load users. Please try again later.");
+        addDebugInfo(`Error: ${err.message}`);
+      } finally {
+        setLoading(false);
       }
-
-      const data = await response.json();
-      console.log("Received data:", data);
-
-      setUsers(data.users || []);
-      setError(null);
-    } catch (err) {
-      console.error("Error fetching users:", err);
-      setError("Failed to load users. Please try again later.");
-    } finally {
-      setLoading(false);
-    }
-  }, [isAdminMode, user]);
-
-  useLayoutEffect(() => {
-    console.log("Effect running...");
-    console.log("Is admin mode:", isAdminMode);
-    console.log("Current user:", user);
-
-    if (!isAdminMode || !user?.isAdmin) {
-      console.log("Not admin or admin mode not enabled. Redirecting...");
-      setTimeout(() => navigate("/"), 1000); // Delay redirect by 1 second
-      return;
-    }
+    };
 
     fetchUsers();
-  }, [fetchUsers, isAdminMode, user, navigate]);
-
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center h-screen">
-        Loading...
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="flex justify-center items-center h-screen">
-        <div
-          className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative"
-          role="alert"
-        >
-          <strong className="font-bold">Error: </strong>
-          <span className="block sm:inline">{error}</span>
-        </div>
-      </div>
-    );
-  }
+  }, [user, isAdminMode]);
 
   return (
     <div className="container mx-auto py-8">
-      <h1 className="text-3xl font-bold mb-6">Users</h1>
-      <div className="bg-white shadow-md rounded-lg overflow-hidden">
-        <table className="min-w-full">
-          <thead>
-            <tr className="bg-gray-100">
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Name
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Email
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Status
-              </th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {users.map((user) => (
-              <tr key={user.id}>
-                <td className="px-6 py-4 whitespace-nowrap">{user.name}</td>
-                <td className="px-6 py-4 whitespace-nowrap">{user.email}</td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <span
-                    className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                      user.status === "admin"
-                        ? "bg-green-100 text-green-800"
-                        : user.status === "disabled"
-                          ? "bg-red-100 text-red-800"
-                          : "bg-blue-100 text-blue-800"
-                    }`}
-                  >
-                    {user.status}
-                  </span>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      <h1 className="text-3xl font-bold mb-6">Users Page</h1>
+      <div className="bg-yellow-100 p-4 mb-4 rounded">
+        <h2 className="text-xl font-bold mb-2">
+          Users Component Debug Information:
+        </h2>
+        <pre className="whitespace-pre-wrap">{debugInfo.join("\n")}</pre>
       </div>
+      {loading && <div>Loading...</div>}
+      {error && <div className="text-red-500">{error}</div>}
+      {!loading && !error && (
+        <div className="bg-white shadow-md rounded-lg overflow-hidden">
+          <table className="min-w-full">
+            <thead>
+              <tr className="bg-gray-100">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Name
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Email
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Status
+                </th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {users.map((user) => (
+                <tr key={user.id}>
+                  <td className="px-6 py-4 whitespace-nowrap">{user.name}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">{user.email}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <span
+                      className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                        user.status === "admin"
+                          ? "bg-green-100 text-green-800"
+                          : user.status === "disabled"
+                            ? "bg-red-100 text-red-800"
+                            : "bg-blue-100 text-blue-800"
+                      }`}
+                    >
+                      {user.status}
+                    </span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 };
