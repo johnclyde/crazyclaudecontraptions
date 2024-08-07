@@ -81,6 +81,7 @@ describe("useUserData", () => {
       operationType: "signIn",
     } as UserCredential);
 
+    // Mock the login API call
     (global.fetch as jest.Mock).mockImplementation((url) => {
       if (url === "/api/login") {
         return Promise.resolve({
@@ -93,6 +94,10 @@ describe("useUserData", () => {
           json: async () => mockUser,
         });
       }
+    });
+
+    (auth.signInWithPopup as jest.Mock).mockResolvedValueOnce({
+      user: { getIdToken: jest.fn().mockResolvedValue("mock-token") },
     });
 
     const { result } = renderHook(() =>

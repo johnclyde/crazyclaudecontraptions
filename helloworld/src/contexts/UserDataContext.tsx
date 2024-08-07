@@ -13,6 +13,7 @@ import { auth } from "../firebase";
 export interface UserDataContextType {
   user: User | null;
   isLoggedIn: boolean;
+  setIsLoggedIn: React.Dispatch<React.SetStateAction<boolean>>;
   login: LoginFunction;
   logout: () => Promise<void>;
   userProgress: UserProgress[];
@@ -28,16 +29,7 @@ const UserDataContext = createContext<UserDataContextType | undefined>(
 export const UserDataProvider: React.FC<{ children: ReactNode }> = ({
   children,
 }) => {
-  const {
-    user,
-    setUser,
-    isLoggedIn,
-    setIsLoggedIn,
-    login,
-    logout,
-    fetchUserProfile,
-    userProgress,
-  } = useUserData();
+  const userData = useUserData();
   const [isAdminMode, setIsAdminMode] = useState(false);
 
   useEffect(() => {
@@ -63,7 +55,7 @@ export const UserDataProvider: React.FC<{ children: ReactNode }> = ({
       const unsubscribe = auth.onAuthStateChanged(async (firebaseUser) => {
         if (firebaseUser) {
           try {
-            await fetchUserProfile(firebaseUser);
+            await userData.fetchUserProfile(firebaseUser);
           } catch (error) {
             console.error("Error during auto-login:", error);
           }
@@ -87,21 +79,25 @@ export const UserDataProvider: React.FC<{ children: ReactNode }> = ({
           setIsLoggedIn(false);
         }
       });
-
-      return () => unsubscribe();
     } else {
       console.error("Firebase auth is not initialized correctly");
     }
-  }, [fetchUserProfile, setUser, setIsLoggedIn]);
+
+    return () => {
+      if (unsubscribe) {
+        unsubscribe();
+      }
+    };
+  }, [userData]);
 
   const toggleAdminMode = useCallback(() => {
     setIsAdminMode((prevMode) => {
-      if (user?.isAdmin) {
+      if (userData.user?.isAdmin) {
         return !prevMode;
       }
       return prevMode;
     });
-  }, [user]);
+  }, [userData.user]);
 
   const logout = useCallback(async () => {
     setIsAdminMode(false);
@@ -124,16 +120,15 @@ export const UserDataProvider: React.FC<{ children: ReactNode }> = ({
     setUser(bypassUser);
     setIsLoggedIn(true);
   }, [setUser, setIsLoggedIn]);
+    await userData.logout();
+    setIsAdminMode(false);
+  }, [userData]);
 
   const contextValue: UserDataContextType = {
-    user,
-    isLoggedIn,
-    login,
-    logout,
-    userProgress,
+    ...userData,
     isAdminMode,
     toggleAdminMode,
-    bypassLogin,
+    logout,
   };
 
   return (
