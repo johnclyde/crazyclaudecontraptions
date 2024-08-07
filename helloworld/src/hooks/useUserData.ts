@@ -111,6 +111,7 @@ const useUserData = (
     }
   };
 
+
         // Call the login API endpoint
         const loginResponse = await fetch("/api/login", {
           method: "POST",
