@@ -19,6 +19,12 @@ def list_users(request: Request) -> Response:
                     "id": user.id,
                     "name": user_data.get("name", "N/A"),
                     "email": user_data.get("email", "N/A"),
+                    "role": user_data.get("role", "user"),
+                    "isAdmin": user_data.get("isAdmin", False),
+                    "isStaff": user_data.get("isStaff", False),
+                    "createdAt": user_data.get("created_at", ""),
+                    "lastLogin": user_data.get("last_login", ""),
+                    "points": user_data.get("points", 0),
                 }
             )
 
