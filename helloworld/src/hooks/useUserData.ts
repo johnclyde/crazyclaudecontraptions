@@ -7,7 +7,6 @@ import {
   User as FirebaseUser,
   Auth,
 } from "firebase/auth";
-import { useNavigate } from "react-router-dom";
 import { User, UserProgress } from "../types";
 
 export type LoginFunction = () => Promise<void>;
@@ -19,25 +18,20 @@ const useUserData = (
   const [user, setUser] = useState<User | null>(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userProgress, setUserProgress] = useState<UserProgress[]>([]);
-  const navigate = useNavigate();
 
   const clearUserData = useCallback(() => {
     setUser(null);
     setUserProgress([]);
     setIsLoggedIn(false);
-    localStorage.removeItem("isAdminMode");
-    navigate("/");
-  }, [navigate]);
+  }, []);
 
   const fetchUserProfile = useCallback(
     async (firebaseUser: FirebaseUser) => {
       try {
         const idToken = await firebaseUser.getIdToken();
-        const response = await fetch("/api/login", {
-          method: "POST",
+        const response = await fetch("/api/user/profile", {
           headers: {
             Authorization: `Bearer ${idToken}`,
-            "Content-Type": "application/json",
           },
         });
 
@@ -49,21 +43,22 @@ const useUserData = (
 
         const userData: User = {
           id: firebaseUser.uid,
-          name: profileData.user.name,
-          email: profileData.user.email,
-          avatar: profileData.user.avatar,
-          isAdmin: profileData.user.isAdmin,
-          isStaff: profileData.user.isStaff,
-          createdAt: profileData.user.created_at,
-          lastLogin: profileData.user.last_login,
-          points: profileData.user.points,
-          role: profileData.user.role,
-          progress: profileData.user.progress || [],
+          name: profileData.name,
+          email: profileData.email,
+          avatar: profileData.avatar,
+          isAdmin: profileData.isAdmin,
+          isStaff: profileData.isStaff,
+          createdAt: profileData.createdAt,
+          lastLogin: profileData.lastLogin,
+          points: profileData.points,
+          role: profileData.role,
+          progress: profileData.progress || [],
         };
 
         setUser(userData);
         setIsLoggedIn(true);
         setUserProgress(profileData.user.progress || []);
+        setUserProgress(profileData.progress || []);
         return userData;
       } catch (error) {
         console.error("Error fetching user profile:", error);
@@ -80,6 +75,33 @@ const useUserData = (
       const result = await signInWithPopupFn(auth, provider);
       if (result.user) {
         const idToken = await result.user.getIdToken();
+      try {
+        const result = await signInWithPopup(auth, provider);
+        const idToken = await result.user.getIdToken();
+
+        // Backend login
+        const loginResponse = await fetch("/api/login", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${idToken}`,
+            "Content-Type": "application/json",
+          },
+        });
+
+        if (!loginResponse.ok) {
+          throw new Error("Backend login failed");
+        }
+
+        // After successful login, fetch user profile
+        await fetchUserProfile(result.user);
+      } catch (error) {
+        console.error("Error during login process:", error);
+        clearUserData();
+      }
+    } else {
+      console.error("Firebase auth is not initialized");
+    }
+  };
 
         // Call the login API endpoint
         const loginResponse = await fetch("/api/login", {
@@ -123,25 +145,6 @@ const useUserData = (
     } catch (error) {
       console.error("Error during logout:", error);
     }
-  };
-
-  const bypassLogin = () => {
-    const bypassUser: User = {
-      id: "math1434",
-      name: "Math User",
-      email: "math1434@example.com",
-      avatar: "",
-      isAdmin: false,
-      isStaff: false,
-      createdAt: "0",
-      lastLogin: "0",
-      points: 1434,
-      role: "User",
-      progress: [],
-    };
-    setUser(bypassUser);
-    setIsLoggedIn(true);
-    setUserProgress([]);
   };
 
   return {
