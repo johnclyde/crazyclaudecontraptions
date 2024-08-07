@@ -9,7 +9,7 @@ import React, {
 import useUserData, { LoginFunction } from "../hooks/useUserData";
 import { User, UserProgress } from "../types";
 
-interface UserDataContextType {
+export interface UserDataContextType {
   user: User | null;
   isLoggedIn: boolean;
   setIsLoggedIn: React.Dispatch<React.SetStateAction<boolean>>;
@@ -59,7 +59,7 @@ export const UserDataProvider: React.FC<{ children: ReactNode }> = ({
     });
   }, [userData]);
 
-  const contextValue = {
+  const contextValue: UserDataContextType = {
     ...userData,
     isAdminMode,
     toggleAdminMode,

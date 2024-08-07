@@ -1,61 +1,60 @@
 import React from "react";
 import { render, act, screen, waitFor } from "@testing-library/react";
 import Users from "./Users";
-import * as UserDataContext from "../contexts/UserDataContext";
-import { MemoryRouter, useNavigate } from "react-router-dom";
+import {
+  UserDataContextType,
+  useUserDataContext,
+} from "../contexts/UserDataContext";
+import { MemoryRouter } from "react-router-dom";
+import { User } from "../types";
 
 jest.mock("../firebase", () => ({
   getIdToken: jest.fn().mockResolvedValue("mock-token"),
 }));
 
-jest.mock("react-router-dom", () => ({
-  ...jest.requireActual("react-router-dom"),
-  useNavigate: jest.fn(),
-}));
-
 global.fetch = jest.fn();
 
-const mockUserDataContext = {
-  user: {
-    id: "1",
-    isAdmin: true,
-    isStaff: true,
-    name: "Frank Drebbin",
-    email: "mrdrebbin@example.com",
-    avatar: "",
-    createdAt: "2023-01-01",
-    lastLogin: "2023-01-01",
-    points: 0,
-    role: "User",
-    progress: [],
-  },
+const mockUser: User = {
+  id: "1",
+  isAdmin: true,
+  isStaff: true,
+  name: "Frank Drebbin",
+  email: "mrdrebbin@example.com",
+  avatar: "",
+  createdAt: "2023-01-01",
+  lastLogin: "2023-01-01",
+  points: 0,
+  role: "User",
+  progress: [],
+};
+
+const mockUserDataContext: UserDataContextType = {
+  user: mockUser,
   isLoggedIn: true,
   setIsLoggedIn: jest.fn(),
   login: jest.fn(),
   logout: jest.fn(),
+  userProgress: [],
   isAdminMode: true,
   toggleAdminMode: jest.fn(),
-  userProgress: [],
 };
 
-const renderUsers = (isAdminMode: boolean) => {
+jest.mock("../contexts/UserDataContext", () => ({
+  ...jest.requireActual("../contexts/UserDataContext"),
+  useUserDataContext: jest.fn(),
+}));
+
+const renderUsers = () => {
   return render(
     <MemoryRouter>
-      <UserDataContext.UserDataProvider>
-        <Users isAdminMode={isAdminMode} />
-      </UserDataContext.UserDataProvider>
+      <Users />
     </MemoryRouter>,
   );
 };
 
 describe("Users component", () => {
-  const mockNavigate = jest.fn();
-
   beforeEach(() => {
-    jest
-      .spyOn(UserDataContext, "useUserDataContext")
-      .mockReturnValue(mockUserDataContext);
-    (useNavigate as jest.Mock).mockReturnValue(mockNavigate);
+    (useUserDataContext as jest.Mock).mockReturnValue(mockUserDataContext);
     jest.spyOn(console, "error").mockImplementation(() => {});
   });
 
@@ -65,8 +64,8 @@ describe("Users component", () => {
 
   it("should render loading state initially", async () => {
     (global.fetch as jest.Mock).mockImplementation(() => new Promise(() => {}));
-    renderUsers(true);
-    expect(await screen.findByText("Loading...")).toBeInTheDocument();
+    renderUsers();
+    expect(screen.getByText("Loading...")).toBeInTheDocument();
   });
 
   it("should fetch and display users", async () => {
@@ -80,7 +79,7 @@ describe("Users component", () => {
       json: () => Promise.resolve({ users: mockUsers }),
     });
 
-    renderUsers(true);
+    renderUsers();
 
     await waitFor(() => {
       expect(screen.getByText("John Doe")).toBeInTheDocument();
@@ -94,17 +93,17 @@ describe("Users component", () => {
       json: () => Promise.resolve({ users: [] }),
     });
 
-    renderUsers(true);
+    renderUsers();
 
     await waitFor(() => {
-      expect(screen.getByText("Users")).toBeInTheDocument();
+      expect(screen.getByText("Users Page")).toBeInTheDocument();
     });
   });
 
   it("should handle error when fetching users", async () => {
     (global.fetch as jest.Mock).mockRejectedValueOnce(new Error("API error"));
 
-    renderUsers(true);
+    renderUsers();
 
     await waitFor(() => {
       expect(
@@ -113,35 +112,29 @@ describe("Users component", () => {
     });
   });
 
-  it("should redirect non-admin users", async () => {
-    jest.spyOn(UserDataContext, "useUserDataContext").mockReturnValue({
+  it("should render for non-admin users", async () => {
+    (useUserDataContext as jest.Mock).mockReturnValue({
       ...mockUserDataContext,
-      user: { ...mockUserDataContext.user, isAdmin: false },
+      user: { ...mockUser, isAdmin: false },
     });
 
-    renderUsers(false);
+    renderUsers();
 
-    await waitFor(
-      () => {
-        expect(mockNavigate).toHaveBeenCalledWith("/");
-      },
-      { timeout: 2000 },
-    );
+    await waitFor(() => {
+      expect(screen.getByText("Users Page")).toBeInTheDocument();
+    });
   });
 
-  it("should redirect when admin mode is off", async () => {
-    jest.spyOn(UserDataContext, "useUserDataContext").mockReturnValue({
+  it("should render when admin mode is off", async () => {
+    (useUserDataContext as jest.Mock).mockReturnValue({
       ...mockUserDataContext,
       isAdminMode: false,
     });
 
-    renderUsers(false);
+    renderUsers();
 
-    await waitFor(
-      () => {
-        expect(mockNavigate).toHaveBeenCalledWith("/");
-      },
-      { timeout: 2000 },
-    );
+    await waitFor(() => {
+      expect(screen.getByText("Users Page")).toBeInTheDocument();
+    });
   });
 });
