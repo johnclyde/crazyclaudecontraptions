@@ -195,7 +195,7 @@ describe("Header", () => {
     };
 
     (UserDataContext.useUserDataContext as jest.Mock).mockReturnValue(
-      mockUseUserDataContext
+      mockUseUserDataContext,
     );
 
     render(
@@ -207,7 +207,7 @@ describe("Header", () => {
           NotificationBell={MockNotificationBell}
           UserMenu={MockUserMenu}
         />
-      </MemoryRouter>
+      </MemoryRouter>,
     );
 
     // Open the user menu
@@ -220,7 +220,7 @@ describe("Header", () => {
     await waitFor(() => {
       // Check if toggleAdminMode was called, which it shouldn't be
       expect(mockToggleAdminMode).not.toHaveBeenCalled();
-      
+
       // The isAdminMode should still be true
       expect(mockUseUserDataContext.isAdminMode).toBe(true);
     });
