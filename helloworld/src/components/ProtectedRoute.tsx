@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { Navigate, Outlet } from "react-router-dom";
 import { useUserDataContext } from "../contexts/UserDataContext";
 
@@ -10,10 +10,9 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   adminOnly = false,
 }) => {
   const { isLoggedIn, user, isAdminMode } = useUserDataContext();
-  const [debugInfo, setDebugInfo] = useState<string[]>([]);
 
   const addDebugInfo = (info: string) => {
-    setDebugInfo((prev) => [...prev, `${new Date().toISOString()}: ${info}`]);
+    console.log(info);
   };
 
   useEffect(() => {
@@ -36,17 +35,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     return <Navigate to="/" replace />;
   }
 
-  return (
-    <>
-      <div className="bg-yellow-100 p-4 mb-4 rounded">
-        <h2 className="text-xl font-bold mb-2">
-          ProtectedRoute Debug Information:
-        </h2>
-        <pre className="whitespace-pre-wrap">{debugInfo.join("\n")}</pre>
-      </div>
-      <Outlet />
-    </>
-  );
+  return <Outlet />;
 };
 
 export default ProtectedRoute;
