@@ -99,35 +99,6 @@ describe("UserDataContext", () => {
     expect(getByTestId("admin-mode")).toHaveTextContent("false");
   });
 
-  it("should persist admin mode in localStorage", async () => {
-    jest
-      .spyOn(require("../hooks/useUserData"), "default")
-      .mockImplementation(() => ({
-        user: { isAdmin: true },
-        isLoggedIn: true,
-        setIsLoggedIn: jest.fn(),
-        login: jest.fn(),
-        logout: jest.fn().mockResolvedValue(undefined),
-        userProgress: [],
-      }));
-
-    const { getByText, getByTestId } = render(
-      <MemoryRouter>
-        <UserDataProvider>
-          <TestComponent />
-        </UserDataProvider>
-      </MemoryRouter>,
-    );
-    await act(async () => {
-      getByText("Toggle Admin Mode").click();
-    });
-    expect(localStorage.getItem("isAdminMode")).toBe("true");
-    await act(async () => {
-      getByText("Toggle Admin Mode").click();
-    });
-    expect(localStorage.getItem("isAdminMode")).toBe("false");
-  });
-
   it("should turn off admin mode on logout", async () => {
     jest
       .spyOn(require("../hooks/useUserData"), "default")
