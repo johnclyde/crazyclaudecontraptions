@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect, useCallback } from "react";
 import { getIdToken } from "../firebase";
 import { useUserDataContext } from "../contexts/UserDataContext";
+import { useNavigate } from "react-router-dom";
 
 interface User {
   id: string;
@@ -10,35 +10,37 @@ interface User {
   status: "admin" | "user" | "disabled";
 }
 
-const Users: React.FC = () => {
+const Users: React.FC<{ isAdminMode: boolean }> = ({ isAdminMode }) => {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const { user, isAdminMode } = useUserDataContext();
+  const { user } = useUserDataContext();
   const navigate = useNavigate();
 
-  useEffect(() => {
-    if (!user?.isAdmin || !isAdminMode) {
-      navigate("/");
-      return;
-    }
-
-    fetchUsers();
-  }, [user, isAdminMode, navigate]);
-
-  const fetchUsers = async () => {
+  const fetchUsers = useCallback(async () => {
     try {
+      console.log("Fetching users...");
+      console.log("Is admin mode:", isAdminMode);
+      console.log("Current user:", user);
+
       setLoading(true);
       const idToken = await getIdToken();
+      console.log("Got ID token");
+
       const response = await fetch("/api/admin/users", {
         headers: {
           Authorization: `Bearer ${idToken}`,
         },
       });
+      console.log("API response status:", response.status);
+
       if (!response.ok) {
-        throw new Error("Failed to fetch users");
+        throw new Error(`Failed to fetch users: ${response.statusText}`);
       }
+
       const data = await response.json();
+      console.log("Received data:", data);
+
       setUsers(data.users || []);
       setError(null);
     } catch (err) {
@@ -47,82 +49,85 @@ const Users: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [isAdminMode, user]);
 
-  const handleStatusChange = async (
-    userId: string,
-    newStatus: "admin" | "user" | "disabled",
-  ) => {
-    try {
-      const idToken = await getIdToken();
-      const response = await fetch("/api/admin/user", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${idToken}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ userId, newStatus }),
-      });
-      if (!response.ok) {
-        throw new Error("Failed to update user status");
-      }
-      await fetchUsers();
-    } catch (err) {
-      console.error("Error updating user status:", err);
-      setError("Failed to update user status. Please try again.");
+  useEffect(() => {
+    if (!isAdminMode || !user?.isAdmin) {
+      console.log("Not admin or admin mode not enabled. Redirecting...");
+      navigate("/");
+      return;
     }
-  };
 
-  if (!user?.isAdmin || !isAdminMode) {
-    return null; // This will prevent any flickering before redirect
+    fetchUsers();
+  }, [fetchUsers, isAdminMode, user, navigate]);
+
+  if (!isAdminMode || !user?.isAdmin) {
+    return null; // or return a "Permission Denied" message
   }
 
   if (loading) {
-    return <div className="p-4">Loading users...</div>;
+    return (
+      <div className="flex justify-center items-center h-screen">
+        Loading...
+      </div>
+    );
   }
 
   if (error) {
-    return <div className="p-4 text-red-500">{error}</div>;
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <div
+          className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative"
+          role="alert"
+        >
+          <strong className="font-bold">Error: </strong>
+          <span className="block sm:inline">{error}</span>
+        </div>
+      </div>
+    );
   }
 
   return (
-    <div className="p-4">
-      <h1 className="text-2xl font-bold mb-4">Users</h1>
-      <table className="min-w-full bg-white">
-        <thead>
-          <tr>
-            <th className="py-2 px-4 border-b">Name</th>
-            <th className="py-2 px-4 border-b">Email</th>
-            <th className="py-2 px-4 border-b">Status</th>
-            <th className="py-2 px-4 border-b">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {users.map((user) => (
-            <tr key={user.id}>
-              <td className="py-2 px-4 border-b">{user.name}</td>
-              <td className="py-2 px-4 border-b">{user.email}</td>
-              <td className="py-2 px-4 border-b">{user.status}</td>
-              <td className="py-2 px-4 border-b">
-                <select
-                  value={user.status}
-                  onChange={(e) =>
-                    handleStatusChange(
-                      user.id,
-                      e.target.value as "admin" | "user" | "disabled",
-                    )
-                  }
-                  className="border rounded p-1"
-                >
-                  <option value="user">User</option>
-                  <option value="admin">Admin</option>
-                  <option value="disabled">Disabled</option>
-                </select>
-              </td>
+    <div className="container mx-auto py-8">
+      <h1 className="text-3xl font-bold mb-6">Users</h1>
+      <div className="bg-white shadow-md rounded-lg overflow-hidden">
+        <table className="min-w-full">
+          <thead>
+            <tr className="bg-gray-100">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Name
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Email
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Status
+              </th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody className="bg-white divide-y divide-gray-200">
+            {users.map((user) => (
+              <tr key={user.id}>
+                <td className="px-6 py-4 whitespace-nowrap">{user.name}</td>
+                <td className="px-6 py-4 whitespace-nowrap">{user.email}</td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <span
+                    className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                      user.status === "admin"
+                        ? "bg-green-100 text-green-800"
+                        : user.status === "disabled"
+                          ? "bg-red-100 text-red-800"
+                          : "bg-blue-100 text-blue-800"
+                    }`}
+                  >
+                    {user.status}
+                  </span>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 };
