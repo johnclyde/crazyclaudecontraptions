@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
-import { BrowserRouter as Router } from "react-router-dom";
+import { BrowserRouter as Router, MemoryRouter } from "react-router-dom";
 import Header from "./Header";
 import { NotificationBellProps } from "./NotificationBell";
 import { UserMenuProps } from "./UserMenu";
