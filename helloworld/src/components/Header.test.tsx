@@ -83,7 +83,7 @@ const MockUserMenu = React.forwardRef<HTMLDivElement, UserMenuProps>(
           aria-label="User menu"
           onClick={() => setIsOpen(!isOpen)}
         >
-          UserMenu
+          Mocked Users Text
         </button>
         {isOpen && <div data-testid="user-menu-dropdown">Menu Content</div>}
       </div>
@@ -163,7 +163,7 @@ describe("Header", () => {
 
   it("closes user menu when clicking outside", async () => {
     renderHeader();
-    const userMenuButton = screen.getByLabelText("User menu");
+    const userMenuButton = screen.getByLabelText("Mocked Users Text");
 
     fireEvent.click(userMenuButton);
     expect(screen.getByTestId("user-menu-dropdown")).toBeInTheDocument();
@@ -207,7 +207,7 @@ describe("Header", () => {
     fireEvent.click(screen.getByLabelText("User menu"));
 
     // Click on the Users link
-    fireEvent.click(screen.getByText("Users"));
+    fireEvent.click(screen.getByText("Mocked Users Text"));
 
     // Wait for any asynchronous actions to complete
     await waitFor(() => {
