@@ -1,17 +1,21 @@
 import { useState, useCallback } from "react";
-import { auth } from "../firebase";
+import { auth as firebaseAuth } from "../firebase";
 import {
   GoogleAuthProvider,
   signInWithPopup,
   signOut,
   User as FirebaseUser,
+  Auth,
 } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
 import { User, UserProgress } from "../types";
 
 export type LoginFunction = () => Promise<void>;
 
-const useUserData = () => {
+const useUserData = (
+  auth: Auth = firebaseAuth,
+  signInWithPopupFn = signInWithPopup,
+) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userProgress, setUserProgress] = useState<UserProgress[]>([]);
@@ -69,61 +73,53 @@ const useUserData = () => {
   );
 
   const login: LoginFunction = async () => {
-    if (auth) {
+    try {
       const provider = new GoogleAuthProvider();
-      try {
-        const result = await signInWithPopup(auth, provider);
-        if (result.user) {
-          const idToken = await result.user.getIdToken();
+      const result = await signInWithPopupFn(auth, provider);
+      if (result.user) {
+        const idToken = await result.user.getIdToken();
 
-          // Call the login API endpoint
-          const loginResponse = await fetch("/api/login", {
-            method: "POST",
-            headers: {
-              Authorization: `Bearer ${idToken}`,
-              "Content-Type": "application/json",
-            },
-          });
-
-          if (!loginResponse.ok) {
-            throw new Error("Backend login failed");
-          }
-
-          // After successful login, fetch the user profile
-          await fetchUserProfile(result.user);
-        } else {
-          throw new Error("No user returned from Firebase");
-        }
-      } catch (error) {
-        console.error("Error during login process:", error);
-        clearUserData();
-      }
-    } else {
-      console.error("Firebase auth is not initialized");
-    }
-  };
-
-  const logout = async () => {
-    if (auth) {
-      try {
-        await signOut(auth);
-        const response = await fetch("/api/logout", {
+        // Call the login API endpoint
+        const loginResponse = await fetch("/api/login", {
           method: "POST",
           headers: {
+            Authorization: `Bearer ${idToken}`,
             "Content-Type": "application/json",
           },
         });
 
-        if (!response.ok) {
-          throw new Error("Logout API call failed");
+        if (!loginResponse.ok) {
+          throw new Error("Backend login failed");
         }
 
-        clearUserData();
-      } catch (error) {
-        console.error("Error during logout:", error);
+        // After successful login, fetch the user profile
+        await fetchUserProfile(result.user);
+      } else {
+        throw new Error("No user returned from Firebase");
       }
-    } else {
-      console.error("Firebase auth is not initialized");
+    } catch (error) {
+      console.error("Error during login process:", error);
+      clearUserData();
+    }
+  };
+
+  const logout = async () => {
+    try {
+      await signOut(auth);
+      const response = await fetch("/api/logout", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("Logout API call failed");
+      }
+
+      clearUserData();
+    } catch (error) {
+      console.error("Error during logout:", error);
     }
   };
 

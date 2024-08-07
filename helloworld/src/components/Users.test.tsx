@@ -30,6 +30,7 @@ const mockUser: User = {
 const mockUserDataContext: UserDataContextType = {
   user: mockUser,
   isLoggedIn: true,
+  bypassLogin: jest.fn(),
   setIsLoggedIn: jest.fn(),
   login: jest.fn(),
   logout: jest.fn(),

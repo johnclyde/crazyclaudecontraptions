@@ -1,36 +1,36 @@
 import { renderHook, act } from "@testing-library/react";
 import { useNavigate } from "react-router-dom";
 import useUserData from "./useUserData";
-import { auth } from "../firebase";
 import { User } from "../types";
+import { Auth, UserCredential } from "firebase/auth";
 
 jest.mock("react-router-dom", () => ({
   useNavigate: jest.fn(),
 }));
 
-jest.mock("../firebase", () => ({
-  auth: {
-    onAuthStateChanged: jest.fn(),
-    signInWithPopup: jest.fn(),
-    signOut: jest.fn(),
-  },
-}));
-
 describe("useUserData", () => {
   const mockNavigate = jest.fn();
+  let mockAuth: jest.Mocked<Auth>;
+  let mockSignInWithPopup: jest.Mock;
 
   beforeEach(() => {
     jest.clearAllMocks();
     (useNavigate as jest.Mock).mockReturnValue(mockNavigate);
-    (auth.onAuthStateChanged as jest.Mock).mockImplementation((callback) => {
-      callback(null);
-      return jest.fn();
-    });
+
+    mockAuth = {
+      onAuthStateChanged: jest.fn(),
+      signOut: jest.fn(),
+    } as unknown as jest.Mocked<Auth>;
+
+    mockSignInWithPopup = jest.fn();
+
     global.fetch = jest.fn();
   });
 
   it("should initialize with default values", () => {
-    const { result } = renderHook(() => useUserData());
+    const { result } = renderHook(() =>
+      useUserData(mockAuth, mockSignInWithPopup),
+    );
 
     expect(result.current.user).toBeNull();
     expect(result.current.isLoggedIn).toBe(false);
@@ -55,11 +55,31 @@ describe("useUserData", () => {
     const mockFirebaseUser = {
       uid: "admin123",
       getIdToken: jest.fn().mockResolvedValue("mock-token"),
+      emailVerified: false,
+      isAnonymous: false,
+      metadata: {
+        creationTime: null,
+        lastSignInTime: null,
+      },
+      providerData: [],
+      refreshToken: "mock-refresh-token",
+      tenantId: null,
+      delete: jest.fn(),
+      getIdTokenResult: jest.fn(),
+      reload: jest.fn(),
+      toJSON: jest.fn(),
+      displayName: null,
+      email: null,
+      phoneNumber: null,
+      photoURL: null,
+      providerId: "firebase",
     };
 
-    (auth.signInWithPopup as jest.Mock).mockResolvedValueOnce({
+    mockSignInWithPopup.mockResolvedValueOnce({
       user: mockFirebaseUser,
-    });
+      providerId: "google.com",
+      operationType: "signIn",
+    } as UserCredential);
 
     (global.fetch as jest.Mock).mockImplementation((url) => {
       if (url === "/api/login") {
@@ -75,7 +95,9 @@ describe("useUserData", () => {
       }
     });
 
-    const { result } = renderHook(() => useUserData());
+    const { result } = renderHook(() =>
+      useUserData(mockAuth, mockSignInWithPopup),
+    );
 
     await act(async () => {
       await result.current.login();
@@ -100,7 +122,9 @@ describe("useUserData", () => {
       progress: [],
     };
 
-    const { result } = renderHook(() => useUserData());
+    const { result } = renderHook(() =>
+      useUserData(mockAuth, mockSignInWithPopup),
+    );
 
     await act(async () => {
       result.current.setUser(mockUser);

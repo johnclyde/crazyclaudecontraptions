@@ -103,6 +103,7 @@ const mockUserDataContext = {
   isLoggedIn: false,
   login: jest.fn(),
   logout: jest.fn(),
+  bypassLogin: jest.fn(),
   isAdminMode: false,
   toggleAdminMode: jest.fn(),
 };
