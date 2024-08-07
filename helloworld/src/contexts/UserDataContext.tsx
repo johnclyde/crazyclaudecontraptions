@@ -51,11 +51,6 @@ export const UserDataProvider: React.FC<{ children: ReactNode }> = ({
         if (firebaseUser) {
           try {
             await userData.fetchUserProfile(firebaseUser);
-    if (auth && typeof auth.onAuthStateChanged === "function") {
-      const unsubscribe = auth.onAuthStateChanged(async (firebaseUser) => {
-        if (firebaseUser) {
-          try {
-            await userData.fetchUserProfile(firebaseUser);
           } catch (error) {
             console.error("Error during auto-login:", error);
           }
@@ -63,20 +58,6 @@ export const UserDataProvider: React.FC<{ children: ReactNode }> = ({
           userData.setUser(null);
           userData.setIsLoggedIn(false);
           setIsAdminMode(false);
-        }
-      });
-    } else {
-      console.error("Firebase auth is not initialized correctly");
-    }
-
-    return () => {
-      if (unsubscribe) {
-        unsubscribe();
-      }
-    };
-  }, [userData]);
-          setUser(null);
-          setIsLoggedIn(false);
         }
       });
     } else {
@@ -102,26 +83,6 @@ export const UserDataProvider: React.FC<{ children: ReactNode }> = ({
   const logout = useCallback(async () => {
     setIsAdminMode(false);
     await userData.logout();
-  }, [userData]);
-  const bypassLogin = useCallback(() => {
-    const bypassUser: User = {
-      id: "math1434",
-      name: "Math User",
-      email: "math1434@example.com",
-      avatar: "",
-      isAdmin: false,
-      isStaff: false,
-      createdAt: "0",
-      lastLogin: "0",
-      points: 1434,
-      role: "User",
-      progress: [],
-    };
-    setUser(bypassUser);
-    setIsLoggedIn(true);
-  }, [setUser, setIsLoggedIn]);
-    await userData.logout();
-    setIsAdminMode(false);
   }, [userData]);
 
   const contextValue: UserDataContextType = {
