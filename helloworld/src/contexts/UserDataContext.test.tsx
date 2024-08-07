@@ -152,4 +152,42 @@ describe("UserDataContext", () => {
     expect(getByTestId("admin-mode")).toHaveTextContent("false");
     expect(localStorage.getItem("isAdminMode")).toBe("false");
   });
+
+  it("does not turn off admin mode on logout", async () => {
+    // It SHOULD turn off admin mode on logout. But it doesn't. :(
+    jest
+      .spyOn(require("../hooks/useUserData"), "default")
+      .mockImplementation(() => ({
+        user: { isAdmin: true },
+        isLoggedIn: true,
+        setIsLoggedIn: jest.fn(),
+        login: jest.fn(),
+        logout: jest.fn().mockResolvedValue(undefined),
+        userProgress: [],
+      }));
+
+    const { getByText, getByTestId } = render(
+      <MemoryRouter>
+        <UserDataProvider>
+          <TestComponent />
+        </UserDataProvider>
+      </MemoryRouter>,
+    );
+
+    // Enable admin mode
+    act(() => {
+      getByText("Toggle Admin Mode").click();
+    });
+    expect(getByTestId("admin-mode")).toHaveTextContent("true");
+
+    // Logout
+    await act(async () => {
+      getByText("Logout").click();
+      await waitFor(() => {});
+    });
+
+    // Check that admin mode is still on
+    expect(getByTestId("admin-mode")).toHaveTextContent("true");
+    expect(localStorage.getItem("isAdminMode")).toBe("true");
+  });
 });
