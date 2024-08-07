@@ -23,7 +23,7 @@ const TestComponent: React.FC = () => {
       <div data-testid="admin-mode">{isAdminMode ? "true" : "false"}</div>
       <button onClick={toggleAdminMode}>Toggle Admin Mode</button>
       <div data-testid="user-admin">{user?.isAdmin ? "true" : "false"}</div>
-      <button onClick={logout}>Logout</button>
+      <button onClick={() => Promise.resolve(logout())}>Logout</button>
     </div>
   );
 };
@@ -44,7 +44,7 @@ describe("UserDataContext", () => {
     expect(getByTestId("admin-mode")).toHaveTextContent("false");
   });
 
-  it("should not toggle admin mode when user is not admin", () => {
+  it("should not toggle admin mode when user is not admin", async () => {
     const { getByText, getByTestId } = render(
       <MemoryRouter>
         <UserDataProvider>
@@ -52,13 +52,13 @@ describe("UserDataContext", () => {
         </UserDataProvider>
       </MemoryRouter>,
     );
-    act(() => {
+    await act(async () => {
       getByText("Toggle Admin Mode").click();
     });
     expect(getByTestId("admin-mode")).toHaveTextContent("false");
   });
 
-  it("should toggle admin mode when user is admin", () => {
+  it("should toggle admin mode when user is admin", async () => {
     jest
       .spyOn(require("../hooks/useUserData"), "default")
       .mockImplementation(() => ({
@@ -78,17 +78,17 @@ describe("UserDataContext", () => {
       </MemoryRouter>,
     );
     expect(getByTestId("user-admin")).toHaveTextContent("true");
-    act(() => {
+    await act(async () => {
       getByText("Toggle Admin Mode").click();
     });
     expect(getByTestId("admin-mode")).toHaveTextContent("true");
-    act(() => {
+    await act(async () => {
       getByText("Toggle Admin Mode").click();
     });
     expect(getByTestId("admin-mode")).toHaveTextContent("false");
   });
 
-  it("should persist admin mode in localStorage", () => {
+  it("should persist admin mode in localStorage", async () => {
     jest
       .spyOn(require("../hooks/useUserData"), "default")
       .mockImplementation(() => ({
@@ -107,18 +107,17 @@ describe("UserDataContext", () => {
         </UserDataProvider>
       </MemoryRouter>,
     );
-    act(() => {
+    await act(async () => {
       getByText("Toggle Admin Mode").click();
     });
     expect(localStorage.getItem("isAdminMode")).toBe("true");
-    act(() => {
+    await act(async () => {
       getByText("Toggle Admin Mode").click();
     });
     expect(localStorage.getItem("isAdminMode")).toBe("false");
   });
 
-  it("does not turn off admin mode on logout", async () => {
-    // It SHOULD turn off admin mode on logout. But it doesn't. :(
+  it("should turn off admin mode on logout", async () => {
     jest
       .spyOn(require("../hooks/useUserData"), "default")
       .mockImplementation(() => ({
@@ -139,7 +138,7 @@ describe("UserDataContext", () => {
     );
 
     // Enable admin mode
-    act(() => {
+    await act(async () => {
       getByText("Toggle Admin Mode").click();
     });
     expect(getByTestId("admin-mode")).toHaveTextContent("true");
@@ -151,7 +150,7 @@ describe("UserDataContext", () => {
     });
 
     // Check that admin mode is still on
-    expect(getByTestId("admin-mode")).toHaveTextContent("true");
-    expect(localStorage.getItem("isAdminMode")).toBe("true");
+    expect(getByTestId("admin-mode")).toHaveTextContent("false");
+    expect(localStorage.getItem("isAdminMode")).toBe("false");
   });
 });

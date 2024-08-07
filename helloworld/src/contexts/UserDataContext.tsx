@@ -4,6 +4,7 @@ import React, {
   ReactNode,
   useState,
   useEffect,
+  useCallback,
 } from "react";
 import useUserData, { LoginFunction } from "../hooks/useUserData";
 import { User, UserProgress } from "../types";
@@ -36,16 +37,23 @@ export const UserDataProvider: React.FC<{ children: ReactNode }> = ({
     localStorage.setItem("isAdminMode", JSON.stringify(isAdminMode));
   }, [isAdminMode]);
 
-  const toggleAdminMode = () => {
+  const toggleAdminMode = useCallback(() => {
     if (userData.user?.isAdmin) {
       setIsAdminMode((prevMode) => !prevMode);
     }
-  };
+  }, [userData.user]);
+
+  const logout = useCallback(async () => {
+    await userData.logout();
+    setIsAdminMode(false);
+    localStorage.removeItem("isAdminMode");
+  }, [userData.logout]);
 
   const contextValue = {
     ...userData,
     isAdminMode,
     toggleAdminMode,
+    logout,
   };
 
   return (
