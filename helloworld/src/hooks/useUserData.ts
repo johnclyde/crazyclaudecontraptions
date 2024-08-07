@@ -15,17 +15,12 @@ const useUserData = () => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userProgress, setUserProgress] = useState<UserProgress[]>([]);
-  const [isAdminMode, setIsAdminMode] = useState<boolean>(() => {
-    const storedAdminMode = localStorage.getItem("isAdminMode");
-    return storedAdminMode ? JSON.parse(storedAdminMode) : false;
-  });
   const navigate = useNavigate();
 
   const clearUserData = useCallback(() => {
     setUser(null);
     setUserProgress([]);
     setIsLoggedIn(false);
-    setIsAdminMode(false);
     localStorage.removeItem("isAdminMode");
     navigate("/");
   }, [navigate]);
@@ -144,18 +139,7 @@ const useUserData = () => {
     setUser(bypassUser);
     setIsLoggedIn(true);
     setUserProgress([]);
-    setIsAdminMode(false);
   };
-
-  const toggleAdminMode = useCallback(() => {
-    if (user?.isAdmin) {
-      setIsAdminMode((prevMode) => {
-        const newMode = !prevMode;
-        localStorage.setItem("isAdminMode", JSON.stringify(newMode));
-        return newMode;
-      });
-    }
-  }, [user]);
 
   return {
     user,
@@ -166,8 +150,6 @@ const useUserData = () => {
     logout,
     bypassLogin,
     userProgress,
-    isAdminMode,
-    toggleAdminMode,
   };
 };
 

@@ -1,4 +1,10 @@
-import React, { createContext, useContext, ReactNode } from "react";
+import React, {
+  createContext,
+  useContext,
+  ReactNode,
+  useState,
+  useEffect,
+} from "react";
 import useUserData, { LoginFunction } from "../hooks/useUserData";
 import { User, UserProgress } from "../types";
 
@@ -21,8 +27,29 @@ export const UserDataProvider: React.FC<{ children: ReactNode }> = ({
   children,
 }) => {
   const userData = useUserData();
+  const [isAdminMode, setIsAdminMode] = useState(() => {
+    const storedAdminMode = localStorage.getItem("isAdminMode");
+    return storedAdminMode ? JSON.parse(storedAdminMode) : false;
+  });
+
+  useEffect(() => {
+    localStorage.setItem("isAdminMode", JSON.stringify(isAdminMode));
+  }, [isAdminMode]);
+
+  const toggleAdminMode = () => {
+    if (userData.user?.isAdmin) {
+      setIsAdminMode((prevMode) => !prevMode);
+    }
+  };
+
+  const contextValue = {
+    ...userData,
+    isAdminMode,
+    toggleAdminMode,
+  };
+
   return (
-    <UserDataContext.Provider value={userData}>
+    <UserDataContext.Provider value={contextValue}>
       {children}
     </UserDataContext.Provider>
   );
