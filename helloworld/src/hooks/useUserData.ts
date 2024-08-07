@@ -7,6 +7,7 @@ import {
   User as FirebaseUser,
   Auth,
 } from "firebase/auth";
+import { useNavigate } from "react-router-dom";
 import { User, UserProgress } from "../types";
 
 export type LoginFunction = () => Promise<void>;
@@ -18,12 +19,15 @@ const useUserData = (
   const [user, setUser] = useState<User | null>(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userProgress, setUserProgress] = useState<UserProgress[]>([]);
+  const navigate = useNavigate();
 
   const clearUserData = useCallback(() => {
     setUser(null);
     setUserProgress([]);
     setIsLoggedIn(false);
-  }, []);
+    localStorage.removeItem("isAdminMode");
+    navigate("/");
+  }, [navigate]);
 
   const fetchUserProfile = useCallback(
     async (firebaseUser: FirebaseUser) => {
@@ -79,7 +83,7 @@ const useUserData = (
         const result = await signInWithPopup(auth, provider);
         const idToken = await result.user.getIdToken();
 
-        // Backend login
+        // Call the login API endpoint
         const loginResponse = await fetch("/api/login", {
           method: "POST",
           headers: {
@@ -92,7 +96,7 @@ const useUserData = (
           throw new Error("Backend login failed");
         }
 
-        // After successful login, fetch user profile
+        // After successful login, fetch the user profile
         await fetchUserProfile(result.user);
       } catch (error) {
         console.error("Error during login process:", error);
@@ -145,6 +149,25 @@ const useUserData = (
     } catch (error) {
       console.error("Error during logout:", error);
     }
+  };
+
+  const bypassLogin = () => {
+    const bypassUser: User = {
+      id: "math1434",
+      name: "Math User",
+      email: "math1434@example.com",
+      avatar: "",
+      isAdmin: false,
+      isStaff: false,
+      createdAt: "0",
+      lastLogin: "0",
+      points: 1434,
+      role: "User",
+      progress: [],
+    };
+    setUser(bypassUser);
+    setIsLoggedIn(true);
+    setUserProgress([]);
   };
 
   return {
