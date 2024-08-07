@@ -8,6 +8,7 @@ import React, {
 } from "react";
 import useUserData, { LoginFunction } from "../hooks/useUserData";
 import { User, UserProgress } from "../types";
+import { auth } from "../firebase";
 
 export interface UserDataContextType {
   user: User | null;
@@ -18,6 +19,7 @@ export interface UserDataContextType {
   userProgress: UserProgress[];
   isAdminMode: boolean;
   toggleAdminMode: () => void;
+  bypassLogin: () => void;
 }
 
 const UserDataContext = createContext<UserDataContextType | undefined>(
@@ -41,6 +43,34 @@ export const UserDataProvider: React.FC<{ children: ReactNode }> = ({
     localStorage.setItem("isAdminMode", JSON.stringify(isAdminMode));
   }, [isAdminMode]);
 
+  useEffect(() => {
+    let unsubscribe: (() => void) | undefined;
+
+    if (auth) {
+      unsubscribe = auth.onAuthStateChanged(async (firebaseUser) => {
+        if (firebaseUser) {
+          try {
+            await userData.fetchUserProfile(firebaseUser);
+          } catch (error) {
+            console.error("Error during auto-login:", error);
+          }
+        } else {
+          userData.setUser(null);
+          userData.setIsLoggedIn(false);
+          setIsAdminMode(false);
+        }
+      });
+    } else {
+      console.error("Firebase auth is not initialized correctly");
+    }
+
+    return () => {
+      if (unsubscribe) {
+        unsubscribe();
+      }
+    };
+  }, [userData]);
+
   const toggleAdminMode = useCallback(() => {
     setIsAdminMode((prevMode) => {
       if (userData.user?.isAdmin) {
@@ -52,7 +82,6 @@ export const UserDataProvider: React.FC<{ children: ReactNode }> = ({
 
   const logout = useCallback(async () => {
     setIsAdminMode(false);
-    localStorage.removeItem("isAdminMode");
     await userData.logout();
   }, [userData]);
 

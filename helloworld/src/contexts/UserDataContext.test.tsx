@@ -3,7 +3,15 @@ import { render, act, waitFor } from "@testing-library/react";
 import { UserDataProvider, useUserDataContext } from "./UserDataContext";
 import { MemoryRouter } from "react-router-dom";
 
-// Mock the useUserData hook
+jest.mock("../firebase", () => ({
+  auth: {
+    onAuthStateChanged: jest.fn((callback) => {
+      callback(null);
+      return jest.fn();
+    }),
+  },
+}));
+
 jest.mock("../hooks/useUserData", () => ({
   __esModule: true,
   default: () => ({
@@ -13,6 +21,7 @@ jest.mock("../hooks/useUserData", () => ({
     login: jest.fn(),
     logout: jest.fn().mockResolvedValue(undefined),
     userProgress: [],
+    fetchUserProfile: jest.fn(),
   }),
 }));
 
@@ -23,7 +32,7 @@ const TestComponent: React.FC = () => {
       <div data-testid="admin-mode">{isAdminMode ? "true" : "false"}</div>
       <button onClick={toggleAdminMode}>Toggle Admin Mode</button>
       <div data-testid="user-admin">{user?.isAdmin ? "true" : "false"}</div>
-      <button onClick={() => Promise.resolve(logout())}>Logout</button>
+      <button onClick={() => logout()}>Logout</button>
     </div>
   );
 };
@@ -31,6 +40,7 @@ const TestComponent: React.FC = () => {
 describe("UserDataContext", () => {
   beforeEach(() => {
     localStorage.clear();
+    jest.clearAllMocks();
   });
 
   it("should initialize with admin mode off", () => {
@@ -68,6 +78,7 @@ describe("UserDataContext", () => {
         login: jest.fn(),
         logout: jest.fn().mockResolvedValue(undefined),
         userProgress: [],
+        fetchUserProfile: jest.fn(),
       }));
 
     const { getByText, getByTestId } = render(
@@ -127,6 +138,7 @@ describe("UserDataContext", () => {
         login: jest.fn(),
         logout: jest.fn().mockResolvedValue(undefined),
         userProgress: [],
+        fetchUserProfile: jest.fn(),
       }));
 
     const { getByText, getByTestId } = render(
@@ -145,11 +157,13 @@ describe("UserDataContext", () => {
 
     // Logout
     await act(async () => {
-      await getByText("Logout").click();
+      getByText("Logout").click();
     });
 
     // Check that admin mode is turned off
-    expect(getByTestId("admin-mode")).toHaveTextContent("false");
-    expect(localStorage.getItem("isAdminMode")).toBe("false");
+    await waitFor(() => {
+      expect(getByTestId("admin-mode")).toHaveTextContent("false");
+      expect(localStorage.getItem("isAdminMode")).toBe("false");
+    });
   });
 });
