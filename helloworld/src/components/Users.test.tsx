@@ -1,5 +1,4 @@
-import React from "react";
-import { render, act, screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import Users from "./Users";
 import {
   UserDataContextType,
@@ -96,7 +95,7 @@ describe("Users component", () => {
     renderUsers();
 
     await waitFor(() => {
-      expect(screen.getByText("Users Page")).toBeInTheDocument();
+      expect(screen.getByText("Users")).toBeInTheDocument();
     });
   });
 
@@ -121,7 +120,7 @@ describe("Users component", () => {
     renderUsers();
 
     await waitFor(() => {
-      expect(screen.getByText("Users Page")).toBeInTheDocument();
+      expect(screen.getByText("Users")).toBeInTheDocument();
     });
   });
 
@@ -134,7 +133,7 @@ describe("Users component", () => {
     renderUsers();
 
     await waitFor(() => {
-      expect(screen.getByText("Users Page")).toBeInTheDocument();
+      expect(screen.getByText("Users")).toBeInTheDocument();
     });
   });
 });

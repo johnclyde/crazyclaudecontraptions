@@ -14,10 +14,9 @@ const Users: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const { user, isAdminMode } = useUserDataContext();
-  const [debugInfo, setDebugInfo] = useState<string[]>([]);
 
   const addDebugInfo = (info: string) => {
-    setDebugInfo((prev) => [...prev, `${new Date().toISOString()}: ${info}`]);
+    console.log(info);
   };
 
   useEffect(() => {
@@ -62,13 +61,7 @@ const Users: React.FC = () => {
 
   return (
     <div className="container mx-auto py-8">
-      <h1 className="text-3xl font-bold mb-6">Users Page</h1>
-      <div className="bg-yellow-100 p-4 mb-4 rounded">
-        <h2 className="text-xl font-bold mb-2">
-          Users Component Debug Information:
-        </h2>
-        <pre className="whitespace-pre-wrap">{debugInfo.join("\n")}</pre>
-      </div>
+      <h1 className="text-3xl font-bold mb-6">Users</h1>
       {loading && <div>Loading...</div>}
       {error && <div className="text-red-500">{error}</div>}
       {!loading && !error && (
