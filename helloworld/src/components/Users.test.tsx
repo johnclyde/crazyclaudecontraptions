@@ -1,9 +1,12 @@
 import React from "react";
 import { render, act, screen, waitFor } from "@testing-library/react";
 import Users from "./Users";
-import * as UserDataContext from "../contexts/UserDataContext";
+import {
+  UserDataContextType,
+  useUserDataContext,
+} from "../contexts/UserDataContext";
 import { MemoryRouter } from "react-router-dom";
-import { User, UserProgress } from "../types"; // Make sure to import these types
+import { User } from "../types";
 
 jest.mock("../firebase", () => ({
   getIdToken: jest.fn().mockResolvedValue("mock-token"),
@@ -25,7 +28,7 @@ const mockUser: User = {
   progress: [],
 };
 
-const mockUserDataContext: UserDataContext.UserDataContextType = {
+const mockUserDataContext: UserDataContextType = {
   user: mockUser,
   isLoggedIn: true,
   setIsLoggedIn: jest.fn(),
@@ -36,21 +39,22 @@ const mockUserDataContext: UserDataContext.UserDataContextType = {
   toggleAdminMode: jest.fn(),
 };
 
+jest.mock("../contexts/UserDataContext", () => ({
+  ...jest.requireActual("../contexts/UserDataContext"),
+  useUserDataContext: jest.fn(),
+}));
+
 const renderUsers = () => {
   return render(
     <MemoryRouter>
-      <UserDataContext.UserDataProvider>
-        <Users />
-      </UserDataContext.UserDataProvider>
+      <Users />
     </MemoryRouter>,
   );
 };
 
 describe("Users component", () => {
   beforeEach(() => {
-    jest
-      .spyOn(UserDataContext, "useUserDataContext")
-      .mockReturnValue(mockUserDataContext);
+    (useUserDataContext as jest.Mock).mockReturnValue(mockUserDataContext);
     jest.spyOn(console, "error").mockImplementation(() => {});
   });
 
@@ -109,7 +113,7 @@ describe("Users component", () => {
   });
 
   it("should render for non-admin users", async () => {
-    jest.spyOn(UserDataContext, "useUserDataContext").mockReturnValue({
+    (useUserDataContext as jest.Mock).mockReturnValue({
       ...mockUserDataContext,
       user: { ...mockUser, isAdmin: false },
     });
@@ -122,7 +126,7 @@ describe("Users component", () => {
   });
 
   it("should render when admin mode is off", async () => {
-    jest.spyOn(UserDataContext, "useUserDataContext").mockReturnValue({
+    (useUserDataContext as jest.Mock).mockReturnValue({
       ...mockUserDataContext,
       isAdminMode: false,
     });
