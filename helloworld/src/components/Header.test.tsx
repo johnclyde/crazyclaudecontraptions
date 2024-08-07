@@ -170,7 +170,7 @@ describe("Header", () => {
 
   it("closes user menu when clicking outside", async () => {
     renderHeader();
-    const userMenuButton = screen.getByLabelText("User menu");
+    const userMenuButton = screen.getByLabelText("Mocked Users Text");
 
     fireEvent.click(userMenuButton);
     expect(screen.getByTestId("user-menu-dropdown")).toBeInTheDocument();
