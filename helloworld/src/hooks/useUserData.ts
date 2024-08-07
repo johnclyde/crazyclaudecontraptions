@@ -33,9 +33,11 @@ const useUserData = (
     async (firebaseUser: FirebaseUser) => {
       try {
         const idToken = await firebaseUser.getIdToken();
-        const response = await fetch("/api/user/profile", {
+        const response = await fetch("/api/login", {
+          method: "POST",
           headers: {
             Authorization: `Bearer ${idToken}`,
+            "Content-Type": "application/json",
           },
         });
 
@@ -47,21 +49,21 @@ const useUserData = (
 
         const userData: User = {
           id: firebaseUser.uid,
-          name: profileData.name,
-          email: profileData.email,
-          avatar: profileData.avatar,
-          isAdmin: profileData.isAdmin,
-          isStaff: profileData.isStaff,
-          createdAt: profileData.createdAt,
-          lastLogin: profileData.lastLogin,
-          points: profileData.points,
-          role: profileData.role,
-          progress: profileData.progress || [],
+          name: profileData.user.name,
+          email: profileData.user.email,
+          avatar: profileData.user.avatar,
+          isAdmin: profileData.user.isAdmin,
+          isStaff: profileData.user.isStaff,
+          createdAt: profileData.user.created_at,
+          lastLogin: profileData.user.last_login,
+          points: profileData.user.points,
+          role: profileData.user.role,
+          progress: profileData.user.progress || [],
         };
 
         setUser(userData);
         setIsLoggedIn(true);
-        setUserProgress(profileData.progress || []);
+        setUserProgress(profileData.user.progress || []);
         return userData;
       } catch (error) {
         console.error("Error fetching user profile:", error);
