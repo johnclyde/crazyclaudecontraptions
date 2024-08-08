@@ -123,7 +123,7 @@ describe("Users component", () => {
     renderUsers();
 
     await waitFor(() => {
-      expect(screen.getByText("Users")).not.toBeInTheDocument();
+      expect(screen.queryByText("Users")).not.toBeInTheDocument();
     });
   });
 
@@ -136,7 +136,7 @@ describe("Users component", () => {
     renderUsers();
 
     await waitFor(() => {
-      expect(screen.getByText("Users")).not.toBeInTheDocument();
+      expect(screen.queryByText("Users")).not.toBeInTheDocument();
     });
   });
 });
@@ -188,7 +188,6 @@ describe("Users Component Behavior", () => {
       </BrowserRouter>,
     );
 
-    // Run all timers to trigger any scheduled effects
     await act(async () => {
       jest.runAllTimers();
     });
@@ -197,8 +196,35 @@ describe("Users Component Behavior", () => {
     console.log(`Console.log called ${consoleLogCount} times`);
 
     expect(fetchCount).toBe(1);
-    expect(consoleLogCount).toBeLessThanOrEqual(10);
+    expect(consoleLogCount).toBeLessThanOrEqual(5);
     expect(console.error).not.toHaveBeenCalled();
+  });
+
+  it("does not re-fetch when admin mode or user doesn't change", async () => {
+    const { rerender } = render(
+      <BrowserRouter>
+        <Users />
+      </BrowserRouter>,
+    );
+
+    await act(async () => {
+      jest.runAllTimers();
+    });
+
+    const initialFetchCount = fetchCount;
+
+    // Trigger a re-render
+    rerender(
+      <BrowserRouter>
+        <Users />
+      </BrowserRouter>,
+    );
+
+    await act(async () => {
+      jest.runAllTimers();
+    });
+
+    expect(fetchCount).toBe(initialFetchCount);
   });
 
   it("should not fetch users when not in admin mode", async () => {
