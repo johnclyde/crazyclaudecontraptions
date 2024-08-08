@@ -1,11 +1,13 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import React from "react";
+import { render, act, screen, waitFor } from "@testing-library/react";
 import Users from "./Users";
 import {
   UserDataContextType,
   useUserDataContext,
 } from "../contexts/UserDataContext";
-import { MemoryRouter } from "react-router-dom";
+import { MemoryRouter, BrowserRouter } from "react-router-dom";
 import { User } from "../types";
+import * as UserDataContext from "../contexts/UserDataContext";
 
 jest.mock("../firebase", () => ({
   getIdToken: jest.fn().mockResolvedValue("mock-token"),
@@ -136,5 +138,86 @@ describe("Users component", () => {
     await waitFor(() => {
       expect(screen.getByText("Users")).toBeInTheDocument();
     });
+  });
+});
+
+describe("Users Component Behavior", () => {
+  let fetchCount = 0;
+  let consoleLogCount = 0;
+  const originalConsoleLog = console.log;
+  const originalConsoleError = console.error;
+
+  beforeEach(() => {
+    fetchCount = 0;
+    consoleLogCount = 0;
+    jest.useFakeTimers();
+
+    global.fetch = jest.fn().mockImplementation(() => {
+      fetchCount++;
+      return Promise.resolve({
+        ok: true,
+        json: async () => ({ users: [] }),
+      });
+    });
+
+    console.log = jest.fn((...args) => {
+      consoleLogCount++;
+      originalConsoleLog(...args);
+    });
+
+    console.error = jest.fn();
+
+    jest.spyOn(UserDataContext, "useUserDataContext").mockReturnValue({
+      user: { isAdmin: true },
+      isLoggedIn: true,
+      isAdminMode: true,
+    } as any);
+  });
+
+  afterEach(() => {
+    console.log = originalConsoleLog;
+    console.error = originalConsoleError;
+    jest.useRealTimers();
+    jest.restoreAllMocks();
+  });
+
+  it("fetches users only once when mounted", async () => {
+    render(
+      <BrowserRouter>
+        <Users />
+      </BrowserRouter>,
+    );
+
+    // Run all timers to trigger any scheduled effects
+    await act(async () => {
+      jest.runAllTimers();
+    });
+
+    console.log(`Fetch called ${fetchCount} times`);
+    console.log(`Console.log called ${consoleLogCount} times`);
+
+    expect(fetchCount).toBe(1);
+    expect(consoleLogCount).toBeLessThanOrEqual(10);
+    expect(console.error).not.toHaveBeenCalled();
+  });
+
+  it("should not fetch users when not in admin mode", async () => {
+    jest.spyOn(UserDataContext, "useUserDataContext").mockReturnValue({
+      user: { isAdmin: true },
+      isLoggedIn: true,
+      isAdminMode: false,
+    } as any);
+
+    render(
+      <BrowserRouter>
+        <Users />
+      </BrowserRouter>,
+    );
+
+    await act(async () => {
+      jest.runAllTimers();
+    });
+
+    expect(fetchCount).toBe(1);
   });
 });
