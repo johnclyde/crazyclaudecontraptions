@@ -1,4 +1,4 @@
-import { render, act, screen, waitFor } from "@testing-library/react";
+import React, { render, act, screen, waitFor } from "@testing-library/react";
 import Users from "./Users";
 import {
   UserDataContextType,
@@ -141,55 +141,51 @@ describe("Users component", () => {
 });
 
 describe("Users Component DoS Detection", () => {
-  let fetchMock: jest.Mock;
-  let apiCallCount: number;
-  const API_CALL_THRESHOLD = 10; // Adjust this as needed
-  const TIME_WINDOW_MS = 1000; // 1 second
+  it("detects excessive behavior", async () => {
+    let fetchCount = 0;
+    let consoleLogCount = 0;
 
-  beforeEach(() => {
-    apiCallCount = 0;
-    fetchMock = jest.fn().mockImplementation(() => {
-      apiCallCount++;
-      if (apiCallCount > API_CALL_THRESHOLD) {
-        throw new Error("DoS detected");
-      }
+    global.fetch = jest.fn().mockImplementation(() => {
+      fetchCount++;
       return Promise.resolve({
         ok: true,
         json: async () => ({ users: [] }),
       });
     });
-    global.fetch = fetchMock;
 
-    jest
-      .spyOn(UserDataContext, "useUserDataContext")
-      .mockImplementation(() => ({
-        ...mockUserDataContext,
-        isAdminMode: true,
-      }));
-  });
+    const originalConsoleLog = console.log;
+    console.log = jest.fn((...args) => {
+      consoleLogCount++;
+      originalConsoleLog(...args);
+    });
 
-  it("detects and stops DoS behavior", async () => {
-    const dosDetected = jest.fn();
+    jest.spyOn(UserDataContext, 'useUserDataContext').mockReturnValue({
+      user: { isAdmin: true },
+      isLoggedIn: true,
+      isAdminMode: true,
+    } as any);
 
-    try {
-      render(
-        <BrowserRouter>
-          <Users />
-        </BrowserRouter>,
-      );
+    render(
+      <BrowserRouter>
+        <Users />
+      </BrowserRouter>
+    );
 
-      await act(async () => {
-        await new Promise((resolve) => setTimeout(resolve, TIME_WINDOW_MS));
-      });
-    } catch (error) {
-      if (error.message === "DoS detected") {
-        dosDetected();
-      } else {
-        throw error;
-      }
+    // Wait for any pending effects to complete
+    await act(async () => {
+      await new Promise(resolve => setTimeout(resolve, 1000));
+    });
+
+    console.log = originalConsoleLog;
+
+    console.log(`Fetch called ${fetchCount} times`);
+    console.log(`Console.log called ${consoleLogCount} times`);
+
+    const isExcessiveBehavior = consoleLogCount > 15;
+    expect(isExcessiveBehavior).toBe(true);
+
+    if (isExcessiveBehavior) {
+      throw new Error('DoS-like behavior detected');
     }
-
-    expect(dosDetected).toHaveBeenCalled();
-    expect(apiCallCount).toBeGreaterThan(API_CALL_THRESHOLD);
   });
 });
