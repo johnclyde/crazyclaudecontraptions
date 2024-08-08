@@ -114,7 +114,7 @@ describe("Users component", () => {
     });
   });
 
-  it("should render for non-admin users", async () => {
+  it("should not render for non-admin users", async () => {
     (useUserDataContext as jest.Mock).mockReturnValue({
       ...mockUserDataContext,
       user: { ...mockUser, isAdmin: false },
@@ -123,11 +123,11 @@ describe("Users component", () => {
     renderUsers();
 
     await waitFor(() => {
-      expect(screen.getByText("Users")).toBeInTheDocument();
+      expect(screen.queryByText("Users")).not.toBeInTheDocument();
     });
   });
 
-  it("should render when admin mode is off", async () => {
+  it("should not render when admin mode is off", async () => {
     (useUserDataContext as jest.Mock).mockReturnValue({
       ...mockUserDataContext,
       isAdminMode: false,
@@ -136,7 +136,7 @@ describe("Users component", () => {
     renderUsers();
 
     await waitFor(() => {
-      expect(screen.getByText("Users")).toBeInTheDocument();
+      expect(screen.queryByText("Users")).not.toBeInTheDocument();
     });
   });
 });
@@ -188,7 +188,6 @@ describe("Users Component Behavior", () => {
       </BrowserRouter>,
     );
 
-    // Run all timers to trigger any scheduled effects
     await act(async () => {
       jest.runAllTimers();
     });
@@ -197,8 +196,35 @@ describe("Users Component Behavior", () => {
     console.log(`Console.log called ${consoleLogCount} times`);
 
     expect(fetchCount).toBe(1);
-    expect(consoleLogCount).toBeLessThanOrEqual(10);
+    expect(consoleLogCount).toBeLessThanOrEqual(5);
     expect(console.error).not.toHaveBeenCalled();
+  });
+
+  it("does not re-fetch when admin mode or user doesn't change", async () => {
+    const { rerender } = render(
+      <BrowserRouter>
+        <Users />
+      </BrowserRouter>,
+    );
+
+    await act(async () => {
+      jest.runAllTimers();
+    });
+
+    const initialFetchCount = fetchCount;
+
+    // Trigger a re-render
+    rerender(
+      <BrowserRouter>
+        <Users />
+      </BrowserRouter>,
+    );
+
+    await act(async () => {
+      jest.runAllTimers();
+    });
+
+    expect(fetchCount).toBe(initialFetchCount);
   });
 
   it("should not fetch users when not in admin mode", async () => {
@@ -218,6 +244,6 @@ describe("Users Component Behavior", () => {
       jest.runAllTimers();
     });
 
-    expect(fetchCount).toBe(1);
+    expect(fetchCount).toBe(0);
   });
 });
