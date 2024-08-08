@@ -114,7 +114,7 @@ describe("Users component", () => {
     });
   });
 
-  it("should render for non-admin users", async () => {
+  it("should not render for non-admin users", async () => {
     (useUserDataContext as jest.Mock).mockReturnValue({
       ...mockUserDataContext,
       user: { ...mockUser, isAdmin: false },
@@ -123,11 +123,11 @@ describe("Users component", () => {
     renderUsers();
 
     await waitFor(() => {
-      expect(screen.getByText("Users")).toBeInTheDocument();
+      expect(screen.getByText("Users")).not.toBeInTheDocument();
     });
   });
 
-  it("should render when admin mode is off", async () => {
+  it("should not render when admin mode is off", async () => {
     (useUserDataContext as jest.Mock).mockReturnValue({
       ...mockUserDataContext,
       isAdminMode: false,
@@ -136,7 +136,7 @@ describe("Users component", () => {
     renderUsers();
 
     await waitFor(() => {
-      expect(screen.getByText("Users")).toBeInTheDocument();
+      expect(screen.getByText("Users")).not.toBeInTheDocument();
     });
   });
 });
@@ -218,6 +218,6 @@ describe("Users Component Behavior", () => {
       jest.runAllTimers();
     });
 
-    expect(fetchCount).toBe(1);
+    expect(fetchCount).toBe(0);
   });
 });
