@@ -1,11 +1,22 @@
-import React, { useState } from "react";
-import { useUserDataContext } from "../contexts/UserDataContext";
+import React, { useState, forwardRef } from "react";
+import Header from "./Header";
+import { NotificationBellProps } from "./NotificationBell";
+import { UserMenuProps } from "./UserMenu";
 import "../LoggedOutPage.css";
 
+const MockNotificationBell = forwardRef<HTMLDivElement, NotificationBellProps>(
+  (props, ref) => {
+    return <div ref={ref}></div>;
+  },
+);
+
+const MockUserMenu = forwardRef<HTMLDivElement, UserMenuProps>((props, ref) => {
+  return <div ref={ref}></div>;
+});
+
 const LoggedOutPage: React.FC = () => {
-  const { login } = useUserDataContext();
   const [selectedGoals, setSelectedGoals] = useState<string[]>([]);
-  const [currentSection, setCurrentSection] = useState(0);
+  const [visibleSections, setVisibleSections] = useState(1);
 
   const competitions = [
     "AMC 8",
@@ -25,9 +36,8 @@ const LoggedOutPage: React.FC = () => {
     );
   };
 
-  const handleNextSection = () => {
-    setCurrentSection((prev) => prev + 1);
-  };
+  const handleNextSection = () =>
+    setVisibleSections((prev) => Math.min(prev + 1, 3));
 
   const createPlanCard = (title: string, description: string) => (
     <div className="plan-card">
@@ -108,77 +118,78 @@ const LoggedOutPage: React.FC = () => {
   };
 
   return (
-    <>
-      <header className="header">
-        <div className="logo">GrindOlympiads</div>
-        <button className="login-btn" onClick={login}>
-          Log In
-        </button>
-      </header>
+    <div className="logged-out-page">
+      <Header
+        notifications={[]}
+        notificationsError={null}
+        markNotificationAsRead={() => {}}
+        NotificationBell={MockNotificationBell}
+        UserMenu={MockUserMenu}
+      />
+      <main>
+        <section className="hero">
+          <h1>Personalized Math Competition Training</h1>
+          <p>
+            Your tailored path to math competition success. Set your goals,
+            track your progress, and excel in AMC, AIME, and beyond.
+          </p>
+        </section>
 
-      <section className="hero">
-        <h1>Personalized Math Competition Training</h1>
-        <p>
-          Your tailored path to math competition success. Set your goals, track
-          your progress, and excel in AMC, AIME, and beyond.
-        </p>
-      </section>
-
-      <main className="content">
-        <div
-          className={`section ${currentSection === 0 ? "visible" : ""}`}
-          id="goal-section"
-        >
-          <h2>What contests do you plan to participate in this year?</h2>
-          <div className="btn-group">
-            {competitions.map((comp) => (
-              <button
-                key={comp}
-                className={`choice-btn ${selectedGoals.includes(comp) ? "selected" : ""}`}
-                onClick={() => handleGoalSelection(comp)}
-              >
-                {comp}
+        <div className="content">
+          <div className="section visible">
+            <h2>What contests do you plan to participate in this year?</h2>
+            <div className="btn-group">
+              {competitions.map((comp) => (
+                <button
+                  key={comp}
+                  className={`choice-btn ${selectedGoals.includes(comp) ? "selected" : ""}`}
+                  onClick={() => handleGoalSelection(comp)}
+                >
+                  {comp}
+                </button>
+              ))}
+            </div>
+            {visibleSections === 1 && (
+              <button className="next-btn" onClick={handleNextSection}>
+                Next: View Your Personalized Plan
               </button>
-            ))}
+            )}
           </div>
-          <button className="next-btn" onClick={handleNextSection}>
-            Next: View Your Personalized Plan
-          </button>
-        </div>
 
-        <div
-          className={`section ${currentSection === 1 ? "visible" : ""}`}
-          id="plan-section"
-        >
-          <h2>Your Personalized Plan</h2>
-          <div id="plan-result">{renderPlan()}</div>
-          <button className="next-btn" onClick={handleNextSection}>
-            Next: View Competition Calendar
-          </button>
-        </div>
+          {visibleSections >= 2 && (
+            <div className="section visible">
+              <h2>Your Personalized Plan</h2>
+              <div id="plan-result">{renderPlan()}</div>
+              {visibleSections === 2 && (
+                <button className="next-btn" onClick={handleNextSection}>
+                  Next: View Competition Calendar
+                </button>
+              )}
+            </div>
+          )}
 
-        <div
-          className={`section ${currentSection === 2 ? "visible" : ""}`}
-          id="calendar-section"
-        >
-          <h2>Upcoming Math Competitions</h2>
-          <div className="calendar">
-            <div className="calendar-event">
-              <strong>November 15, 2024</strong>
-              <p>AMC 10/12 A</p>
+          {visibleSections >= 3 && (
+            <div className="section visible">
+              <h2>Upcoming Math Competitions</h2>
+              <div className="calendar">
+                <div className="calendar-event">
+                  <strong>November 15, 2024</strong>
+                  <p>AMC 10/12 A</p>
+                </div>
+                <div className="calendar-event">
+                  <strong>November 22, 2024</strong>
+                  <p>AMC 10/12 B</p>
+                </div>
+                <div className="calendar-event">
+                  <strong>January 30, 2025</strong>
+                  <p>AIME I</p>
+                </div>
+              </div>
             </div>
-            <div className="calendar-event">
-              <strong>November 22, 2024</strong>
-              <p>AMC 10/12 B</p>
-            </div>
-            <div className="calendar-event">
-              <strong>January 30, 2025</strong>
-              <p>AIME I</p>
-            </div>
-          </div>
+          )}
         </div>
       </main>
-    </>
+    </div>
   );
 };
 
