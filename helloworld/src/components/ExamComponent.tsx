@@ -1,16 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import LatexRenderer from "./LatexRenderer";
-import ProblemEditor from "./ProblemEditor";
+import ProblemEditor, { Problem } from "./ProblemEditor";
+import AnswerSubmissionForm from "./AnswerSubmissionForm";
 import { getIdToken } from "../firebase";
 import { useUserDataContext } from "../contexts/UserDataContext";
-
-interface Problem {
-  id: string;
-  number: number;
-  problem: string;
-  image_url?: string;
-}
 
 const ExamComponent: React.FC = () => {
   const { competition, year, exam } = useParams<{
@@ -27,7 +21,6 @@ const ExamComponent: React.FC = () => {
   const [examId, setExamId] = useState<string | null>(null);
   const [editingProblem, setEditingProblem] = useState<Problem | null>(null);
   const [showEditButton, setShowEditButton] = useState(false);
-  const [userAnswer, setUserAnswer] = useState("");
 
   const { user, isAdminMode } = useUserDataContext();
 
@@ -102,9 +95,8 @@ const ExamComponent: React.FC = () => {
     }
   };
 
-  const handleAnswerSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!examId || problems.length === 0) return;
+  const handleAnswerSubmit = async (problemId: string, answer: string) => {
+    if (!examId) return;
 
     try {
       const response = await fetch("/api/submit-answer", {
@@ -115,8 +107,8 @@ const ExamComponent: React.FC = () => {
         },
         body: JSON.stringify({
           examId,
-          problemId: problems[currentProblemIndex].id,
-          answer: userAnswer,
+          problemId,
+          answer,
           timestamp: new Date().toISOString(),
         }),
       });
@@ -125,8 +117,6 @@ const ExamComponent: React.FC = () => {
         throw new Error("Failed to submit answer");
       }
 
-      // Clear the answer input after successful submission
-      setUserAnswer("");
       // You might want to show a success message to the user here
     } catch (err) {
       console.error("Error submitting answer:", err);
@@ -147,21 +137,10 @@ const ExamComponent: React.FC = () => {
           className="mt-2 max-w-full h-auto"
         />
       )}
-      <form onSubmit={handleAnswerSubmit} className="mt-4">
-        <input
-          type="text"
-          value={userAnswer}
-          onChange={(e) => setUserAnswer(e.target.value)}
-          placeholder="Enter your answer"
-          className="w-full p-2 border rounded"
-        />
-        <button
-          type="submit"
-          className="mt-2 bg-blue-500 text-white px-4 py-2 rounded"
-        >
-          Submit Answer
-        </button>
-      </form>
+      <AnswerSubmissionForm
+        problemId={problem.id}
+        onSubmit={(answer) => handleAnswerSubmit(problem.id, answer)}
+      />
       {showEditButton && (
         <button
           onClick={() => handleEditProblem(problem)}

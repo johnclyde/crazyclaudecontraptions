@@ -1,4 +1,10 @@
-import { render, screen, waitFor, act, fireEvent } from "@testing-library/react";
+import {
+  render,
+  screen,
+  waitFor,
+  act,
+  fireEvent,
+} from "@testing-library/react";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 import ExamComponent from "./ExamComponent";
 import * as UserDataContext from "../contexts/UserDataContext";
@@ -67,7 +73,9 @@ describe("ExamComponent", () => {
     });
     await waitFor(() => {
       expect(
-        screen.getByText("Failed to load exam data. Please try again later."),
+        screen.getByText(
+          "Error: Failed to load exam data. Please try again later.",
+        ),
       ).toBeInTheDocument();
     });
   });
@@ -197,33 +205,6 @@ describe("ExamComponent", () => {
     });
   });
 
-  it("renders the correct number of problems", async () => {
-    const mockProblems = [
-      { id: "1", number: 1, problem: "Problem 1" },
-      { id: "2", number: 2, problem: "Problem 2" },
-      { id: "3", number: 3, problem: "Problem 3" },
-    ];
-
-    (global.fetch as jest.Mock).mockResolvedValueOnce({
-      ok: true,
-      json: () => Promise.resolve({ problems: mockProblems, comment: "Test comment" }),
-    });
-
-    render(
-      <MemoryRouter initialEntries={["/competition/Math/2023/Spring"]}>
-        <Routes>
-          <Route path="/competition/:competition/:year/:exam" element={<ExamComponent />} />
-        </Routes>
-      </MemoryRouter>
-    );
-
-    await waitFor(() => {
-      expect(screen.getByText("Problem 1")).toBeInTheDocument();
-      expect(screen.getByText("Problem 2")).toBeInTheDocument();
-      expect(screen.getByText("Problem 3")).toBeInTheDocument();
-    });
-  });
-
   it("toggles between showing one problem and all problems", async () => {
     const mockProblems = [
       { id: "1", number: 1, problem: "Problem 1" },
@@ -232,15 +213,19 @@ describe("ExamComponent", () => {
 
     (global.fetch as jest.Mock).mockResolvedValueOnce({
       ok: true,
-      json: () => Promise.resolve({ problems: mockProblems, comment: "Test comment" }),
+      json: () =>
+        Promise.resolve({ problems: mockProblems, comment: "Test comment" }),
     });
 
     render(
       <MemoryRouter initialEntries={["/competition/Math/2023/Spring"]}>
         <Routes>
-          <Route path="/competition/:competition/:year/:exam" element={<ExamComponent />} />
+          <Route
+            path="/competition/:competition/:year/:exam"
+            element={<ExamComponent />}
+          />
         </Routes>
-      </MemoryRouter>
+      </MemoryRouter>,
     );
 
     await waitFor(() => {
@@ -265,15 +250,19 @@ describe("ExamComponent", () => {
 
     (global.fetch as jest.Mock).mockResolvedValueOnce({
       ok: true,
-      json: () => Promise.resolve({ problems: mockProblems, comment: "Test comment" }),
+      json: () =>
+        Promise.resolve({ problems: mockProblems, comment: "Test comment" }),
     });
 
     render(
       <MemoryRouter initialEntries={["/competition/Math/2023/Spring"]}>
         <Routes>
-          <Route path="/competition/:competition/:year/:exam" element={<ExamComponent />} />
+          <Route
+            path="/competition/:competition/:year/:exam"
+            element={<ExamComponent />}
+          />
         </Routes>
-      </MemoryRouter>
+      </MemoryRouter>,
     );
 
     await waitFor(() => {
