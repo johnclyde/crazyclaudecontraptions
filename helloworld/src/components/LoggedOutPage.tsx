@@ -1,10 +1,9 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState } from "react";
 import { useUserDataContext } from "../contexts/UserDataContext";
+import "../LoggedOutPage.css";
 
 const LoggedOutPage: React.FC = () => {
   const { login } = useUserDataContext();
-  const navigate = useNavigate();
   const [selectedGoals, setSelectedGoals] = useState<string[]>([]);
   const [currentSection, setCurrentSection] = useState(0);
 
@@ -13,6 +12,7 @@ const LoggedOutPage: React.FC = () => {
     "AMC 10",
     "AMC 12",
     "AIME",
+    "ARML",
     "USAJMO",
     "USAMO",
     "IMO",
