@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link } from 'react-router-dom';
 
 const ComponentDirectory = () => {
   const components = [
@@ -36,6 +36,12 @@ const ComponentDirectory = () => {
       name: "Challenges",
       path: "/labs/challenges",
       description: "Display and interact with math challenges",
+    },
+    // Add the new Settings component
+    {
+      name: "Settings",
+      path: "/labs/settings",
+      description: "User settings and preferences",
     },
   ];
 
