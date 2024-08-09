@@ -13,7 +13,7 @@ import LabsRoutes from "./LabsRoutes";
 import Header from "./components/Header";
 import NotificationBell from "./components/NotificationBell";
 import UserMenu from "./components/UserMenu";
-import Settings from "./components/Settings";
+import LoggedOutPage from "./components/LoggedOutPage";
 
 const App: React.FC = () => {
   const isStaging = process.env.REACT_APP_ENVIRONMENT === "staging";
@@ -24,6 +24,10 @@ const App: React.FC = () => {
         <UserDataProvider>
           <Routes>
             <Route
+              path="/"
+              element={<LoggedOutPage />}
+            />
+            <Route
               element={
                 <GrindOlympiadsLayout
                   isStaging={isStaging}
@@ -33,7 +37,7 @@ const App: React.FC = () => {
                 />
               }
             >
-              <Route index element={<GrindOlympiadsIndex />} />
+              <Route path="/home" element={<GrindOlympiadsIndex />} />
               <Route
                 path="competition/:competition/:year/:exam"
                 element={<ExamComponent />}
@@ -43,7 +47,6 @@ const App: React.FC = () => {
                 element={<UserResponseComponent />}
               />
               <Route path="profile" element={<UserProfile />} />
-              <Route path="settings" element={<Settings />} />
               <Route element={<ProtectedRoute adminOnly={true} />}>
                 <Route path="admin/users" element={<Users />} />
               </Route>
