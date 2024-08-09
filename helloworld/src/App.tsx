@@ -23,10 +23,7 @@ const App: React.FC = () => {
       <Router>
         <UserDataProvider>
           <Routes>
-            <Route
-              path="/"
-              element={<LoggedOutPage />}
-            />
+            <Route path="/" element={<LoggedOutPage />} />
             <Route
               element={
                 <GrindOlympiadsLayout
