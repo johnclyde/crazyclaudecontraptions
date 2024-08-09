@@ -3,13 +3,13 @@ import Hero from "./components/Hero";
 import TestSearch from "./components/TestSearch";
 import TestList from "./components/TestList";
 import UserProgress from "./components/UserProgress";
-import useUserData from "./hooks/useUserData";
+import { useUserDataContext } from "./contexts/UserDataContext";
 import useTests from "./hooks/useTests";
 import LoggedOutPage from "./components/LoggedOutPage";
 
 const GrindOlympiadsIndex: React.FC = () => {
   const [showTests, setShowTests] = useState<boolean>(false);
-  const { isLoggedIn, user, userProgress } = useUserData();
+  const { isLoggedIn, user, userProgress } = useUserDataContext();
   const {
     tests,
     loading,

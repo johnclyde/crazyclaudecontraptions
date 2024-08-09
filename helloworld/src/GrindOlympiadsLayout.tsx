@@ -1,7 +1,7 @@
 import React from "react";
 import { Outlet } from "react-router-dom";
+import { useUserDataContext } from "./contexts/UserDataContext";
 import useNotifications from "./hooks/useNotifications";
-import useUserData from "./hooks/useUserData";
 
 interface GrindOlympiadsLayoutProps {
   isStaging: boolean;
@@ -17,7 +17,7 @@ const GrindOlympiadsLayout: React.FC<GrindOlympiadsLayoutProps> = ({
   UserMenu,
 }) => {
   const { user, isLoggedIn, setIsLoggedIn, login, logout, bypassLogin } =
-    useUserData();
+    useUserDataContext();
   const { notifications, notificationsError, markNotificationAsRead } =
     useNotifications(isLoggedIn);
 
