@@ -5,6 +5,7 @@ import TestList from "./components/TestList";
 import UserProgress from "./components/UserProgress";
 import useUserData from "./hooks/useUserData";
 import useTests from "./hooks/useTests";
+import LoggedOutPage from "./components/LoggedOutPage";
 
 const GrindOlympiadsIndex: React.FC = () => {
   const [showTests, setShowTests] = useState<boolean>(false);
@@ -19,6 +20,10 @@ const GrindOlympiadsIndex: React.FC = () => {
     setSelectedCompetition,
     filteredTests,
   } = useTests();
+
+  if (!isLoggedIn) {
+    return <LoggedOutPage />;
+  }
 
   if (loading) {
     return (
@@ -42,15 +47,9 @@ const GrindOlympiadsIndex: React.FC = () => {
       <Hero showTests={showTests} setShowTests={setShowTests} />
 
       <div className="container mx-auto py-8">
-        {isLoggedIn ? (
-          <h2 className="text-2xl font-bold mb-4">
-            Welcome, {user?.name || "User"}!
-          </h2>
-        ) : (
-          <h2 className="text-2xl font-bold mb-4">
-            Please log in to access all features.
-          </h2>
-        )}
+        <h2 className="text-2xl font-bold mb-4">
+          Welcome, {user?.name || "User"}!
+        </h2>
       </div>
 
       {showTests && (
@@ -65,7 +64,7 @@ const GrindOlympiadsIndex: React.FC = () => {
           <TestList tests={filteredTests} />
         </>
       )}
-      {isLoggedIn && <UserProgress userProgress={userProgress} />}
+      <UserProgress userProgress={userProgress} />
     </div>
   );
 };
