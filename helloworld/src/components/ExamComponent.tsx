@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import LatexRenderer from "./LatexRenderer";
 import ProblemEditor, { Problem } from "./ProblemEditor";
+import AnswerSubmissionForm from "./AnswerSubmissionForm";
 import { getIdToken } from "../firebase";
 import { useUserDataContext } from "../contexts/UserDataContext";
 
@@ -94,6 +95,37 @@ const ExamComponent: React.FC = () => {
     }
   };
 
+  const handleAnswerSubmit = async (
+    examId: string,
+    problemId: string,
+    answer: string,
+  ) => {
+    try {
+      const response = await fetch("/api/submit-answer", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${await getIdToken()}`,
+        },
+        body: JSON.stringify({
+          examId,
+          problemId,
+          answer,
+          timestamp: new Date().toISOString(),
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to submit answer");
+      }
+
+      // You might want to show a success message to the user here
+    } catch (err) {
+      console.error("Error submitting answer:", err);
+      // You might want to show an error message to the user here
+    }
+  };
+
   const renderProblem = (problem: Problem) => (
     <li key={problem.id} className="bg-white p-4 rounded shadow">
       <strong className="text-lg">Problem {problem.number}:</strong>
@@ -107,10 +139,17 @@ const ExamComponent: React.FC = () => {
           className="mt-2 max-w-full h-auto"
         />
       )}
+      {examId && (
+        <AnswerSubmissionForm
+          examId={examId}
+          problemId={problem.id}
+          onSubmit={handleAnswerSubmit}
+        />
+      )}
       {showEditButton && (
         <button
           onClick={() => handleEditProblem(problem)}
-          className="mt-2 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors"
+          className="mt-2 bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600 transition-colors"
         >
           Edit Problem
         </button>
@@ -129,7 +168,7 @@ const ExamComponent: React.FC = () => {
   if (error) {
     return (
       <div className="p-6 bg-gray-100 min-h-screen flex items-center justify-center">
-        <p className="text-xl text-red-500">{error}</p>
+        <p className="text-xl text-red-500">Error: {error}</p>
       </div>
     );
   }
