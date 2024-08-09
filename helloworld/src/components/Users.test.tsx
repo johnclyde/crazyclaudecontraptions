@@ -1,9 +1,13 @@
 import React from "react";
 import { render, act, screen, waitFor } from "@testing-library/react";
 import Users from "./Users";
-import * as UserDataContext from "../contexts/UserDataContext";
+import {
+  UserDataContextType,
+  useUserDataContext,
+} from "../contexts/UserDataContext";
 import { MemoryRouter } from "react-router-dom";
 import { User } from "../types";
+import * as UserDataContext from "../contexts/UserDataContext";
 
 jest.mock("../firebase", () => ({
   getIdToken: jest.fn().mockResolvedValue("mock-token"),
@@ -26,7 +30,34 @@ const mockUser: User = {
   progress: [],
 };
 
-describe("Users Component", () => {
+const mockUserDataContext: UserDataContextType = {
+  user: mockUser,
+  isLoggedIn: true,
+  bypassLogin: jest.fn(),
+  setIsLoggedIn: jest.fn(),
+  login: jest.fn(),
+  logout: jest.fn(),
+  userProgress: [],
+  isAdminMode: true,
+  toggleAdminMode: jest.fn(),
+};
+
+jest.mock("../contexts/UserDataContext", () => ({
+  ...jest.requireActual("../contexts/UserDataContext"),
+  useUserDataContext: jest.fn(),
+}));
+
+const renderUsers = (contextOverrides = {}) => {
+  const contextValue = { ...mockUserDataContext, ...contextOverrides };
+  (useUserDataContext as jest.Mock).mockReturnValue(contextValue);
+  return render(
+    <MemoryRouter>
+      <Users />
+    </MemoryRouter>,
+  );
+};
+
+describe("Users component", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockFetch.mockResolvedValue({
@@ -35,36 +66,15 @@ describe("Users Component", () => {
     });
   });
 
+  // Keep existing tests
   it("should render loading state initially", async () => {
     mockFetch.mockImplementationOnce(() => new Promise(() => {}));
-    jest.spyOn(UserDataContext, "useUserDataContext").mockReturnValue({
-      user: { isAdmin: true },
-      isLoggedIn: true,
-      isAdminMode: true,
-    } as any);
-
-    render(
-      <MemoryRouter>
-        <Users />
-      </MemoryRouter>,
-    );
-
+    renderUsers();
     expect(screen.getByText("Loading...")).toBeInTheDocument();
   });
 
   it("should fetch and display users", async () => {
-    jest.spyOn(UserDataContext, "useUserDataContext").mockReturnValue({
-      user: { isAdmin: true },
-      isLoggedIn: true,
-      isAdminMode: true,
-    } as any);
-
-    render(
-      <MemoryRouter>
-        <Users />
-      </MemoryRouter>,
-    );
-
+    renderUsers();
     await waitFor(() => {
       expect(screen.getByText("Frank Drebbin")).toBeInTheDocument();
       expect(screen.getByText("mrdrebbin@example.com")).toBeInTheDocument();
@@ -76,19 +86,7 @@ describe("Users Component", () => {
       ok: true,
       json: async () => ({ users: [] }),
     });
-
-    jest.spyOn(UserDataContext, "useUserDataContext").mockReturnValue({
-      user: { isAdmin: true },
-      isLoggedIn: true,
-      isAdminMode: true,
-    } as any);
-
-    render(
-      <MemoryRouter>
-        <Users />
-      </MemoryRouter>,
-    );
-
+    renderUsers();
     await waitFor(() => {
       expect(screen.getByText("Users")).toBeInTheDocument();
       expect(screen.queryByText("Frank Drebbin")).not.toBeInTheDocument();
@@ -97,19 +95,7 @@ describe("Users Component", () => {
 
   it("should handle error when fetching users", async () => {
     mockFetch.mockRejectedValueOnce(new Error("API error"));
-
-    jest.spyOn(UserDataContext, "useUserDataContext").mockReturnValue({
-      user: { isAdmin: true },
-      isLoggedIn: true,
-      isAdminMode: true,
-    } as any);
-
-    render(
-      <MemoryRouter>
-        <Users />
-      </MemoryRouter>,
-    );
-
+    renderUsers();
     await waitFor(() => {
       expect(
         screen.getByText("Failed to load users. Please try again later."),
@@ -118,88 +104,42 @@ describe("Users Component", () => {
   });
 
   it("should not render for non-admin users", async () => {
-    jest.spyOn(UserDataContext, "useUserDataContext").mockReturnValue({
-      user: { isAdmin: false },
-      isLoggedIn: true,
-      isAdminMode: true,
-    } as any);
-
-    render(
-      <MemoryRouter>
-        <Users />
-      </MemoryRouter>,
-    );
-
+    renderUsers({ user: { ...mockUser, isAdmin: false } });
     await waitFor(() => {
       expect(screen.queryByText("Users")).not.toBeInTheDocument();
     });
   });
 
   it("should not render when admin mode is off", async () => {
-    jest.spyOn(UserDataContext, "useUserDataContext").mockReturnValue({
-      user: { isAdmin: true },
-      isLoggedIn: true,
-      isAdminMode: false,
-    } as any);
-
-    render(
-      <MemoryRouter>
-        <Users />
-      </MemoryRouter>,
-    );
-
+    renderUsers({ isAdminMode: false });
     await waitFor(() => {
       expect(screen.queryByText("Users")).not.toBeInTheDocument();
     });
   });
 
-  it("should fetch users when admin user and admin mode are true", async () => {
-    jest.spyOn(UserDataContext, "useUserDataContext").mockReturnValue({
-      user: { isAdmin: true },
-      isLoggedIn: true,
-      isAdminMode: true,
-    } as any);
-
-    render(
-      <MemoryRouter>
-        <Users />
-      </MemoryRouter>,
-    );
-
+  // Add new tests
+  it("should fetch users only once when mounted", async () => {
+    renderUsers();
     await waitFor(() => {
       expect(mockFetch).toHaveBeenCalledTimes(1);
     });
   });
 
   it("should re-fetch users when admin status changes", async () => {
-    const mockUseContext = jest.spyOn(UserDataContext, "useUserDataContext");
-    mockUseContext.mockReturnValue({
-      user: { isAdmin: false },
-      isLoggedIn: true,
-      isAdminMode: true,
-    } as any);
-
-    const { rerender } = render(
-      <MemoryRouter>
-        <Users />
-      </MemoryRouter>,
-    );
-
+    const { rerender } = renderUsers({ user: { ...mockUser, isAdmin: false } });
     await waitFor(() => {
       expect(mockFetch).not.toHaveBeenCalled();
     });
-
-    mockUseContext.mockReturnValue({
-      user: { isAdmin: true },
-      isLoggedIn: true,
-      isAdminMode: true,
-    } as any);
 
     rerender(
       <MemoryRouter>
         <Users />
       </MemoryRouter>,
     );
+    (useUserDataContext as jest.Mock).mockReturnValue({
+      ...mockUserDataContext,
+      user: { ...mockUser, isAdmin: true },
+    });
 
     await waitFor(() => {
       expect(mockFetch).toHaveBeenCalledTimes(1);
@@ -207,34 +147,20 @@ describe("Users Component", () => {
   });
 
   it("should re-fetch users when admin mode changes", async () => {
-    const mockUseContext = jest.spyOn(UserDataContext, "useUserDataContext");
-    mockUseContext.mockReturnValue({
-      user: { isAdmin: true },
-      isLoggedIn: true,
-      isAdminMode: false,
-    } as any);
-
-    const { rerender } = render(
-      <MemoryRouter>
-        <Users />
-      </MemoryRouter>,
-    );
-
+    const { rerender } = renderUsers({ isAdminMode: false });
     await waitFor(() => {
       expect(mockFetch).not.toHaveBeenCalled();
     });
-
-    mockUseContext.mockReturnValue({
-      user: { isAdmin: true },
-      isLoggedIn: true,
-      isAdminMode: true,
-    } as any);
 
     rerender(
       <MemoryRouter>
         <Users />
       </MemoryRouter>,
     );
+    (useUserDataContext as jest.Mock).mockReturnValue({
+      ...mockUserDataContext,
+      isAdminMode: true,
+    });
 
     await waitFor(() => {
       expect(mockFetch).toHaveBeenCalledTimes(1);
@@ -242,34 +168,20 @@ describe("Users Component", () => {
   });
 
   it("should not re-fetch when unrelated user properties change", async () => {
-    const mockUseContext = jest.spyOn(UserDataContext, "useUserDataContext");
-    mockUseContext.mockReturnValue({
-      user: { isAdmin: true, name: "John" },
-      isLoggedIn: true,
-      isAdminMode: true,
-    } as any);
-
-    const { rerender } = render(
-      <MemoryRouter>
-        <Users />
-      </MemoryRouter>,
-    );
-
+    const { rerender } = renderUsers();
     await waitFor(() => {
       expect(mockFetch).toHaveBeenCalledTimes(1);
     });
-
-    mockUseContext.mockReturnValue({
-      user: { isAdmin: true, name: "Jane" },
-      isLoggedIn: true,
-      isAdminMode: true,
-    } as any);
 
     rerender(
       <MemoryRouter>
         <Users />
       </MemoryRouter>,
     );
+    (useUserDataContext as jest.Mock).mockReturnValue({
+      ...mockUserDataContext,
+      user: { ...mockUser, name: "Jane Doe" },
+    });
 
     await waitFor(() => {
       expect(mockFetch).toHaveBeenCalledTimes(1);
