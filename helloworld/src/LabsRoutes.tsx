@@ -7,6 +7,7 @@ import InteractiveCounter from "./components/InteractiveCounter";
 import ProblemEditorDemo from "./components/ProblemEditorDemo";
 import LoginWarningPopup from "./components/LoginWarningPopup";
 import Challenges from "./components/Challenges";
+import Settings from "./components/Settings";
 
 const LabsRoutes: React.FC = () => {
   return (
@@ -18,6 +19,7 @@ const LabsRoutes: React.FC = () => {
       <Route path="problem-editor-demo" element={<ProblemEditorDemo />} />
       <Route path="login-warning-popup" element={<LoginWarningPopup />} />
       <Route path="challenges" element={<Challenges />} />
+      <Route path="settings" element={<Settings />} />
     </Routes>
   );
 };

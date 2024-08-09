@@ -13,6 +13,7 @@ import LabsRoutes from "./LabsRoutes";
 import Header from "./components/Header";
 import NotificationBell from "./components/NotificationBell";
 import UserMenu from "./components/UserMenu";
+import Settings from "./components/Settings";
 
 const App: React.FC = () => {
   const isStaging = process.env.REACT_APP_ENVIRONMENT === "staging";
@@ -42,6 +43,7 @@ const App: React.FC = () => {
                 element={<UserResponseComponent />}
               />
               <Route path="profile" element={<UserProfile />} />
+              <Route path="settings" element={<Settings />} />
               <Route element={<ProtectedRoute adminOnly={true} />}>
                 <Route path="admin/users" element={<Users />} />
               </Route>
