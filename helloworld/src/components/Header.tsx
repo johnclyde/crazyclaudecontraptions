@@ -60,7 +60,7 @@ const Header: React.FC<HeaderProps> = ({
 
   return (
     <header
-      className={`${headerBackgroundColor} text-white p-4 sticky top-0 z-50`}
+      className={`${headerBackgroundColor} text-white p-4 sticky top-0 z-50 w-full`}
     >
       <div className="container mx-auto flex justify-between items-center">
         <Link to="/" className="text-xl font-bold">
@@ -72,27 +72,36 @@ const Header: React.FC<HeaderProps> = ({
               Components Directory
             </Link>
           )}
-          {isLoggedIn && (
-            <NotificationBell
-              ref={notificationRef}
-              notifications={notifications}
-              notificationsError={notificationsError}
-              showNotifications={showNotifications}
-              setShowNotifications={setShowNotifications}
-              markNotificationAsRead={markNotificationAsRead}
-            />
+          {isLoggedIn ? (
+            <>
+              <NotificationBell
+                ref={notificationRef}
+                notifications={notifications}
+                notificationsError={notificationsError}
+                showNotifications={showNotifications}
+                setShowNotifications={setShowNotifications}
+                markNotificationAsRead={markNotificationAsRead}
+              />
+              <UserMenu
+                ref={userMenuRef}
+                user={user}
+                isLoggedIn={isLoggedIn}
+                showUserMenu={showUserMenu}
+                setShowUserMenu={setShowUserMenu}
+                login={login}
+                logout={logout}
+                isAdminMode={isAdminMode}
+                toggleAdminMode={toggleAdminMode}
+              />
+            </>
+          ) : (
+            <button
+              onClick={login}
+              className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded"
+            >
+              Log In
+            </button>
           )}
-          <UserMenu
-            ref={userMenuRef}
-            user={user}
-            isLoggedIn={isLoggedIn}
-            showUserMenu={showUserMenu}
-            setShowUserMenu={setShowUserMenu}
-            login={login}
-            logout={logout}
-            isAdminMode={isAdminMode}
-            toggleAdminMode={toggleAdminMode}
-          />
         </div>
       </div>
     </header>

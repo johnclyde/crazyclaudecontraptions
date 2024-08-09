@@ -1,125 +1,81 @@
-import React, { useState, useRef, useEffect } from "react";
+import React from "react";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
-import { BrowserRouter as Router, MemoryRouter } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  MemoryRouter,
+  useNavigate,
+} from "react-router-dom";
 import Header from "./Header";
-import { NotificationBellProps } from "./NotificationBell";
-import { UserMenuProps } from "./UserMenu";
-import { NotificationType } from "../types";
 import * as UserDataContext from "../contexts/UserDataContext";
+
+jest.mock("react-router-dom", () => ({
+  ...jest.requireActual("react-router-dom"),
+  useNavigate: jest.fn(),
+}));
 
 jest.mock("../contexts/UserDataContext", () => ({
   useUserDataContext: jest.fn(),
 }));
 
-const useOutsideClick = (callback: () => void) => {
-  const ref = useRef<HTMLDivElement>(null);
+const mockUseUserDataContext = UserDataContext.useUserDataContext as jest.Mock;
 
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (ref.current && !ref.current.contains(event.target as Node)) {
-        callback();
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [callback]);
-
-  return ref;
-};
-
-const MockNotificationBell = React.forwardRef<
-  HTMLDivElement,
-  NotificationBellProps
->((props, forwardedRef) => {
-  const [isOpen, setIsOpen] = useState(false);
-  const dropdownRef = useOutsideClick(() => setIsOpen(false));
-  const buttonRef = useRef<HTMLButtonElement>(null);
-
-  useEffect(() => {
-    if (typeof forwardedRef === "function") {
-      forwardedRef(dropdownRef.current);
-    } else if (forwardedRef) {
-      forwardedRef.current = dropdownRef.current;
-    }
-  }, [forwardedRef]);
-
-  return (
-    <div ref={dropdownRef}>
-      <button
-        ref={buttonRef}
-        aria-label="Notifications"
-        onClick={() => setIsOpen(!isOpen)}
-      >
-        NotificationBell
-      </button>
-      {isOpen && (
-        <div data-testid="notification-dropdown">Notification Content</div>
-      )}
-    </div>
-  );
-});
-
-const MockUserMenu = React.forwardRef<HTMLDivElement, UserMenuProps>(
-  (props, forwardedRef) => {
-    const [isOpen, setIsOpen] = useState(false);
-    const menuRef = useOutsideClick(() => setIsOpen(false));
-    const buttonRef = useRef<HTMLButtonElement>(null);
-
-    useEffect(() => {
-      if (typeof forwardedRef === "function") {
-        forwardedRef(menuRef.current);
-      } else if (forwardedRef) {
-        forwardedRef.current = menuRef.current;
-      }
-    }, [forwardedRef]);
-
-    return (
-      <div ref={menuRef}>
-        <button
-          ref={buttonRef}
-          aria-label="User menu"
-          onClick={() => setIsOpen(!isOpen)}
-        >
-          User Icon
-        </button>
-        {isOpen && (
-          <div data-testid="user-menu-dropdown">
-            <button>Profile</button>
-            <button>Users</button>
-            <button>Settings</button>
-            <button>Logout</button>
-          </div>
-        )}
-      </div>
-    );
-  },
-);
-
-const mockUserDataContext = {
+const defaultUserContextValue = {
   user: null,
   isLoggedIn: false,
   login: jest.fn(),
   logout: jest.fn(),
-  bypassLogin: jest.fn(),
   isAdminMode: false,
   toggleAdminMode: jest.fn(),
 };
 
+const MockNotificationBell = React.forwardRef<HTMLDivElement, any>(
+  (props, ref) => (
+    <div ref={ref}>
+      <button
+        onClick={() => props.setShowNotifications(!props.showNotifications)}
+        aria-label="Notifications"
+      >
+        NotificationBell
+      </button>
+      {props.showNotifications && (
+        <div data-testid="notification-dropdown">Notification Content</div>
+      )}
+    </div>
+  ),
+);
+
+const MockUserMenu = React.forwardRef<HTMLDivElement, any>((props, ref) => (
+  <div ref={ref}>
+    <button
+      onClick={() => props.setShowUserMenu(!props.showUserMenu)}
+      aria-label="User menu"
+    >
+      User Icon
+    </button>
+    {props.showUserMenu && (
+      <div data-testid="user-menu-dropdown">
+        <button>Profile</button>
+        <button>Users</button>
+        <button>Settings</button>
+        <button>Logout</button>
+      </div>
+    )}
+  </div>
+));
+
 const defaultProps = {
-  notifications: [] as NotificationType[],
+  notifications: [],
   notificationsError: null,
   markNotificationAsRead: jest.fn(),
   NotificationBell: MockNotificationBell,
   UserMenu: MockUserMenu,
 };
 
-const renderHeader = (props = {}, contextValue = mockUserDataContext) => {
-  (UserDataContext.useUserDataContext as jest.Mock).mockReturnValue(
-    contextValue,
-  );
+const renderHeader = (
+  props = {},
+  userContextValue = defaultUserContextValue,
+) => {
+  mockUseUserDataContext.mockReturnValue(userContextValue);
   return render(
     <Router>
       <Header {...defaultProps} {...props} />
@@ -128,34 +84,95 @@ const renderHeader = (props = {}, contextValue = mockUserDataContext) => {
 };
 
 describe("Header", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
   it("renders GrindOlympiads link", () => {
     renderHeader();
     expect(screen.getByText("GrindOlympiads")).toBeInTheDocument();
   });
 
-  it("renders NotificationBell when logged in", () => {
-    renderHeader({}, { ...mockUserDataContext, isLoggedIn: true });
-    expect(
-      screen.getByRole("button", { name: /notifications/i }),
-    ).toBeInTheDocument();
+  it("renders login button when user is not logged in", () => {
+    renderHeader();
+    expect(screen.getByRole("button", { name: "Log In" })).toBeInTheDocument();
   });
 
-  it("doesn't render NotificationBell when not logged in", () => {
-    renderHeader();
-    expect(
-      screen.queryByRole("button", { name: /notifications/i }),
-    ).not.toBeInTheDocument();
+  it("calls login function when login button is clicked", () => {
+    const mockLogin = jest.fn();
+    renderHeader({}, { ...defaultUserContextValue, login: mockLogin });
+    fireEvent.click(screen.getByRole("button", { name: "Log In" }));
+    expect(mockLogin).toHaveBeenCalled();
   });
 
-  it("renders UserMenu", () => {
+  it("renders UserMenu when user is logged in", () => {
+    renderHeader({}, { ...defaultUserContextValue, isLoggedIn: true });
+    expect(screen.getByLabelText("User menu")).toBeInTheDocument();
+  });
+
+  it("renders NotificationBell when user is logged in", () => {
+    renderHeader({}, { ...defaultUserContextValue, isLoggedIn: true });
+    expect(screen.getByLabelText("Notifications")).toBeInTheDocument();
+  });
+
+  it("doesn't render NotificationBell when user is not logged in", () => {
     renderHeader();
-    expect(
-      screen.getByRole("button", { name: /user menu/i }),
-    ).toBeInTheDocument();
+    expect(screen.queryByLabelText("Notifications")).not.toBeInTheDocument();
+  });
+
+  it("renders labs link when on labs path", () => {
+    mockUseUserDataContext.mockReturnValue(defaultUserContextValue);
+    render(
+      <MemoryRouter initialEntries={["/labs/some-component"]}>
+        <Header {...defaultProps} />
+      </MemoryRouter>,
+    );
+    expect(screen.getByText("Components Directory")).toBeInTheDocument();
+  });
+
+  it("doesn't render labs link when not on labs path", () => {
+    renderHeader();
+    expect(screen.queryByText("Components Directory")).not.toBeInTheDocument();
+  });
+
+  it("applies correct background color for admin mode", () => {
+    renderHeader(
+      {},
+      { ...defaultUserContextValue, isLoggedIn: true, isAdminMode: true },
+    );
+    const header = screen.getByRole("banner");
+    expect(header).toHaveClass("bg-red-900");
+  });
+
+  it("applies correct background color for non-admin mode", () => {
+    renderHeader(
+      {},
+      { ...defaultUserContextValue, isLoggedIn: true, isAdminMode: false },
+    );
+    const header = screen.getByRole("banner");
+    expect(header).toHaveClass("bg-gray-800");
+  });
+
+  it("renders full width header", () => {
+    renderHeader();
+    const header = screen.getByRole("banner");
+    expect(header).toHaveClass("w-full");
+  });
+
+  it("renders sticky header", () => {
+    renderHeader();
+    const header = screen.getByRole("banner");
+    expect(header).toHaveClass("sticky top-0");
+  });
+
+  it("renders with correct z-index", () => {
+    renderHeader();
+    const header = screen.getByRole("banner");
+    expect(header).toHaveClass("z-50");
   });
 
   it("closes notification dropdown when clicking outside", async () => {
-    renderHeader({}, { ...mockUserDataContext, isLoggedIn: true });
+    renderHeader({}, { ...defaultUserContextValue, isLoggedIn: true });
     const notificationBell = screen.getByLabelText("Notifications");
 
     fireEvent.click(notificationBell);
@@ -170,7 +187,7 @@ describe("Header", () => {
   });
 
   it("closes user menu when clicking outside", async () => {
-    renderHeader();
+    renderHeader({}, { ...defaultUserContextValue, isLoggedIn: true });
     const userMenuButton = screen.getByLabelText("User menu");
 
     fireEvent.click(userMenuButton);
@@ -184,9 +201,9 @@ describe("Header", () => {
     });
   });
 
-  it("toggles off admin mode when clicking on Users", async () => {
+  it("navigates to Users page without toggling off admin mode", async () => {
     const mockToggleAdminMode = jest.fn();
-    const mockUseUserDataContext = {
+    const mockUserContextValue = {
       user: { id: "1", name: "Test User", isAdmin: true },
       isLoggedIn: true,
       login: jest.fn(),
@@ -195,9 +212,7 @@ describe("Header", () => {
       toggleAdminMode: mockToggleAdminMode,
     };
 
-    (UserDataContext.useUserDataContext as jest.Mock).mockReturnValue(
-      mockUseUserDataContext,
-    );
+    mockUseUserDataContext.mockReturnValue(mockUserContextValue);
 
     render(
       <MemoryRouter>
@@ -219,11 +234,11 @@ describe("Header", () => {
 
     // Wait for any asynchronous actions to complete
     await waitFor(() => {
-      // Check if toggleAdminMode was called, which it shouldn't be
+      // Check if toggleAdminMode was not called
       expect(mockToggleAdminMode).not.toHaveBeenCalled();
 
       // The isAdminMode should still be true
-      expect(mockUseUserDataContext.isAdminMode).toBe(true);
+      expect(mockUserContextValue.isAdminMode).toBe(true);
     });
   });
 });
