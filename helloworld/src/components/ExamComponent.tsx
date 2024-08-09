@@ -95,9 +95,11 @@ const ExamComponent: React.FC = () => {
     }
   };
 
-  const handleAnswerSubmit = async (problemId: string, answer: string) => {
-    if (!examId) return;
-
+  const handleAnswerSubmit = async (
+    examId: string,
+    problemId: string,
+    answer: string,
+  ) => {
     try {
       const response = await fetch("/api/submit-answer", {
         method: "POST",
@@ -137,10 +139,13 @@ const ExamComponent: React.FC = () => {
           className="mt-2 max-w-full h-auto"
         />
       )}
-      <AnswerSubmissionForm
-        problemId={problem.id}
-        onSubmit={(answer) => handleAnswerSubmit(problem.id, answer)}
-      />
+      {examId && (
+        <AnswerSubmissionForm
+          examId={examId}
+          problemId={problem.id}
+          onSubmit={handleAnswerSubmit}
+        />
+      )}
       {showEditButton && (
         <button
           onClick={() => handleEditProblem(problem)}

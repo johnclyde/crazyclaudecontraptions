@@ -30,8 +30,14 @@ const AnswerSubmissionForm: React.FC<AnswerSubmissionFormProps> = ({
         value={answer}
         onChange={(e) => setAnswer(e.target.value)}
         placeholder="Enter your answer"
+        className="w-full p-2 border rounded"
       />
-      <button type="submit">Submit Answer</button>
+      <button
+        type="submit"
+        className="mt-2 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors"
+      >
+        Submit Answer
+      </button>
     </form>
   );
 };
