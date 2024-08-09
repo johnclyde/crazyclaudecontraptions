@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
-import { useUserDataContext } from '../contexts/UserDataContext';
+import React, { useState } from "react";
+import { useUserDataContext } from "../contexts/UserDataContext";
 
 const Settings: React.FC = () => {
   const { user, logout } = useUserDataContext();
-  const [email, setEmail] = useState(user?.email || '');
+  const [email, setEmail] = useState(user?.email || "");
   const [darkMode, setDarkMode] = useState(false);
   const [notifications, setNotifications] = useState(true);
   const [saveAlert, setSaveAlert] = useState(false);
@@ -22,7 +22,7 @@ const Settings: React.FC = () => {
 
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Saving settings:', { email, darkMode, notifications });
+    console.log("Saving settings:", { email, darkMode, notifications });
     setSaveAlert(true);
     setTimeout(() => setSaveAlert(false), 3000);
   };
@@ -32,7 +32,9 @@ const Settings: React.FC = () => {
       <h2 className="text-2xl font-bold mb-4">Settings</h2>
       <form onSubmit={handleSave}>
         <div className="mb-4">
-          <label htmlFor="email" className="block mb-2">Email</label>
+          <label htmlFor="email" className="block mb-2">
+            Email
+          </label>
           <input
             type="email"
             id="email"
@@ -63,11 +65,17 @@ const Settings: React.FC = () => {
             Enable Notifications
           </label>
         </div>
-        <button type="submit" className="w-full bg-blue-500 text-white px-4 py-2 rounded">
+        <button
+          type="submit"
+          className="w-full bg-blue-500 text-white px-4 py-2 rounded"
+        >
           Save Settings
         </button>
       </form>
-      <button onClick={logout} className="w-full mt-4 bg-red-500 text-white px-4 py-2 rounded">
+      <button
+        onClick={logout}
+        className="w-full mt-4 bg-red-500 text-white px-4 py-2 rounded"
+      >
         Logout
       </button>
       {saveAlert && (
