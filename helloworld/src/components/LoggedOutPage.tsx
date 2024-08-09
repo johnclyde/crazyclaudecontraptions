@@ -1,10 +1,20 @@
-import React, { useState } from "react";
-import { useUserDataContext } from "../contexts/UserDataContext";
+import React, { useState, forwardRef } from "react";
 import Header from "./Header";
+import { NotificationBellProps } from "./NotificationBell";
+import { UserMenuProps } from "./UserMenu";
 import "../LoggedOutPage.css";
 
+const MockNotificationBell = forwardRef<HTMLDivElement, NotificationBellProps>(
+  (props, ref) => {
+    return <div ref={ref}></div>;
+  },
+);
+
+const MockUserMenu = forwardRef<HTMLDivElement, UserMenuProps>((props, ref) => {
+  return <div ref={ref}></div>;
+});
+
 const LoggedOutPage: React.FC = () => {
-  const { login } = useUserDataContext();
   const [selectedGoals, setSelectedGoals] = useState<string[]>([]);
   const [visibleSections, setVisibleSections] = useState(1);
 
@@ -113,8 +123,8 @@ const LoggedOutPage: React.FC = () => {
         notifications={[]}
         notificationsError={null}
         markNotificationAsRead={() => {}}
-        NotificationBell={() => null}
-        UserMenu={() => null}
+        NotificationBell={MockNotificationBell}
+        UserMenu={MockUserMenu}
       />
       <main>
         <section className="hero">
