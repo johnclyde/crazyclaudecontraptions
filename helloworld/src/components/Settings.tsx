@@ -1,11 +1,4 @@
 import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardFooter } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Switch } from '@/components/ui/switch';
-import { Label } from '@/components/ui/label';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Mail, Moon, Bell } from 'lucide-react';
 import { useUserDataContext } from '../contexts/UserDataContext';
 
 const Settings: React.FC = () => {
@@ -34,71 +27,55 @@ const Settings: React.FC = () => {
     setTimeout(() => setSaveAlert(false), 3000);
   };
 
-  const handleLogout = () => {
-    logout();
-    // Any additional logout logic
-  };
-
   return (
-    <Card className="w-[400px] mx-auto">
-      <CardHeader>
-        <h2 className="text-2xl font-bold">Settings</h2>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSave}>
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <div className="flex">
-                <Mail className="w-4 h-4 mr-2 mt-3" />
-                <Input
-                  type="email"
-                  id="email"
-                  value={email}
-                  onChange={handleEmailChange}
-                  className="flex-grow"
-                />
-              </div>
-            </div>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                <Moon className="w-4 h-4" />
-                <Label htmlFor="dark-mode">Dark Mode</Label>
-              </div>
-              <Switch
-                id="dark-mode"
-                checked={darkMode}
-                onCheckedChange={handleDarkModeToggle}
-              />
-            </div>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                <Bell className="w-4 h-4" />
-                <Label htmlFor="notifications">Notifications</Label>
-              </div>
-              <Switch
-                id="notifications"
-                checked={notifications}
-                onCheckedChange={handleNotificationsToggle}
-              />
-            </div>
-          </div>
-          <Button type="submit" className="w-full mt-6">
-            Save Settings
-          </Button>
-        </form>
-      </CardContent>
-      <CardFooter>
-        <Button variant="destructive" className="w-full" onClick={handleLogout}>
-          Logout
-        </Button>
-      </CardFooter>
+    <div className="w-[400px] mx-auto p-6 bg-white rounded-lg shadow-md">
+      <h2 className="text-2xl font-bold mb-4">Settings</h2>
+      <form onSubmit={handleSave}>
+        <div className="mb-4">
+          <label htmlFor="email" className="block mb-2">Email</label>
+          <input
+            type="email"
+            id="email"
+            value={email}
+            onChange={handleEmailChange}
+            className="w-full px-3 py-2 border rounded"
+          />
+        </div>
+        <div className="mb-4">
+          <label className="flex items-center">
+            <input
+              type="checkbox"
+              checked={darkMode}
+              onChange={handleDarkModeToggle}
+              className="mr-2"
+            />
+            Dark Mode
+          </label>
+        </div>
+        <div className="mb-4">
+          <label className="flex items-center">
+            <input
+              type="checkbox"
+              checked={notifications}
+              onChange={handleNotificationsToggle}
+              className="mr-2"
+            />
+            Enable Notifications
+          </label>
+        </div>
+        <button type="submit" className="w-full bg-blue-500 text-white px-4 py-2 rounded">
+          Save Settings
+        </button>
+      </form>
+      <button onClick={logout} className="w-full mt-4 bg-red-500 text-white px-4 py-2 rounded">
+        Logout
+      </button>
       {saveAlert && (
-        <Alert className="mt-4">
-          <AlertDescription>Settings saved successfully!</AlertDescription>
-        </Alert>
+        <div className="mt-4 p-2 bg-green-100 text-green-700 rounded">
+          Settings saved successfully!
+        </div>
       )}
-    </Card>
+    </div>
   );
 };
 
