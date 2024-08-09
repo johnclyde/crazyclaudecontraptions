@@ -1,11 +1,5 @@
 import React from "react";
-import {
-  render,
-  screen,
-  fireEvent,
-  waitFor,
-  act,
-} from "@testing-library/react";
+import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { BrowserRouter as Router, MemoryRouter } from "react-router-dom";
 import Header from "./Header";
 import * as UserDataContext from "../contexts/UserDataContext";
@@ -13,6 +7,17 @@ import * as UserDataContext from "../contexts/UserDataContext";
 jest.mock("../contexts/UserDataContext", () => ({
   useUserDataContext: jest.fn(),
 }));
+
+const mockUseUserDataContext = UserDataContext.useUserDataContext as jest.Mock;
+
+const defaultUserContextValue = {
+  user: null,
+  isLoggedIn: false,
+  login: jest.fn(),
+  logout: jest.fn(),
+  isAdminMode: false,
+  toggleAdminMode: jest.fn(),
+};
 
 const MockNotificationBell = React.forwardRef<HTMLDivElement, any>(
   (props, ref) => (
@@ -52,19 +57,11 @@ const defaultProps = {
   UserMenu: MockUserMenu,
 };
 
-const mockUserDataContext = {
-  user: null,
-  isLoggedIn: false,
-  login: jest.fn(),
-  logout: jest.fn(),
-  isAdminMode: false,
-  toggleAdminMode: jest.fn(),
-};
-
-const renderHeader = (props = {}, contextValue = mockUserDataContext) => {
-  (UserDataContext.useUserDataContext as jest.Mock).mockReturnValue(
-    contextValue,
-  );
+const renderHeader = (
+  props = {},
+  userContextValue = defaultUserContextValue,
+) => {
+  mockUseUserDataContext.mockReturnValue(userContextValue);
   return render(
     <Router>
       <Header {...defaultProps} {...props} />
@@ -89,18 +86,18 @@ describe("Header", () => {
 
   it("calls login function when login button is clicked", () => {
     const mockLogin = jest.fn();
-    renderHeader({}, { ...mockUserDataContext, login: mockLogin });
+    renderHeader({}, { ...defaultUserContextValue, login: mockLogin });
     fireEvent.click(screen.getByRole("button", { name: "Log In" }));
     expect(mockLogin).toHaveBeenCalled();
   });
 
   it("renders UserMenu when user is logged in", () => {
-    renderHeader({}, { ...mockUserDataContext, isLoggedIn: true });
+    renderHeader({}, { ...defaultUserContextValue, isLoggedIn: true });
     expect(screen.getByLabelText("User menu")).toBeInTheDocument();
   });
 
   it("renders NotificationBell when user is logged in", () => {
-    renderHeader({}, { ...mockUserDataContext, isLoggedIn: true });
+    renderHeader({}, { ...defaultUserContextValue, isLoggedIn: true });
     expect(screen.getByLabelText("Notifications")).toBeInTheDocument();
   });
 
@@ -110,6 +107,7 @@ describe("Header", () => {
   });
 
   it("renders labs link when on labs path", () => {
+    mockUseUserDataContext.mockReturnValue(defaultUserContextValue);
     render(
       <MemoryRouter initialEntries={["/labs/some-component"]}>
         <Header {...defaultProps} />
@@ -126,7 +124,7 @@ describe("Header", () => {
   it("applies correct background color for admin mode", () => {
     renderHeader(
       {},
-      { ...mockUserDataContext, isLoggedIn: true, isAdminMode: true },
+      { ...defaultUserContextValue, isLoggedIn: true, isAdminMode: true },
     );
     const header = screen.getByRole("banner");
     expect(header).toHaveClass("bg-red-900");
@@ -135,7 +133,7 @@ describe("Header", () => {
   it("applies correct background color for non-admin mode", () => {
     renderHeader(
       {},
-      { ...mockUserDataContext, isLoggedIn: true, isAdminMode: false },
+      { ...defaultUserContextValue, isLoggedIn: true, isAdminMode: false },
     );
     const header = screen.getByRole("banner");
     expect(header).toHaveClass("bg-gray-800");
@@ -160,19 +158,13 @@ describe("Header", () => {
   });
 
   it("closes notification dropdown when clicking outside", async () => {
-    renderHeader({}, { ...mockUserDataContext, isLoggedIn: true });
+    renderHeader({}, { ...defaultUserContextValue, isLoggedIn: true });
     const notificationBell = screen.getByLabelText("Notifications");
 
-    act(() => {
-      fireEvent.click(notificationBell);
-    });
-
+    fireEvent.click(notificationBell);
     expect(screen.getByTestId("notification-dropdown")).toBeInTheDocument();
 
-    act(() => {
-      fireEvent.mouseDown(document.body);
-    });
-
+    fireEvent.mouseDown(document.body);
     await waitFor(() => {
       expect(
         screen.queryByTestId("notification-dropdown"),
@@ -181,19 +173,13 @@ describe("Header", () => {
   });
 
   it("closes user menu when clicking outside", async () => {
-    renderHeader({}, { ...mockUserDataContext, isLoggedIn: true });
+    renderHeader({}, { ...defaultUserContextValue, isLoggedIn: true });
     const userMenuButton = screen.getByLabelText("User menu");
 
-    act(() => {
-      fireEvent.click(userMenuButton);
-    });
-
+    fireEvent.click(userMenuButton);
     expect(screen.getByTestId("user-menu-dropdown")).toBeInTheDocument();
 
-    act(() => {
-      fireEvent.mouseDown(document.body);
-    });
-
+    fireEvent.mouseDown(document.body);
     await waitFor(() => {
       expect(
         screen.queryByTestId("user-menu-dropdown"),
