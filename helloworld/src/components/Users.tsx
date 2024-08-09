@@ -53,7 +53,7 @@ const Users: React.FC = () => {
     if (user?.isAdmin && isAdminMode) {
       fetchUsers();
     }
-  }, [user, isAdminMode]);
+  }, [user?.isAdmin, isAdminMode]);
 
   if (!user?.isAdmin || !isAdminMode) {
     return null;

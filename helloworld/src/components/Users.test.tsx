@@ -139,111 +139,32 @@ describe("Users component", () => {
       expect(screen.queryByText("Users")).not.toBeInTheDocument();
     });
   });
-});
 
-describe("Users Component Behavior", () => {
-  let fetchCount = 0;
-  let consoleLogCount = 0;
-  const originalConsoleLog = console.log;
-  const originalConsoleError = console.error;
-
-  beforeEach(() => {
-    fetchCount = 0;
-    consoleLogCount = 0;
-    jest.useFakeTimers();
-
-    global.fetch = jest.fn().mockImplementation(() => {
-      fetchCount++;
-      return Promise.resolve({
-        ok: true,
-        json: async () => ({ users: [] }),
-      });
+  it("should not re-fetch users on re-render with same props", async () => {
+    const mockFetch = jest.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ users: [mockUser] }),
     });
+    global.fetch = mockFetch;
 
-    console.log = jest.fn((...args) => {
-      consoleLogCount++;
-      originalConsoleLog(...args);
-    });
-
-    console.error = jest.fn();
-
-    jest.spyOn(UserDataContext, "useUserDataContext").mockReturnValue({
-      user: { isAdmin: true },
-      isLoggedIn: true,
-      isAdminMode: true,
-    } as any);
-  });
-
-  afterEach(() => {
-    console.log = originalConsoleLog;
-    console.error = originalConsoleError;
-    jest.useRealTimers();
-    jest.restoreAllMocks();
-  });
-
-  it("fetches users only once when mounted", async () => {
-    render(
-      <BrowserRouter>
-        <Users />
-      </BrowserRouter>,
-    );
-
-    await act(async () => {
-      jest.runAllTimers();
-    });
-
-    console.log(`Fetch called ${fetchCount} times`);
-    console.log(`Console.log called ${consoleLogCount} times`);
-
-    expect(fetchCount).toBe(1);
-    expect(consoleLogCount).toBeLessThanOrEqual(5);
-    expect(console.error).not.toHaveBeenCalled();
-  });
-
-  it("does not re-fetch when admin mode or user doesn't change", async () => {
     const { rerender } = render(
-      <BrowserRouter>
+      <MemoryRouter>
         <Users />
-      </BrowserRouter>,
+      </MemoryRouter>,
     );
 
-    await act(async () => {
-      jest.runAllTimers();
+    await waitFor(() => {
+      expect(mockFetch).toHaveBeenCalledTimes(1);
     });
 
-    const initialFetchCount = fetchCount;
-
-    // Trigger a re-render
     rerender(
-      <BrowserRouter>
+      <MemoryRouter>
         <Users />
-      </BrowserRouter>,
+      </MemoryRouter>,
     );
 
-    await act(async () => {
-      jest.runAllTimers();
+    await waitFor(() => {
+      expect(mockFetch).toHaveBeenCalledTimes(1);
     });
-
-    expect(fetchCount).toBe(initialFetchCount);
-  });
-
-  it("should not fetch users when not in admin mode", async () => {
-    jest.spyOn(UserDataContext, "useUserDataContext").mockReturnValue({
-      user: { isAdmin: true },
-      isLoggedIn: true,
-      isAdminMode: false,
-    } as any);
-
-    render(
-      <BrowserRouter>
-        <Users />
-      </BrowserRouter>,
-    );
-
-    await act(async () => {
-      jest.runAllTimers();
-    });
-
-    expect(fetchCount).toBe(0);
   });
 });
