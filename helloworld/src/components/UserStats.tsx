@@ -1,5 +1,14 @@
-import React from 'react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import React from "react";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+} from "recharts";
 
 interface UserStatsProps {
   user: {
@@ -20,15 +29,21 @@ const UserStats: React.FC<UserStatsProps> = ({ user }) => {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         <div className="bg-blue-100 p-4 rounded-lg">
           <h3 className="text-lg font-semibold mb-2">Problems Solved</h3>
-          <p className="text-3xl font-bold text-blue-600">{user.problemsSolved}</p>
+          <p className="text-3xl font-bold text-blue-600">
+            {user.problemsSolved}
+          </p>
         </div>
         <div className="bg-green-100 p-4 rounded-lg">
           <h3 className="text-lg font-semibold mb-2">Tests Completed</h3>
-          <p className="text-3xl font-bold text-green-600">{user.testsCompleted}</p>
+          <p className="text-3xl font-bold text-green-600">
+            {user.testsCompleted}
+          </p>
         </div>
         <div className="bg-yellow-100 p-4 rounded-lg">
           <h3 className="text-lg font-semibold mb-2">Average Score</h3>
-          <p className="text-3xl font-bold text-yellow-600">{user.averageScore}%</p>
+          <p className="text-3xl font-bold text-yellow-600">
+            {user.averageScore}%
+          </p>
         </div>
       </div>
       <div className="mb-6">
