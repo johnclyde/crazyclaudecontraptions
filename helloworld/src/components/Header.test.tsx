@@ -1,8 +1,17 @@
 import React from "react";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
-import { BrowserRouter as Router, MemoryRouter } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  MemoryRouter,
+  useNavigate,
+} from "react-router-dom";
 import Header from "./Header";
 import * as UserDataContext from "../contexts/UserDataContext";
+
+jest.mock("react-router-dom", () => ({
+  ...jest.requireActual("react-router-dom"),
+  useNavigate: jest.fn(),
+}));
 
 jest.mock("../contexts/UserDataContext", () => ({
   useUserDataContext: jest.fn(),
@@ -44,7 +53,12 @@ const MockUserMenu = React.forwardRef<HTMLDivElement, any>((props, ref) => (
       User Icon
     </button>
     {props.showUserMenu && (
-      <div data-testid="user-menu-dropdown">User Menu Content</div>
+      <div data-testid="user-menu-dropdown">
+        <button>Profile</button>
+        <button>Users</button>
+        <button>Settings</button>
+        <button>Logout</button>
+      </div>
     )}
   </div>
 ));
@@ -184,6 +198,47 @@ describe("Header", () => {
       expect(
         screen.queryByTestId("user-menu-dropdown"),
       ).not.toBeInTheDocument();
+    });
+  });
+
+  it("navigates to Users page without toggling off admin mode", async () => {
+    const mockToggleAdminMode = jest.fn();
+    const mockUserContextValue = {
+      user: { id: "1", name: "Test User", isAdmin: true },
+      isLoggedIn: true,
+      login: jest.fn(),
+      logout: jest.fn(),
+      isAdminMode: true,
+      toggleAdminMode: mockToggleAdminMode,
+    };
+
+    mockUseUserDataContext.mockReturnValue(mockUserContextValue);
+
+    render(
+      <MemoryRouter>
+        <Header
+          notifications={[]}
+          notificationsError={null}
+          markNotificationAsRead={jest.fn()}
+          NotificationBell={MockNotificationBell}
+          UserMenu={MockUserMenu}
+        />
+      </MemoryRouter>,
+    );
+
+    // Open the user menu
+    fireEvent.click(screen.getByLabelText("User menu"));
+
+    // Click on the Users button in the dropdown
+    fireEvent.click(screen.getByText("Users"));
+
+    // Wait for any asynchronous actions to complete
+    await waitFor(() => {
+      // Check if toggleAdminMode was not called
+      expect(mockToggleAdminMode).not.toHaveBeenCalled();
+
+      // The isAdminMode should still be true
+      expect(mockUserContextValue.isAdminMode).toBe(true);
     });
   });
 });
