@@ -1,18 +1,5 @@
-import React, { useState, forwardRef } from "react";
-import Header from "./Header";
-import { NotificationBellProps } from "./NotificationBell";
-import { UserMenuProps } from "./UserMenu";
+import React, { useState } from "react";
 import "../LoggedOutPage.css";
-
-const MockNotificationBell = forwardRef<HTMLDivElement, NotificationBellProps>(
-  (props, ref) => {
-    return <div ref={ref}></div>;
-  },
-);
-
-const MockUserMenu = forwardRef<HTMLDivElement, UserMenuProps>((props, ref) => {
-  return <div ref={ref}></div>;
-});
 
 const LoggedOutPage: React.FC = () => {
   const [selectedGoals, setSelectedGoals] = useState<string[]>([]);
@@ -119,13 +106,6 @@ const LoggedOutPage: React.FC = () => {
 
   return (
     <div className="logged-out-page">
-      <Header
-        notifications={[]}
-        notificationsError={null}
-        markNotificationAsRead={() => {}}
-        NotificationBell={MockNotificationBell}
-        UserMenu={MockUserMenu}
-      />
       <main>
         <section className="hero">
           <h1>Personalized Math Competition Training</h1>
